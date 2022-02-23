@@ -1,0 +1,33 @@
+language : generic
+
+sudo: required
+
+services:
+  - docker
+
+before_install:
+  - docker build -t $DOCKER_HUB_ID/docker-test-jpro-blog -f ./jpro-blog/Dockerfile.dev ./jpro-blog
+
+# script:
+#   - docker run -e CI=true $DOCKER_HUB_ID/docker-test-jpro-blog [test script]
+
+after_success:
+  - docker build -t $DOCKER_HUB_ID/docker-jpro-blog ./jpro-blog
+  - docker build -t $DOCKER_HUB_ID/docker-jpro-profile ./jpro-profile
+  - docker build -t $DOCKER_HUB_ID/docker-nginx ./nginx
+  - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_ID" --password-stdin
+  - docker push $DOCKER_HUB_ID/docker-jpro-blog
+  - docker push $DOCKER_HUB_ID/docker-jpro-profile
+  - docker push $DOCKER_HUB_ID/docker-nginx
+
+deploy:
+  provider: elasticbeanstalk
+  region: "ap-northeast-2"
+  app : "service-jpro-app"
+  env: "Servicejproapp-env"
+  bucket_name: $Bucker_Name
+  bucket_path: $Bucker_Path
+  on:
+    branch: main
+  access_key_id: $AWS_Access_Key
+  secret_access_key: $AWS_Secret_Access_Key
