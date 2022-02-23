@@ -1,0 +1,14 @@
+/api
+/mysql
+/jupyter
+
+/docker-compose-dev.yml
+/docker-compose-dev copy.yml
+
+/jpro-blog/Dockerfile.dev
+/jpro-profile/Dockerfile.dev
+/nginx/Dockerfile.dev
+/nginx/conf.d/default-dev.conf
+/nginx/conf.d/nginx-dev.conf
+
+/.vscode

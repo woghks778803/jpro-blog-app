@@ -1,0 +1,17 @@
+{
+    "name": "root/jpro-profile",
+    "autoload": {
+        "psr-4": {
+            
+        }
+    },
+    "authors": [
+        {
+            "name": "jpro",
+            "email": "admin@jpro.website"
+        }
+    ],
+    "require": {
+        "scssphp/scssphp": "^1.10.0"
+    }
+}
