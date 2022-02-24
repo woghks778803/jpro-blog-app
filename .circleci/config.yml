@@ -1,4 +1,6 @@
 version: 2.1
+orbs:
+  aws-s3: circleci/aws-s3@3.0
 jobs:
   build:
     docker:
@@ -13,27 +15,33 @@ jobs:
       #   command: |
       #       docker build -t $DOCKER_HUB_ID/docker-jpro-blog-dev ./jpro-blog
       #       docker build -t $DOCKER_HUB_ID/docker-jpro-profile-dev ./jpro-profile
-      #       docker build -t $DOCKER_HUB_ID/docker-nginx-dev ./nginx
+      #       docker build -t $DOCKER_HUB_ID/docker-jpro-nginx-dev ./nginx
       # - run:
       #   name: Dev Docker Image Testing
       #   command: |
-      #     ...
+      #     docker run -e CI=true $DOCKER_HUB_ID/docker-jpro-blog-dev [test script]
       - run:
           name: Op Docker Image Build
           command: |
             echo "Build Start"
             docker build -t $DOCKER_HUB_ID/docker-jpro-blog ./jpro-blog
             docker build -t $DOCKER_HUB_ID/docker-jpro-profile ./jpro-profile
-            docker build -t $DOCKER_HUB_ID/docker-nginx ./nginx
+            docker build -t $DOCKER_HUB_ID/docker-jpro-nginx ./nginx
       - run:
           name: Image DockerHub Push
           command: |
             echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_ID" --password-stdin
             docker push $DOCKER_HUB_ID/docker-jpro-blog
             docker push $DOCKER_HUB_ID/docker-jpro-profile
-            docker push $DOCKER_HUB_ID/docker-nginx
-    # - run:
-    #     name: AWS Elastic BeanStalk Deploying
-    #     command: |
-    #       git config --global core.autocrlf input
-    #       eb deploy service-jpro-app
+            docker push $DOCKER_HUB_ID/docker-jpro-nginx
+      - run:
+          name: Installing deployment dependencies
+          command: |
+            sudo apt-get -y -qq update            
+            sudo apt-get install python3-pip python3-dev build-essential
+            sudo pip3 install --upgrade setuptools
+            sudo pip3 install awsebcli --upgrade
+      - run:
+          name: AWS Elastic BeanStalk Deploying
+          command: |
+            eb deploy $EB_SERVICE_NAME
