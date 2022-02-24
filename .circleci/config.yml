@@ -10,16 +10,16 @@ jobs:
       - setup_remote_docker:
           version: 20.10.11
           docker_layer_caching: true
-      - run:
-        name: Dev Docker Image Bulid
-        command: |
-            docker build -t $DOCKER_HUB_ID/docker-jpro-blog-dev ./jpro-blog
-            docker build -t $DOCKER_HUB_ID/docker-jpro-profile-dev ./jpro-profile
-            docker build -t $DOCKER_HUB_ID/docker-jpro-nginx-dev ./nginx
-      - run:
-        name: Dev Docker Image Testing
-        command: |
-          docker run -e CI=true $DOCKER_HUB_ID/docker-jpro-blog-dev [test script]
+      # - run:
+      #     name: Dev Docker Image Bulid
+      #     command: |
+      #         docker build -t $DOCKER_HUB_ID/docker-jpro-blog-dev ./jpro-blog
+      #         docker build -t $DOCKER_HUB_ID/docker-jpro-profile-dev ./jpro-profile
+      #         docker build -t $DOCKER_HUB_ID/docker-jpro-nginx-dev ./nginx
+      # - run:
+      #     name: Dev Docker Image Testing
+      #     command: |
+      #       docker run -e CI=true $DOCKER_HUB_ID/docker-jpro-blog-dev [test script]
       - run:
           name: Op Docker Image Build
           command: |
