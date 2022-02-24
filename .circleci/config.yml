@@ -5,6 +5,10 @@ jobs:
       - image: docker:20.10.11
     steps:
       - checkout
+      - run:
+          name: Docker Start
+          command: |
+            sudo systemctl start docker
       # - run:
       #   name: Dev Docker Image Bulid
       #   command: |
@@ -18,6 +22,7 @@ jobs:
       - run:
           name: Op Docker Image Build
           command: |
+            echo "Build Start"
             docker build -t $DOCKER_HUB_ID/docker-jpro-blog ./jpro-blog
             docker build -t $DOCKER_HUB_ID/docker-jpro-profile ./jpro-profile
             docker build -t $DOCKER_HUB_ID/docker-nginx ./nginx
