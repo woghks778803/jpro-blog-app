@@ -2,10 +2,24 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: alpine:3.7
+      - image: docker:20.10.11
     steps:
+      - checkout
       - run:
-          name: The First Step
-          command: |
-            echo 'Hello World!'
-            echo 'This is the delivery pipeline'
+          name: Op Docker Image Build
+          command: 
+            docker build -t $DOCKER_HUB_ID/docker-jpro-blog ./jpro-blog
+            docker build -t $DOCKER_HUB_ID/docker-jpro-profile ./jpro-profile
+            docker build -t $DOCKER_HUB_ID/docker-nginx ./nginx
+      - run:
+          name: Image DockerHub Push
+          command: 
+            echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_ID" --password-stdin
+            docker push $DOCKER_HUB_ID/docker-jpro-blog
+            docker push $DOCKER_HUB_ID/docker-jpro-profile
+            docker push $DOCKER_HUB_ID/docker-nginx
+    # - run:
+    #     name: AWS Elastic BeanStalk Deploying
+    #     command: |
+    #       git config --global core.autocrlf input
+    #       eb deploy service-jpro-app

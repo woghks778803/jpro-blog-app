@@ -1,0 +1,62 @@
+------------------------------------------------------------
+  Plugin list generated with BackWPup version: 3.10.0
+  http://backwpup.com
+  Blog Name: JPro
+  Blog URL: https://www.jpro.blog
+  Generated on: 2022-02-24 18:41.15
+------------------------------------------------------------
+
+
+All plugin information:
+------------------------------
+Advanced Ads (v.1.31.1) from Thomas Maier, Advanced Ads GmbH
+	https://wpadvancedads.com
+Advanced Ads – Google AdSense In-feed Placement (v.1.1.2) from Thomas Maier
+	https://wpadvancedads.com
+Advanced Heading (v.1.1.0) from WPDeveloper
+	
+Akismet Anti-Spam (v.4.2.2) from Automattic
+	https://akismet.com/
+All in One SEO (v.4.1.7) from All in One SEO Team
+	https://aioseo.com/
+BackWPup (v.3.10.0) from Inpsyde GmbH
+	http://backwpup.com
+Code Syntax Block (v.3.0.0) from Marcus Kazmierczak
+	https://github.com/mkaz/code-syntax-block
+Hello Dolly (v.1.7.2) from Matt Mullenweg
+	http://wordpress.org/plugins/hello-dolly/
+iThemes Security (v.8.0.2) from iThemes
+	https://ithemes.com/security
+Jetpack (v.10.6) from Automattic
+	https://jetpack.com
+Max Mega Menu (v.2.9.5) from megamenu.com
+	https://www.megamenu.com
+SVG Support (v.2.4.2) from Benbodhi
+	http://wordpress.org/plugins/svg-support/
+WPForms Lite (v.1.7.2.1) from WPForms
+	https://wpforms.com
+WP Mail SMTP (v.3.3.0) from WPForms
+	https://wpmailsmtp.com/
+WP Offload Media Lite (v.2.5.5) from Delicious Brains
+	http://wordpress.org/extend/plugins/amazon-s3-and-cloudfront/
+
+Active plugins:
+------------------------------
+Advanced Ads
+Advanced Ads – Google AdSense In-feed Placement
+Advanced Heading
+Akismet Anti-Spam
+All in One SEO
+BackWPup
+Code Syntax Block
+Hello Dolly
+iThemes Security
+Jetpack
+Max Mega Menu
+SVG Support
+WPForms Lite
+WP Mail SMTP
+WP Offload Media Lite
+
+Inactive plugins:
+------------------------------

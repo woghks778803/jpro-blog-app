@@ -13,10 +13,11 @@ services:
       dockerfile: Dockerfile.dev
     container_name: jpro-blog
     environment: 
-      DB_NAME: $DB_NAME
-      DB_USER: $DB_USER
-      DB_PASSWORD: $DB_PASSWORD
-      DB_HOST: $DB_HOST
+      MYSQL_HOST: $MYSQL_HOST 
+      MYSQL_USER: $MYSQL_USER 
+      MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
+      MYSQL_DATABASE: $MYSQL_DATABASE
+      MYSQL_PORT: $MYSQL_PORT  
       access_key_id: $AWS_Access_Key
       secret_access_key: $AWS_Secret_Access_Key
       TZ: "Asia/Seoul"

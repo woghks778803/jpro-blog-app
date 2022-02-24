@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="492" height="292" viewBox="0 0 492 292" version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <rect x="0" y="0" width="492" height="292" fill="#fff" stroke="none"/>
+    <g style="fill:#e6e6e6;stroke:#000;stroke-width:1px;">
+        <rect x="46.5" y="100.5" width="7" height="16"/>
+        <rect x="104.5" y="100.5" width="7" height="16"/>
+        <rect x="28.5" y="43.5" width="101" height="60"/>
+        <rect x="28.5" y="112.5" width="101" height="17"/>
+        <rect x="230.5" y="6.5" width="139" height="277" rx="25" ry="25"/>
+        <rect x="46.5" y="182.5" width="65" height="73"/>
+    </g>
+    <g style="fill:#fff;stroke:#000;stroke-width:1px;">
+        <rect x="42.5" y="50.5" width="72" height="45" rx="8" ry="8"/>
+        <path d="M71.5,154.5L71.5,134.5L86.5,134.5L86.5,154.5L96,154.5L79,171.5L62,154.5L71.5,154.5Z"/>
+        <path d="M199.5,226.5L127.5,226.5L127.5,211.5L199.5,211.5L199.5,202L216.5,219L199.5,236L199.5,226.5Z"/>
+    </g>
+    <g style="fill:#97cbff;stroke:#000;stroke-width:1px;">
+        <ellipse cx="300" cy="48.5" rx="34.5" ry="24"/>
+        <ellipse cx="300" cy="145" rx="59" ry="37"/>
+        <ellipse cx="300" cy="241.5" rx="34.5" ry="24"/>
+        <path d="M305.5,88.5L305.5,103.5L294.5,103.5L294.5,88.5L289,88.5L300,77.5L311,88.5L305.5,88.5Z"/>
+        <path d="M305.5,201.5L311,201.5L300,212.5L289,201.5L294.5,201.5L294.5,186.5L305.5,186.5L305.5,201.5Z"/>
+    </g>
+    <g style="fill:none;stroke:#000;stroke-width:1px;">
+        <path d="M340,48.5L397,48.5"/>
+        <path d="M340,241.5L397,241.5"/>
+    </g>
+    <g style="font-family:'Times New Roman', serif;font-size:18px;">
+        <text text-anchor="middle" x="78.5" y="34">Web Users</text>
+        <text text-anchor="middle" x="78.5" y="223">HTTP</text>
+        <text text-anchor="middle" x="448" y="238">Web</text>
+        <text text-anchor="middle" x="448" y="256">Server</text>
+        <text text-anchor="middle" x="448" y="43">Gateway</text>
+        <text text-anchor="middle" x="448" y="61">Program</text>
+        <text text-anchor="middle" x="300" y="150">CGI</text>
+    </g>
+</svg>
