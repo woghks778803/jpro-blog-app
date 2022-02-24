@@ -14,11 +14,11 @@ before_install:
 after_success:
   - docker build -t $DOCKER_HUB_ID/docker-jpro-blog ./jpro-blog
   - docker build -t $DOCKER_HUB_ID/docker-jpro-profile ./jpro-profile
-  - docker build -t $DOCKER_HUB_ID/docker-nginx ./nginx
+  - docker build -t $DOCKER_HUB_ID/docker-jpro-nginx ./nginx
   - echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_ID" --password-stdin
   - docker push $DOCKER_HUB_ID/docker-jpro-blog
   - docker push $DOCKER_HUB_ID/docker-jpro-profile
-  - docker push $DOCKER_HUB_ID/docker-nginx
+  - docker push $DOCKER_HUB_ID/docker-jpro-nginx
 
 deploy:
   provider: elasticbeanstalk
