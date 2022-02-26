@@ -1,42 +1,15 @@
-version: '2.1'
+version: 2.1
 orbs:
   aws-s3: circleci/aws-s3@3.0
 jobs:
   build:
     docker:
-      - image: 'cimg/python:3.6'
+      - image: cimg/python:3.6
     steps:
       - checkout
-      - run: mkdir bucket && echo "lorem ipsum" > bucket/build_asset.txt
-      - aws-s3/sync:
-          arguments: |
-            --acl public-read \
-            --cache-control "max-age=86400"
-          aws-access-key-id: AWS_ACCESS_KEY_ID
-          aws-region: AWS_REGION
-          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-          from: bucket
-          to: $BUCKET_NAME_PATH
-      - aws-s3/copy:
-          arguments: '--dryrun'
-          from: bucket/build_asset.txt
-          to: $BUCKET_NAME
-workflows:
-  s3-example:
-    jobs:
-      - build
-# version: 2.1
-# orbs:
-#   aws-s3: circleci/aws-s3@3.0
-# jobs:
-#   build:
-#     docker:
-#       - image: cimg/base:2022.02
-#     steps:
-#       - checkout
-#       - setup_remote_docker:
-#           version: 20.10.11
-#           docker_layer_caching: true
+      - setup_remote_docker:
+          version: 20.10.11
+          docker_layer_caching: true
       # - run:
       #     name: Dev Docker Image Bulid
       #     command: |
@@ -61,13 +34,13 @@ workflows:
       #       docker push $DOCKER_HUB_ID/docker-jpro-blog
       #       docker push $DOCKER_HUB_ID/docker-jpro-profile
       #       docker push $DOCKER_HUB_ID/docker-jpro-nginx
-      # - run:
-      #     name: Installing deployment dependencies
-      #     command: |
-      #       sudo apt-get -y -qq update            
-      #       sudo apt-get install -y python3-pip python3-dev build-essential
-      #       sudo pip3 install --upgrade setuptools
-      #       sudo pip3 install awsebcli --upgrade
+      - run:
+          name: Installing deployment dependencies
+          command: |
+            sudo apt-get -y -qq update            
+            sudo apt-get install -y python3-pip python3-dev build-essential
+            sudo pip3 install --upgrade setuptools
+            sudo pip3 install awsebcli --upgrade
       # - run:
       #     name: AWS Elastic BeanStalk Deploying
       #     command: |
@@ -77,20 +50,19 @@ workflows:
       #     commands:
       #       - eb use $EB_SERVICE_NAME --profile $EB_SERVICE_NAME
       #       - eb deploy --profile $EB_SERVICE_NAME
-      # - run: mkdir bucket && echo "lorem ipsum" > bucket/build_asset.txt
       # - aws-s3/sync:
       #     arguments: |
       #       --acl public-read \
       #       --cache-control "max-age=86400"
-      #     aws-access-key-id: $AWS_ACCESS_KEY_ID
-      #     aws-region: $AWS_REGION
-      #     aws-secret-access-key: $AWS_SECRET_ACCESS_KEY
+      #     aws-access-key-id: AWS_ACCESS_KEY_ID
+      #     aws-region: AWS_REGION
+      #     aws-secret-access-key: AWS_SECRET_ACCESS_KEY
       #     from: bucket
-      #     to: 's3://$BUCKET_NAME/prefix'
+      #     to: $BUCKET_NAME_PATH
       # - aws-s3/copy:
       #     arguments: '--dryrun'
       #     from: bucket/build_asset.txt
-      #     to: 's3://$BUCKET_NAME'
+      #     to: $BUCKET_NAME
 # workflows:
 #   s3-example:
 #     jobs:
