@@ -1,10 +1,11 @@
 version: 2.1
-orbs:
+orbs: 
+  aws-eb: circleci/aws-elastic-beanstalk@2.0.1
   aws-s3: circleci/aws-s3@3.0
 jobs:
-  build:
+  docker-build:
     docker:
-      - image: cimg/python:3.6
+      - image: cimg/base:2022.02
     steps:
       - checkout
       - setup_remote_docker:
@@ -20,27 +21,39 @@ jobs:
       #     name: Dev Docker Image Testing
       #     command: |
       #       docker run -e CI=true $DOCKER_HUB_ID/docker-jpro-blog-dev [test script]
-      # - run:
-      #     name: Op Docker Image Build
-      #     command: |
-      #       echo "Build Start"
-      #       docker build -t $DOCKER_HUB_ID/docker-jpro-blog ./jpro-blog
-      #       docker build -t $DOCKER_HUB_ID/docker-jpro-profile ./jpro-profile
-      #       docker build -t $DOCKER_HUB_ID/docker-jpro-nginx ./nginx
-      # - run:
-      #     name: Image DockerHub Push
-      #     command: |
-      #       echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_ID" --password-stdin
-      #       docker push $DOCKER_HUB_ID/docker-jpro-blog
-      #       docker push $DOCKER_HUB_ID/docker-jpro-profile
-      #       docker push $DOCKER_HUB_ID/docker-jpro-nginx
       - run:
-          name: Installing deployment dependencies
+          name: Op Docker Image Build
           command: |
-            sudo apt-get -y -qq update            
-            sudo apt-get install -y python3-pip python3-dev build-essential
-            sudo pip3 install --upgrade setuptools
-            sudo pip3 install awsebcli --upgrade
+            echo "Build Start"
+            docker build -t $DOCKER_HUB_ID/docker-jpro-blog ./jpro-blog
+            docker build -t $DOCKER_HUB_ID/docker-jpro-profile ./jpro-profile
+            docker build -t $DOCKER_HUB_ID/docker-jpro-nginx ./nginx
+      - run:
+          name: Image DockerHub Push
+          command: |
+            echo "$DOCKER_HUB_PASSWORD" | docker login -u "$DOCKER_HUB_ID" --password-stdin
+            docker push $DOCKER_HUB_ID/docker-jpro-blog
+            docker push $DOCKER_HUB_ID/docker-jpro-profile
+            docker push $DOCKER_HUB_ID/docker-jpro-nginx
+  # eb-demo:
+  #   docker:
+  #     - image: 'cimg/base:stable'
+  #   steps:
+  #     - checkout
+  #     - eb/setup
+  #     - run:
+  #         command: |
+  #           eb create my-environment
+  #           eb deploy my-environment
+  #           eb status
+  #         name: You may now use the EB CLI within this job
+      # - run:
+      #     name: Installing deployment dependencies
+      #     command: |
+      #       sudo apt-get -y -qq update            
+      #       sudo apt-get install -y python3-pip python3-dev build-essential
+      #       sudo pip3 install --upgrade setuptools
+      #       sudo pip3 install awsebcli --upgrade
       # - run:
       #     name: AWS Elastic BeanStalk Deploying
       #     command: |
@@ -50,20 +63,29 @@ jobs:
       #     commands:
       #       - eb use $EB_SERVICE_NAME --profile $EB_SERVICE_NAME
       #       - eb deploy --profile $EB_SERVICE_NAME
-      # - aws-s3/sync:
-      #     arguments: |
-      #       --acl public-read \
-      #       --cache-control "max-age=86400"
-      #     aws-access-key-id: AWS_ACCESS_KEY_ID
-      #     aws-region: AWS_REGION
-      #     aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-      #     from: bucket
-      #     to: $BUCKET_NAME_PATH
-      # - aws-s3/copy:
-      #     arguments: '--dryrun'
-      #     from: bucket/build_asset.txt
-      #     to: $BUCKET_NAME
-# workflows:
-#   s3-example:
-#     jobs:
-#       - build
+  s3-upload:
+    docker:
+      - image: cimg/python:3.6
+    steps:
+      - checkout
+      - run: mkdir bucket && echo "lorem ipsum" > bucket/build_asset.txt
+      - aws-s3/sync:
+          arguments: |
+            --acl public-read \
+            --cache-control "max-age=86400"
+          aws-access-key-id: AWS_ACCESS_KEY_ID
+          aws-region: AWS_REGION
+          aws-secret-access-key: AWS_SECRET_ACCESS_KEY
+          from: bucket
+          to: $BUCKET_NAME_PATH
+      - aws-s3/copy:
+          arguments: '--dryrun'
+          from: bucket/build_asset.txt
+          to: $BUCKET_NAME
+workflows:
+  s3-workflow:
+    jobs:
+      - s3-upload
+  # elastic-beanstalk-workflow:
+  #   jobs:
+  #     - eb-demo
