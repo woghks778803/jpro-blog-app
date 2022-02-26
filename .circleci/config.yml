@@ -1,15 +1,42 @@
-version: 2.1
+version: '2.1'
 orbs:
   aws-s3: circleci/aws-s3@3.0
 jobs:
   build:
     docker:
-      - image: cimg/base:2022.02
+      - image: 'cimg/python:3.6'
     steps:
       - checkout
-      - setup_remote_docker:
-          version: 20.10.11
-          docker_layer_caching: true
+      - run: mkdir bucket && echo "lorem ipsum" > bucket/build_asset.txt
+      - aws-s3/sync:
+          arguments: |
+            --acl public-read \
+            --cache-control "max-age=86400"
+          aws-access-key-id: $AWS_ACCESS_KEY_ID
+          aws-region: $AWS_REGION
+          aws-secret-access-key: $AWS_SECRET_ACCESS_KEY
+          from: bucket
+          to: 's3://$BUCKET_NAME/prefix'
+      - aws-s3/copy:
+          arguments: '--dryrun'
+          from: bucket/build_asset.txt
+          to: 's3://$BUCKET_NAME'
+workflows:
+  s3-example:
+    jobs:
+      - build
+# version: 2.1
+# orbs:
+#   aws-s3: circleci/aws-s3@3.0
+# jobs:
+#   build:
+#     docker:
+#       - image: cimg/base:2022.02
+#     steps:
+#       - checkout
+#       - setup_remote_docker:
+#           version: 20.10.11
+#           docker_layer_caching: true
       # - run:
       #     name: Dev Docker Image Bulid
       #     command: |
@@ -50,21 +77,21 @@ jobs:
       #     commands:
       #       - eb use $EB_SERVICE_NAME --profile $EB_SERVICE_NAME
       #       - eb deploy --profile $EB_SERVICE_NAME
-      - run: mkdir bucket && echo "lorem ipsum" > bucket/build_asset.txt
-      - aws-s3/sync:
-          arguments: |
-            --acl public-read \
-            --cache-control "max-age=86400"
-          aws-access-key-id: $AWS_ACCESS_KEY_ID
-          aws-region: $AWS_REGION
-          aws-secret-access-key: $AWS_SECRET_ACCESS_KEY
-          from: bucket
-          to: 's3://$BUCKET_NAME/prefix'
-      - aws-s3/copy:
-          arguments: '--dryrun'
-          from: bucket/build_asset.txt
-          to: 's3://$BUCKET_NAME'
-workflows:
-  s3-example:
-    jobs:
-      - build
+      # - run: mkdir bucket && echo "lorem ipsum" > bucket/build_asset.txt
+      # - aws-s3/sync:
+      #     arguments: |
+      #       --acl public-read \
+      #       --cache-control "max-age=86400"
+      #     aws-access-key-id: $AWS_ACCESS_KEY_ID
+      #     aws-region: $AWS_REGION
+      #     aws-secret-access-key: $AWS_SECRET_ACCESS_KEY
+      #     from: bucket
+      #     to: 's3://$BUCKET_NAME/prefix'
+      # - aws-s3/copy:
+      #     arguments: '--dryrun'
+      #     from: bucket/build_asset.txt
+      #     to: 's3://$BUCKET_NAME'
+# workflows:
+#   s3-example:
+#     jobs:
+#       - build
