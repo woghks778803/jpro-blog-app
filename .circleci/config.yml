@@ -68,7 +68,7 @@ jobs:
       - image: cimg/python:3.6
     steps:
       - checkout
-      - run: mkdir bucket && echo "lorem ipsum" > bucket/build_asset.txt
+      - run: mkdir bucket && echo "lorem ipsum" > bucket/upload_asset.txt
       - aws-s3/sync:
           arguments: |
             --acl public-read \
@@ -80,9 +80,12 @@ jobs:
           to: $BUCKET_NAME_PATH
       - aws-s3/copy:
           arguments: '--dryrun'
-          from: bucket/build_asset.txt
+          from: bucket/upload_asset.txt
           to: $BUCKET_NAME
 workflows:
+  docker-workflow:
+    jobs:
+      - docker-build
   s3-workflow:
     jobs:
       - s3-upload
