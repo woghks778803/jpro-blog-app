@@ -81,7 +81,7 @@ workflows:
               only: jpro
       - s3-upload:
           requires:
-            - docker-workflow
+            - docker-build
           filters:
             branches:
               only: jpro
