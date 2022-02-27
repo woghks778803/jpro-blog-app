@@ -67,7 +67,7 @@ jobs:
       - run:
           name: deploying
           command: |
-            eb init --platform 'Jpro Service running on 64bit Amazon Linux 2' --region $AWS_REGION $EB_APP_NAME
+            eb init --platform 'Docker running on 64bit Amazon Linux 2' --region $AWS_REGION $EB_APP_NAME
             eb use $EB_ENV_NAME
             eb deploy $EB_ENV_NAME --message $CIRCLE_BUILD_NUM
 workflows:
