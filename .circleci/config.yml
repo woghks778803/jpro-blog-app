@@ -35,34 +35,6 @@ jobs:
             docker push $DOCKER_HUB_ID/docker-jpro-blog
             docker push $DOCKER_HUB_ID/docker-jpro-profile
             docker push $DOCKER_HUB_ID/docker-jpro-nginx
-  # eb-demo:
-  #   docker:
-  #     - image: 'cimg/base:stable'
-  #   steps:
-  #     - checkout
-  #     - eb/setup
-  #     - run:
-  #         command: |
-  #           eb create my-environment
-  #           eb deploy my-environment
-  #           eb status
-  #         name: You may now use the EB CLI within this job
-      # - run:
-      #     name: Installing deployment dependencies
-      #     command: |
-      #       sudo apt-get -y -qq update            
-      #       sudo apt-get install -y python3-pip python3-dev build-essential
-      #       sudo pip3 install --upgrade setuptools
-      #       sudo pip3 install awsebcli --upgrade
-      # - run:
-      #     name: AWS Elastic BeanStalk Deploying
-      #     command: |
-      #       eb deploy $EB_SERVICE_NAME
-      # production:
-      #     branch: jpro
-      #     commands:
-      #       - eb use $EB_SERVICE_NAME --profile $EB_SERVICE_NAME
-      #       - eb deploy --profile $EB_SERVICE_NAME
   s3-upload:
     docker:
       - image: cimg/python:3.6
@@ -82,13 +54,41 @@ jobs:
           arguments: '--dryrun'
           from: bucket/upload_asset.txt
           to: $BUCKET_NAME
+  eb-demo:
+    docker:
+      - image: circleci/python:3.7.7
+    steps:
+      - checkout
+      - run:
+          name: installing aws dependencies
+          command: |
+            sudo pip install --upgrade setuptools
+            sudo pip install awsebcli --upgrade
+            echo $AWS_ACCESS_KEY_ID
+            sudo eb deploy $EB_ENV_NAME
+      # - run:
+      #     name: deploying
+      #     command: |
+      #       eb init --platform 'Python 3.7 running on 64bit Amazon Linux 2' --region 'us-east-2' $EB_APP_NAME
+      #       eb use $EB_ENV_NAME
+      #       eb deploy $EB_ENV_NAME --message $CIRCLE_BUILD_NUM
 workflows:
   docker-workflow:
     jobs:
-      - docker-build
-  s3-workflow:
-    jobs:
-      - s3-upload
-  # elastic-beanstalk-workflow:
-  #   jobs:
-  #     - eb-demo
+      - docker-build:
+          filters:
+            branches:
+              only: jpro
+      - s3-upload:
+          requires:
+            - docker-workflow
+          filters:
+            branches:
+              only: jpro
+      - eb-demo:
+          filters:
+            branches:
+              only:
+                - jpro
+          requires:
+            - s3-upload
