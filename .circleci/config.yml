@@ -58,19 +58,18 @@ jobs:
     docker:
       - image: circleci/python:3.7.7
     steps:
+      - checkout
       - run:
           name: installing aws dependencies
           command: |
             sudo pip install --upgrade setuptools
             sudo pip install awsebcli --upgrade
-            echo $AWS_ACCESS_KEY_ID
-            sudo eb deploy $EB_ENV_NAME
-      # - run:
-      #     name: deploying
-      #     command: |
-      #       eb init --platform 'Python 3.7 running on 64bit Amazon Linux 2' --region 'us-east-2' $EB_APP_NAME
-      #       eb use $EB_ENV_NAME
-      #       eb deploy $EB_ENV_NAME --message $CIRCLE_BUILD_NUM
+      - run:
+          name: deploying
+          command: |
+            eb init --platform 'Jpro Service running on 64bit Amazon Linux 2' --region $AWS_REGION $EB_APP_NAME
+            eb use $EB_ENV_NAME
+            eb deploy $EB_ENV_NAME --message $CIRCLE_BUILD_NUM
 workflows:
   docker-workflow:
     jobs:
