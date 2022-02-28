@@ -1,5 +1,5 @@
 FROM php:7.4-fpm as builder
-WORKDIR /var/www/html
+WORKDIR /var/www/html/jpro-profile
 COPY ./src /var/www/html/jpro-profile
 
 RUN chmod -R 755 ./
@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd
 
+# git 설치
 RUN apt-get install -y git
+
+# composer 설치 및 경로 지정
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin/
 RUN ln -s /usr/local/bin/composer.phar /usr/local/bin/composer
