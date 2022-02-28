@@ -35,6 +35,22 @@ jobs:
             docker push $DOCKER_HUB_ID/docker-jpro-blog
             docker push $DOCKER_HUB_ID/docker-jpro-profile
             docker push $DOCKER_HUB_ID/docker-jpro-nginx
+  eb-demo:
+    docker:
+      - image: circleci/python:3.7.7
+    steps:
+      - checkout
+      - run:
+          name: installing aws dependencies
+          command: |
+            sudo pip install --upgrade setuptools
+            sudo pip install awsebcli --upgrade
+      - run:
+          name: deploying
+          command: |
+            eb init --platform 'Docker running on 64bit Amazon Linux 2' --region $AWS_REGION $EB_APP_NAME
+            eb use $EB_ENV_NAME
+            eb deploy $EB_ENV_NAME --message $CIRCLE_BUILD_NUM
   # s3-upload:
   #   docker:
   #     - image: cimg/python:3.6
@@ -54,22 +70,6 @@ jobs:
   #         arguments: '--dryrun'
   #         from: bucket/upload_asset.txt
   #         to: $BUCKET_NAME
-  eb-demo:
-    docker:
-      - image: circleci/python:3.7.7
-    steps:
-      - checkout
-      - run:
-          name: installing aws dependencies
-          command: |
-            sudo pip install --upgrade setuptools
-            sudo pip install awsebcli --upgrade
-      - run:
-          name: deploying
-          command: |
-            eb init --platform 'Docker running on 64bit Amazon Linux 2' --region $AWS_REGION $EB_APP_NAME
-            eb use $EB_ENV_NAME
-            eb deploy $EB_ENV_NAME --message $CIRCLE_BUILD_NUM
 workflows:
   docker-workflow:
     jobs:
@@ -77,14 +77,16 @@ workflows:
           filters:
             branches:
               only: jpro
+      - eb-demo:
+          requires:
+            - docker-build
+          filters:
+            branches:
+              only:
+                - jpro
       # - s3-upload:
       #     requires:
       #       - docker-build
       #     filters:
       #       branches:
       #         only: jpro
-      - eb-demo:
-          filters:
-            branches:
-              only:
-                - jpro
