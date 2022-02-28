@@ -3,14 +3,14 @@ services:
   jpro-profile: 
     build: 
       context: ./jpro-profile 
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: jpro-profile
     environment: 
       TZ: "Asia/Seoul"
   jpro-blog: 
     build: 
       context: ./jpro-blog 
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     container_name: jpro-blog
     environment: 
       MYSQL_HOST: $MYSQL_HOST 
@@ -25,7 +25,7 @@ services:
     restart: always
     build:
       context: ./nginx
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     volumes:
       - ./jpro-profile/src:/var/www/html/jpro-profile
       - ./jpro-blog/src:/var/www/html/jpro-blog
