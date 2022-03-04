@@ -3,10 +3,6 @@
 // BEGIN iThemes Security - Do not modify or remove this line
 // iThemes Security Config Details: 2
 define( 'FORCE_SSL_ADMIN', true ); // Redirect All HTTP Page Requests to HTTPS - Security > Settings > Enforce SSL
-// so check for https existence  
-if (strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false)  
-    $_SERVER['HTTPS']='on';
-
 define( 'DISALLOW_FILE_EDIT', true ); // Disable File Editor - Security > Settings > WordPress Tweaks > File Editor
 // END iThemes Security - Do not modify or remove this line
 
@@ -35,9 +31,12 @@ define( 'AS3CF_SETTINGS', serialize( array(
     'secret-access-key' => getenv('secret_access_key'),
 ) ) );
 
+// so check for https existence  
+if (strpos($_SERVER['HTTP_X_FORWARDED_PROTO'], 'https') !== false)  
+    $_SERVER['HTTPS']='on';
+
 // ** MySQL settings - You can get this info from your web host ** //
 /** The name of the database for WordPress */
-// 거지같다 진짜
 define( 'DB_NAME', getenv('MYSQL_DATABASE') );
 
 /** MySQL database username */

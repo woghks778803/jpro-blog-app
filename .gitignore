@@ -8,6 +8,7 @@
 /jpro-blog/Dockerfile.dev
 /jpro-profile/Dockerfile.dev
 /nginx/Dockerfile.dev
+/nginx/conf.d/default copy.conf
 /nginx/conf.d/default-dev.conf
 /nginx/conf.d/nginx-dev.conf
 
