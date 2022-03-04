@@ -18,8 +18,8 @@ services:
       MYSQL_ROOT_PASSWORD: $MYSQL_ROOT_PASSWORD
       MYSQL_DATABASE: $MYSQL_DATABASE
       MYSQL_PORT: $MYSQL_PORT  
-      access_key_id: $AWS_Access_Key
-      secret_access_key: $AWS_Secret_Access_Key
+      access_key_id: $AWS_ACCESS_KEY_ID
+      secret_access_key: $AWS_SECRET_ACCESS_KEY
       TZ: "Asia/Seoul"
   nginx:
     restart: always

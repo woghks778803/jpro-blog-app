@@ -25,6 +25,13 @@ define( 'DISALLOW_FILE_EDIT', true ); // Disable File Editor - Security > Settin
  * @package WordPress
  */
 
+// 자동 update 관련
+// 모든 자동 업데이트 끄기
+define( 'AUTOMATIC_UPDATER_DISABLED', true );
+// 코어 자동 업데이트 끄기
+define( 'WP_AUTO_UPDATE_CORE', false );
+
+// aws iam 인증
 define( 'AS3CF_SETTINGS', serialize( array(
     'provider' => 'aws',
     'access-key-id' => getenv('access_key_id'),
