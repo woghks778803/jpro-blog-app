@@ -48,6 +48,8 @@ jobs:
       - run:
           name: deploying
           command: |
+            export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
+            export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
             eb init --platform 'Docker running on 64bit Amazon Linux 2' --region $AWS_REGION $EB_APP_NAME
             eb use $EB_ENV_NAME
             eb deploy $EB_ENV_NAME --message $CIRCLE_BUILD_NUM
