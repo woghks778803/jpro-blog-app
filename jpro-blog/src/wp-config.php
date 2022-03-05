@@ -34,8 +34,8 @@ define( 'WP_AUTO_UPDATE_CORE', false );
 // aws iam 인증
 define( 'AS3CF_SETTINGS', serialize( array(
     'provider' => 'aws',
-    'access-key-id' => getenv('access_key_id'),
-    'secret-access-key' => getenv('secret_access_key'),
+    'access-key-id' => getenv('AWS_ACCESS_KEY_ID'),
+    'secret-access-key' => getenv('AWS_SECRET_ACCESS_KEY'),
 ) ) );
 
 // so check for https existence  
