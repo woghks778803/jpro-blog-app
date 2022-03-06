@@ -1,8 +1,8 @@
 
 # BEGIN WPForms
-# "BEGIN WPForms"와 "END WPForms" 사이의 지시문(줄)은 
-# 동적으로 생성되며 워드프레스 필터를 통해서만 수정해야합니다. 
-# 이 표시 사이의 지시문을 변경하면 덮어쓰게 됩니다.
+# The directives (lines) between "BEGIN WPForms" and "END WPForms" are
+# dynamically generated, and should only be modified via WordPress filters.
+# Any changes to the directives between these markers will be overwritten.
 # Disable PHP and Python scripts parsing.
 <Files *>
   SetHandler none
