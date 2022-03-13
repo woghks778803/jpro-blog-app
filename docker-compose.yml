@@ -26,6 +26,7 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile
+    container_name: jpro-nginx
     volumes:
       - ./jpro-profile/src:/var/www/html/jpro-profile
       - ./jpro-blog/src:/var/www/html/jpro-blog
