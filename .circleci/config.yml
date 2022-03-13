@@ -53,42 +53,18 @@ jobs:
             eb init --platform 'Docker running on 64bit Amazon Linux 2' --region $AWS_REGION $EB_APP_NAME
             eb use $EB_ENV_NAME
             eb deploy $EB_ENV_NAME --message $CIRCLE_BUILD_NUM
-  # s3-upload:
-  #   docker:
-  #     - image: cimg/python:3.6
-  #   steps:
-  #     - checkout
-  #     - run: mkdir bucket && echo "lorem ipsum" > bucket/upload_asset.txt
-  #     - aws-s3/sync:
-  #         arguments: |
-  #           --acl public-read \
-  #           --cache-control "max-age=86400"
-  #         aws-access-key-id: AWS_ACCESS_KEY_ID
-  #         aws-region: AWS_REGION
-  #         aws-secret-access-key: AWS_SECRET_ACCESS_KEY
-  #         from: bucket
-  #         to: $BUCKET_NAME_PATH
-  #     - aws-s3/copy:
-  #         arguments: '--dryrun'
-  #         from: bucket/upload_asset.txt
-  #         to: $BUCKET_NAME
 workflows:
   docker-workflow:
     jobs:
       - docker-build:
           filters:
             branches:
-              only: jpro
+              only:
+                - main
       - eb-demo:
           requires:
             - docker-build
           filters:
             branches:
               only:
-                - jpro
-      # - s3-upload:
-      #     requires:
-      #       - docker-build
-      #     filters:
-      #       branches:
-      #         only: jpro
+                - main
