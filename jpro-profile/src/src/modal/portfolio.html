@@ -14,10 +14,20 @@
                                 <div class="item">
                                     <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/jpro_blog/jpro_logo.png" alt="..." />
                                 </div>
+                                <div class="item">
+                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/jpro_blog/jpro1.png" alt="..." />
+                                </div>
+                                <div class="item">
+                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/jpro_blog/jpro2.png" alt="..." />
+                                </div>
+                                <div class="item">
+                                    <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/jpro_blog/jpro3.png" alt="..." />
+                                </div>
                             </div>
                             <p>
-                                공부 내용 또는 업무에서 마주한 문제 해결을<br>
-                                기록하는 지식 공유 목적의 블로그
+                                기존에 이미 AWS EC2 환경을 통해 운영하던 WordPress 블로그였지만,<br>
+                                Docker 기반의 AWS Elastic Beanstalk 환경과 CI/CD 학습을 위해 재구축하였습니다.<br>
+                                관련 학습에 대한 공부도 되었지만 기존에 알던 내용을 다시 한번 짚어보게 된 의미있는 프로젝트였습니다.
                             </p>
                             <ul class="list-inline collapsible mylist" data-collapsible="expandable">
                                 <li class="collapsible-li">
@@ -49,7 +59,65 @@
                                             <li> 
                                                 Version Control : Docker Hub, Git, Github, CircleCI, <span style="text-decoration:line-through">Travis CI</span>
                                             </li>
-                                            <li> Deployment : AWS(EB, EC2, RDS, VPC, S3, Route 53)</li>
+                                            <li> Deployment : AWS(EB, EC2, RDS, VPC, WAF, S3, Route 53)</li>
+                                        </ul>
+                                    </div>
+                                </li>
+                                <li class="collapsible-li">
+                                    <div class="collapsible-header">
+                                        <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/jpro_blog/ci_cd.png" alt="..." />
+                                    </div>
+                                    <div class="collapsible-body">
+                                        <ul>
+                                            <li>위 이미지는 개발 및 테스트된 내용을 remote repository에 업로드한 이후부터 EB 환경에서의 Deploy 과정까지를 나타냅니다.</li>
+                                            <li>우선 S3와 EB에 대한 권한을 가진 IAM 사용자의 Access Key와 Secret Key, DockerHub에 이미지 업로드를 위한 계정 정보, EB 환경 등에 대한 환경변수 설정이 필요합니다.</li>
+                                            <li>이후 remote repository로 업로드시 .circleci/config.yml의 workflow 설정에 따라 트리거가 실행됩니다.</li>
+                                            <li>Docker Image 빌드 및 업로드
+                                                <ul>
+                                                    <li>workflow의 설정을 통해 테스트 환경을 Docker Image로 빌드 후 실행하여 테스트 코드를 진행합니다.</li>
+                                                    <li>테스트가 끝나면 운영 환경의 이미지를 빌드 후 DockerHub에 업로드합니다.</li>
+                                                </ul>
+                                            </li>
+                                            <li>AWS Elastic Beanstalk 배포
+                                                <ul>
+                                                    <li>EB 배포를 위해 AWS Elastic Beanstalk용 명령줄 인터페이스(awsebcli)를 설치합니다.</li>
+                                                    <li>eb cli를 통해 필요한 입력값(region, platform, env name 등)을 넣어 배포를 진행합니다.</li>
+                                                    <li>배포시 Source Code는 zip 파일로 S3에 업로드되며 AWS Elastic Beanstalk에서 S3에 업로드된 zip 파일을 통해 배포하게 됩니다.</li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                                <li class="collapsible-li">
+                                    <div class="collapsible-header">
+                                        <img class="img-fluid d-block mx-auto" src="assets/img/portfolio/jpro_blog/aws_architecture.png" alt="..." />
+                                    </div>
+                                    <div class="collapsible-body">
+                                        <ul>
+                                            <li>위 이미지는 해당 AWS 서비스 환경의 구조를 나타냅니다.</li>
+                                            <li>EB 구성 및 접근 설정
+                                                <ul>
+                                                    <li>사용자는 도메인을 통해 해당 서비스에 접근할 수 있습니다.</li>
+                                                    <li>SSL 접근을 위해 AWS Certificate Manager로 해당 도메인의 인증서를 발급받았습니다.</li>
+                                                    <li>Route 53에 등록한 도메인과 인증서를 연결하였습니다.</li>
+                                                    <li>EB 환경 내의 EC2 인스턴스 간의 auto scaling을 위해 ALB를 구성하였습니다.</li>
+                                                    <li>구성한 ALB와 Route 53에 등록한 도메인을 연결하였습니다.</li>
+                                                    <li>악성 접근을 차단하기 위해 WAF에 EB 환경의 ALB를 지정하여 구성하였습니다.</li>
+                                                    <li>EB 환경을 알림을 통해 모니터링 하기 위해 CloudWatch 설정하였습니다.</li>
+                                                </ul>
+                                            </li>
+                                            <li>DB 구성
+                                                <ul>
+                                                    <li>EB 환경에서 배포시 EC2 인스턴스는 구성한 auto scaling으로 인해 가변합니다.</li>
+                                                    <li>그러므로 영속성을 가져야하는 DB를 RDS로 분리한 후 접속을 위해 별도의 보안 그룹을 지정합니다.</li>
+                                                </ul>
+                                            </li>
+                                            <li>EC2 인스턴스 내부 구성
+                                                <ul>
+                                                    <li>생성된 EC2 인스턴스는 1개의 Nginx 컨테이너와 2개의 PHP 서비스 컨테이너로 구성하였습니다.</li>
+                                                    <li>Nginx 컨테이너를 웹 서버로 지정하여 각 서비스 컨테이너를 연결하였습니다.</li>
+                                                </ul>
+                                            </li>
                                         </ul>
                                     </div>
                                 </li>
