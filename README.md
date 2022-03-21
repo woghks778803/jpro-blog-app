@@ -24,7 +24,7 @@
 <span><img src="https://img.shields.io/badge/CircleCI-343434?style=flat&logo=CircleCI&logoColor=white"/></span><br>
 
 ## ▎CI Workflow
-[![image](https://user-images.githubusercontent.com/38343913/158019700-79c72e60-ae4f-4fdc-aa6e-1f6601cdc5e1.png)](https://www.jpro.blog)
+[![image](https://user-images.githubusercontent.com/38343913/158019700-79c72e60-ae4f-4fdc-aa6e-1f6601cdc5e1.png)](#)
 > <b>구성 설명</b>
 >> <p>위 이미지는 개발 및 테스트된 내용을 remote repository에 업로드한 이후부터 EB 환경에서의 Deploy 과정까지를 나타냅니다.</p>
 >>> 우선 S3와 EB에 대한 권한을 가진 IAM 사용자의 Access Key와 Secret Key, DockerHub에 이미지 업로드를 위한 계정 정보, EB 환경 등에 대한 환경변수 설정이 필요합니다.<br>
@@ -40,7 +40,7 @@
 >>> 배포시 Source Code는 zip 파일로 S3에 업로드되며 AWS Elastic Beanstalk에서 S3에 업로드된 zip 파일을 통해 배포하게 됩니다.<br>
 
 ## ▎AWS Service Architecture
-[![image](https://user-images.githubusercontent.com/38343913/158030069-caa7ce37-59ab-4b41-9826-1efa5e81b1f8.png)](https://jpro.blog)
+[![image](https://user-images.githubusercontent.com/38343913/158030069-caa7ce37-59ab-4b41-9826-1efa5e81b1f8.png)](#)
 > <b>구성 설명</b>
 >> <p>위 이미지는 해당 AWS 서비스 환경의 구조를 나타냅니다.</p>
 >> <p><b>EB 구성 및 접근 설정</b></p>
@@ -66,7 +66,6 @@
 
 ***
 # ▎관련 정리 자료
-- <a href="https://www.jpro.blog/?p=2220">Elastic Beanstalk 이란?</a>
 - <a href="https://www.jpro.blog/?p=2147">Circle CI 사용법 (+Docker 서비스 빌드해보기)</a>
 - <a href="https://www.jpro.blog/?p=353">WordPress - BackWPup backup 플러그인 사용해보기</a>
 
