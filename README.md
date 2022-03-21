@@ -66,7 +66,6 @@
 
 ***
 # ▎관련 정리 자료
-- <a href="https://www.jpro.blog/?p=2220">Elastic Beanstalk 이란?</a>
 - <a href="https://www.jpro.blog/?p=2147">Circle CI 사용법 (+Docker 서비스 빌드해보기)</a>
 - <a href="https://www.jpro.blog/?p=353">WordPress - BackWPup backup 플러그인 사용해보기</a>
 

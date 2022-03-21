@@ -22,7 +22,7 @@ jobs:
       #     command: |
       #       docker run -e CI=true $DOCKER_HUB_ID/docker-jpro-blog-dev [test script]
       - run:
-          name: Op Docker Image Build
+          name: Operation Docker Image Build
           command: |
             echo "Build Start"
             docker build -t $DOCKER_HUB_ID/docker-jpro-blog ./jpro-blog
