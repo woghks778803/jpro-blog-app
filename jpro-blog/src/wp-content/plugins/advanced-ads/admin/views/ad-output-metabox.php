@@ -2,22 +2,44 @@
 /**
  * Render Layout/Output meta box on ad edit screen.
  *
- * @var bool   $has_position       true if the position option is set.
- * @var bool   $has_clearfix       true if the clearfix option is enabled.
- * @var string $margin             value for margin option.
- * @var string $wrapper_id         value for wrapper ID option.
- * @var bool   $debug_mode_enabled true if the ad debug mode option is enabled.
- * @var string $positioning        The positioning view.
+ * @var bool $has_position true if the position option is set.
+ * @var bool $has_clearfix true if the clearfix option is enabled.
+ * @var string $margin value for margin option.
+ * @var string $wrapper_id value for wrapper ID option.
+ * @var bool $debug_mode_enabled true if the ad debug mode option is enabled.
  */
 ?>
-<div class="advads-ad-positioning">
-	<?php
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped template string.
-		echo $positioning;
-	?>
-</div>
-
+<p class="description"><?php esc_html_e( 'Everything connected to the ads layout and output.', 'advanced-ads' ); ?></p>
 <div class="advads-option-list">
+	<span class="label"><?php esc_html_e( 'Position', 'advanced-ads' ); ?></span>
+	<div id="advanced-ad-output-position">
+		<label><input type="radio" name="advanced_ad[output][position]" value="" title="<?php esc_html_e( '- default -', 'advanced-ads' ); ?>" <?php checked( $has_position, false ); ?>
+																											?
+			/><?php esc_html_e( 'default', 'advanced-ads' ); ?></label>
+		<label title="<?php esc_html_e( 'left', 'advanced-ads' ); ?>"><input type="radio" name="advanced_ad[output][position]" value="left" <?php checked( $position, 'left' ); ?>
+			/>
+			<img src="<?php echo esc_url( ADVADS_BASE_URL ); ?>admin/assets/img/output-left.png" width="60" height="45"/></label>
+		<label title="<?php esc_html_e( 'center', 'advanced-ads' ); ?>"><input type="radio" name="advanced_ad[output][position]" value="center" <?php checked( $position, 'center' ); ?>
+			/>
+			<img src="<?php echo esc_url( ADVADS_BASE_URL ); ?>admin/assets/img/output-center.png" width="60" height="45"/></label>
+		<label title="<?php esc_html_e( 'right', 'advanced-ads' ); ?>"><input type="radio" name="advanced_ad[output][position]" value="right" <?php checked( $position, 'right' ); ?>
+			/>
+			<img src="<?php echo esc_url( ADVADS_BASE_URL ); ?>admin/assets/img/output-right.png" width="60" height="45"/></label>
+	<p><label><input type="checkbox" name="advanced_ad[output][clearfix]" value="1" <?php checked( $has_clearfix, true ); ?>
+	/>
+	<?php
+		esc_html_e( 'Check this if you don’t want the following elements to float around the ad. (adds a clearfix)', 'advanced-ads' );
+	?>
+		</label></p>
+	</div>
+	<hr/>
+	<span class="label"><?php esc_html_e( 'Margin', 'advanced-ads' ); ?></span>
+	<div id="advanced-ad-output-margin">
+		<label><?php esc_html_e( 'top:', 'advanced-ads' ); ?> <input type="number" value="<?php echo ( isset( $margin['top'] ) ) ? esc_attr( $margin['top'] ) : ''; ?>" name="advanced_ad[output][margin][top]"/>px</label>
+		<label><?php esc_html_e( 'right:', 'advanced-ads' ); ?> <input type="number" value="<?php echo ( isset( $margin['right'] ) ) ? esc_attr( $margin['right'] ) : ''; ?>" name="advanced_ad[output][margin][right]"/>px</label>
+		<label><?php esc_html_e( 'bottom:', 'advanced-ads' ); ?> <input type="number" value="<?php echo ( isset( $margin['bottom'] ) ) ? esc_attr( $margin['bottom'] ) : ''; ?>" name="advanced_ad[output][margin][bottom]"/>px</label>
+		<label><?php esc_html_e( 'left:', 'advanced-ads' ); ?> <input type="number" value="<?php echo ( isset( $margin['left'] ) ) ? esc_attr( $margin['left'] ) : ''; ?>" name="advanced_ad[output][margin][left]"/>px</label>
+	</div>
 	<hr class="advads-hide-in-wizard"/>
 	<label class='label advads-hide-in-wizard' for="advads-output-wrapper-id"><?php esc_html_e( 'container ID', 'advanced-ads' ); ?></label>
 	<div class="advads-hide-in-wizard">
@@ -40,7 +62,7 @@
 	<label for="advads-output-debugmode" class="label advads-hide-in-wizard"><?php esc_html_e( 'Enable debug mode', 'advanced-ads' ); ?></label>
 	<div class="advads-hide-in-wizard">
 	<input id="advads-output-debugmode" type="checkbox" name="advanced_ad[output][debugmode]" value="1" <?php checked( $debug_mode_enabled, true ); ?>/>
-	<a href="<?php echo esc_url( ADVADS_URL ); ?>manual/ad-debug-mode/?utm_source=advanced-ads&utm_medium=link&utm_campaign=ad-debug-mode" target="_blank" class="advads-manual-link"><?php esc_html_e( 'Manual', 'advanced-ads' ); ?></a>
+	<a href="<?php echo esc_url( ADVADS_URL ); ?>manual/ad-debug-mode/#utm_source=advanced-ads&utm_medium=link&utm_campaign=ad-debug-mode" target="_blank"><?php esc_html_e( 'Manual', 'advanced-ads' ); ?></a>
 	</div>
 
 	<?php if ( ! defined( 'AAP_VERSION' ) ) : ?>

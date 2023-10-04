@@ -11,36 +11,25 @@ $is_page_level_ad_in_code_field = ( isset( $ad->type ) && 'plain' === $ad->type 
 <span class="advads-loader" style="display: none;"></span>
 	<div id="advads-ad-injection-message-placement-created" class="hidden">
 	<p><?php esc_html_e( 'Congratulations! Your ad is now visible in the frontend.', 'advanced-ads' ); ?></p>
-	<?php if (empty( $ad->conditions ) && ! empty( $latest_post ) ): ?>
-		<a class="button button-primary" target="_blank" href="<?php echo esc_url( get_permalink( $latest_post['ID'] ) ); ?>"><?php esc_html_e( 'Take a look at your ad', 'advanced-ads' ); ?></a>
-	<?php endif; ?>
+	<a class="advads-placement-link button button-primary" href="<?php echo esc_url( admin_url( 'admin.php?page=advanced-ads-placements#single-placement-' ) ); ?>"><?php esc_html_e( 'Adjust the placement options', 'advanced-ads' ); ?></a>
 	<p>
 	<?php
 	printf(
 		wp_kses(
 		// translators: %s is a URL.
+
 			__( 'Ad not showing up? Take a look <a href="%s" target="_blank">here</a>', 'advanced-ads' ),
-			[
-				'a' => [
-					'href'   => [],
-					'target' => [],
-				],
-			]
+			array(
+				'a' => array(
+					'href'   => array(),
+					'target' => array(),
+				),
+			)
 		),
-		esc_url( ADVADS_URL ) . 'manual/ads-not-showing-up/?utm_source=advanced-ads&utm_medium=link&utm_campaign=edit-ad-not-visible'
+		esc_url( ADVADS_URL ) . 'manual/ads-not-showing-up/#utm_source=advanced-ads&utm_medium=link&utm_campaign=edit-ad-not-visible'
 	);
 	?>
-	</p>
-	<p>
-	<?php
-	printf(
-		// Translators: %1$s is the opening link tag, %2$s is closing link tag.
-		__( 'Adjust the placement options? Take a look  %1$shere.%2$s', 'advanced-ads' ),
-		'<a href="' . esc_url( admin_url( 'admin.php?page=advanced-ads-placements#single-placement-' ) ) . '" target="_blank">',
-		'</a>'
-	);
-	?>
-	</p>
+		</p>
 	</div>
 	<div id="advads-ad-injection-box-placements">
 		<h2><?php esc_html_e( 'Where do you want to display the ad?', 'advanced-ads' ); ?></h2>
@@ -55,11 +44,11 @@ $is_page_level_ad_in_code_field = ( isset( $ad->type ) && 'plain' === $ad->type 
 									wp_kses(
 										// translators: %s is a URL.
 										__( 'The AdSense verification and Auto ads code is already activated in the <a href="%s">AdSense settings</a>.', 'advanced-ads' ),
-										[
-											'a' => [
-												'href' => [],
-											],
-										]
+										array(
+											'a' => array(
+												'href' => array(),
+											),
+										)
 									),
 									admin_url( 'admin.php?page=advanced-ads-settings#top#adsense' )
 								);
@@ -92,11 +81,11 @@ $is_page_level_ad_in_code_field = ( isset( $ad->type ) && 'plain' === $ad->type 
 			<div class="advads-ad-injection-box-button-wrap"><button type="button" class="advads-ad-injection-button button-primary" data-placement-type="post_bottom" style="background-image: url(<?php echo esc_url( ADVADS_BASE_URL ) . 'admin/assets/img/placements/content-after.png'; ?>)"><?php esc_html_e( 'After Content', 'advanced-ads' ); ?></button></div>
 			<a href="<?php echo esc_url( admin_url( 'widgets.php' ) ); ?>"><div class="advads-ad-injection-box-button-wrap"><button type="button" class="advads-ad-injection-button button-primary" style="background-image: url(<?php echo esc_url( ADVADS_BASE_URL ) . 'admin/assets/img/placements/widget.png'; ?>)"><?php esc_html_e( 'Manage Sidebar', 'advanced-ads' ); ?></button></div></a>
 			<div class="advads-ad-injection-box-button-wrap"><button type="button" class="advads-ad-injection-button button-primary" data-placement-type="default" style="background-image: url(<?php echo esc_url( ADVADS_BASE_URL ) . 'admin/assets/img/placements/manual.png'; ?>)"><?php esc_html_e( 'PHP or Shortcode', 'advanced-ads' ); ?></button></div>
-			<a href="<?php echo esc_url( ADVADS_URL ) . 'place-ads-in-website-header/?utm_source=advanced-ads&utm_medium=link&utm_campaign=edit-placements'; ?>" target="_blank"><div class="advads-ad-injection-box-button-wrap"><button type="button" class="advads-ad-injection-button button-primary" style="background-image: url(<?php echo esc_url( ADVADS_BASE_URL ) . 'admin/assets/img/placements/ads-in-header.png'; ?>)"><?php esc_html_e( 'Header (Manual)', 'advanced-ads' ); ?></button></div></a>
+			<a href="<?php echo esc_url( ADVADS_URL ) . 'place-ads-in-website-header/#utm_source=advanced-ads&utm_medium=link&utm_campaign=edit-placements'; ?>" target="_blank"><div class="advads-ad-injection-box-button-wrap"><button type="button" class="advads-ad-injection-button button-primary" style="background-image: url(<?php echo esc_url( ADVADS_BASE_URL ) . 'admin/assets/img/placements/ads-in-header.png'; ?>)"><?php esc_html_e( 'Header (Manual)', 'advanced-ads' ); ?></button></div></a>
 							<?php
 							if ( ! defined( 'AAP_VERSION' ) ) :
 								?>
-			<a href="<?php echo esc_url( ADVADS_URL ) . 'manual/custom-position-placement/?utm_source=advanced-ads&utm_medium=link&utm_campaign=edit-placements'; ?>" target="_blank"><div class="advads-ad-injection-box-button-wrap"><button type="button" class="advads-ad-injection-button button-primary advads-pro-link" style="background-image: url(<?php echo esc_url( ADVADS_BASE_URL ) . 'admin/assets/img/placements/custom-position.png'; ?>)"><?php esc_html_e( 'Custom Position', 'advanced-ads' ); ?></button></div></a><a href="<?php echo esc_url( ADVADS_URL ) . 'add-ons/advanced-ads-pro/?utm_source=advanced-ads&utm_medium=link&utm_campaign=edit-created-injection-pro'; ?>" target="_blank"><div class="advads-ad-injection-box-button-wrap"><button type="button" class="advads-ad-injection-button button-primary advads-pro-link" style="background-image: url(<?php echo esc_url( ADVADS_BASE_URL ) . 'admin/assets/img/placements/content-random.png'; ?>)"><?php esc_html_e( 'Show Pro Places', 'advanced-ads' ); ?></button></div></a>
+			<a href="<?php echo esc_url( ADVADS_URL ) . 'manual/custom-position-placement/#utm_source=advanced-ads&utm_medium=link&utm_campaign=edit-placements'; ?>" target="_blank"><div class="advads-ad-injection-box-button-wrap"><button type="button" class="advads-ad-injection-button button-primary advads-pro-link" style="background-image: url(<?php echo esc_url( ADVADS_BASE_URL ) . 'admin/assets/img/placements/custom-position.png'; ?>)"><?php esc_html_e( 'Custom Position', 'advanced-ads' ); ?></button></div></a><a href="<?php echo esc_url( ADVADS_URL ) . 'add-ons/advanced-ads-pro/#utm_source=advanced-ads&utm_medium=link&utm_campaign=edit-created-injection-pro'; ?>" target="_blank"><div class="advads-ad-injection-box-button-wrap"><button type="button" class="advads-ad-injection-button button-primary advads-pro-link" style="background-image: url(<?php echo esc_url( ADVADS_BASE_URL ) . 'admin/assets/img/placements/content-random.png'; ?>)"><?php esc_html_e( 'Show Pro Places', 'advanced-ads' ); ?></button></div></a>
 								<?php
 			else :
 				?>
@@ -111,13 +100,13 @@ $is_page_level_ad_in_code_field = ( isset( $ad->type ) && 'plain' === $ad->type 
 
 			if ( ! defined( 'AASADS_VERSION' ) ) :
 				?>
-			<a href="<?php echo esc_url( ADVADS_URL ) . 'add-ons/sticky-ads/?utm_source=advanced-ads&utm_medium=link&utm_campaign=edit-created-injection-sticky'; ?>" target="_blank"><div class="advads-ad-injection-box-button-wrap"><button type="button" class="advads-ad-injection-button button-primary advads-pro-link" style="background-image: url(<?php echo esc_url( ADVADS_BASE_URL ) . 'admin/assets/img/placements/sticky-sidebar-left.png'; ?>)"><?php esc_html_e( 'Show Sticky Places', 'advanced-ads' ); ?></button></div></a>
+			<a href="<?php echo esc_url( ADVADS_URL ) . 'add-ons/sticky-ads/#utm_source=advanced-ads&utm_medium=link&utm_campaign=edit-created-injection-sticky'; ?>" target="_blank"><div class="advads-ad-injection-box-button-wrap"><button type="button" class="advads-ad-injection-button button-primary advads-pro-link" style="background-image: url(<?php echo esc_url( ADVADS_BASE_URL ) . 'admin/assets/img/placements/sticky-sidebar-left.png'; ?>)"><?php esc_html_e( 'Show Sticky Places', 'advanced-ads' ); ?></button></div></a>
 				<?php
 			endif;
 
 			if ( ! defined( 'AAPLDS_VERSION' ) ) :
 				?>
-			<a href="<?php echo esc_url( ADVADS_URL ) . 'add-ons/popup-and-layer-ads/?utm_source=advanced-ads&utm_medium=link&utm_campaign=edit-created-injection-layer'; ?>" target="_blank"><div class="advads-ad-injection-box-button-wrap"><button type="button" class="advads-ad-injection-button button-primary advads-pro-link" style="background-image: url(<?php echo esc_url( ADVADS_BASE_URL ) . 'admin/assets/img/placements/layer.png'; ?>)"><?php esc_html_e( 'Show PopUp', 'advanced-ads' ); ?></button></div></a>
+			<a href="<?php echo esc_url( ADVADS_URL ) . 'add-ons/popup-and-layer-ads/#utm_source=advanced-ads&utm_medium=link&utm_campaign=edit-created-injection-layer'; ?>" target="_blank"><div class="advads-ad-injection-box-button-wrap"><button type="button" class="advads-ad-injection-button button-primary advads-pro-link" style="background-image: url(<?php echo esc_url( ADVADS_BASE_URL ) . 'admin/assets/img/placements/layer.png'; ?>)"><?php esc_html_e( 'Show PopUp', 'advanced-ads' ); ?></button></div></a>
 				<?php
 			else :
 				?>
@@ -185,7 +174,7 @@ $is_page_level_ad_in_code_field = ( isset( $ad->type ) && 'plain' === $ad->type 
 								// translators: %s is a URL.
 							// phpcs:ignore
 								__( 'Learn more about your choices to display an ad in the <a href="%s" target="_blank">manual</a>.', 'advanced-ads' ),
-								esc_url( ADVADS_URL ) . 'manual/display-ads/?utm_source=advanced-ads&utm_medium=link&utm_campaign=edit-created'
+								esc_url( ADVADS_URL ) . 'manual/display-ads/#utm_source=advanced-ads&utm_medium=link&utm_campaign=edit-created'
 							);
 							?>
 								</p>

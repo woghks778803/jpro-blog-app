@@ -32,7 +32,7 @@ class Advanced_Ads_Admin_Notices {
 	 *
 	 * @var    array
 	 */
-	public $notices = [];
+	public $notices = array();
 
 	/**
 	 * Plugin class
@@ -49,7 +49,7 @@ class Advanced_Ads_Admin_Notices {
 		// load notices.
 		$this->load_notices();
 
-		add_action( 'advanced-ads-ad-params-before', [ $this, 'adsense_tutorial' ], 10, 2 );
+		add_action( 'advanced-ads-ad-params-before', array( $this, 'adsense_tutorial' ), 10, 2 );
 	}
 
 	/**
@@ -76,7 +76,7 @@ class Advanced_Ads_Admin_Notices {
 		$plugin_options = $this->plugin->options();
 
 		// load notices from queue.
-		$this->notices  = isset( $options['queue'] ) ? $options['queue'] : [];
+		$this->notices  = isset( $options['queue'] ) ? $options['queue'] : array();
 		$notices_before = $this->notices;
 
 		// check license notices.
@@ -119,9 +119,9 @@ class Advanced_Ads_Admin_Notices {
 		$activation       = ( isset( $internal_options['installed'] ) ) ? $internal_options['installed'] : $now; // activation time.
 
 		$options = $this->options();
-		$closed  = isset( $options['closed'] ) ? $options['closed'] : [];
-		$queue   = isset( $options['queue'] ) ? $options['queue'] : [];
-		$paused  = isset( $options['paused'] ) ? $options['paused'] : [];
+		$closed  = isset( $options['closed'] ) ? $options['closed'] : array();
+		$queue   = isset( $options['queue'] ) ? $options['queue'] : array();
+		$paused  = isset( $options['paused'] ) ? $options['paused'] : array();
 
 		// offer free add-ons if not yet subscribed.
 		if ( $this->user_can_subscribe() && ! in_array( 'nl_free_addons', $queue, true ) && ! isset( $closed['nl_free_addons'] ) ) {
@@ -140,7 +140,7 @@ class Advanced_Ads_Admin_Notices {
 
 		// register intro message.
 		if ( ! $number_of_ads
-			&& [] === $options && ! in_array( 'nl_intro', $queue, true ) && ! isset( $closed['nl_intro'] ) ) {
+			&& array() === $options && ! in_array( 'nl_intro', $queue, true ) && ! isset( $closed['nl_intro'] ) ) {
 			$this->notices[] = 'nl_intro';
 		} elseif ( $number_of_ads ) {
 			$key = array_search( 'nl_intro', $this->notices, true );
@@ -175,7 +175,7 @@ class Advanced_Ads_Admin_Notices {
 		}
 
 		$options = $this->options();
-		$queue   = isset( $options['queue'] ) ? $options['queue'] : [];
+		$queue   = isset( $options['queue'] ) ? $options['queue'] : array();
 		// check license keys.
 
 		if ( Advanced_Ads_Checks::licenses_invalid() ) {
@@ -201,7 +201,7 @@ class Advanced_Ads_Admin_Notices {
 
 		// get queue from options.
 		$options = $this->options();
-		$queue   = isset( $options['queue'] ) ? $options['queue'] : [];
+		$queue   = isset( $options['queue'] ) ? $options['queue'] : array();
 
 		if ( is_array( $notices ) ) {
 			$queue = array_merge( $queue, $notices );
@@ -237,8 +237,8 @@ class Advanced_Ads_Admin_Notices {
 			return;
 		}
 		$queue  = (array) $options['queue'];
-		$closed = isset( $options['closed'] ) ? $options['closed'] : [];
-		$paused = isset( $options['paused'] ) ? $options['paused'] : [];
+		$closed = isset( $options['closed'] ) ? $options['closed'] : array();
+		$paused = isset( $options['paused'] ) ? $options['paused'] : array();
 
 		$key = array_search( $notice, $queue, true );
 		if ( false !== $key ) {
@@ -285,7 +285,7 @@ class Advanced_Ads_Admin_Notices {
 			return;
 		}
 		$queue  = (array) $options['queue'];
-		$paused = isset( $options['paused'] ) ? $options['paused'] : [];
+		$paused = isset( $options['paused'] ) ? $options['paused'] : array();
 
 		$key = array_search( $notice, $queue, true );
 		if ( false !== $key ) {
@@ -318,18 +318,18 @@ class Advanced_Ads_Admin_Notices {
 			return;
 		}
 
-		// register Black Friday 2022 deals.
-		if ( time() > 1669291200 &&
-			time() <= 1669723200 && Advanced_Ads_Admin::get_instance()->screen_belongs_to_advanced_ads() ) {
+		// register Black Friday 2021 deals.
+		if ( time() > 1637841600 &&
+			time() <= 1638273600 && Advanced_Ads_Admin::get_instance()->screen_belongs_to_advanced_ads() ) {
 			$options = $this->options();
-			$closed  = isset( $options['closed'] ) ? $options['closed'] : [];
+			$closed  = isset( $options['closed'] ) ? $options['closed'] : array();
 
-			if ( ! isset( $closed['bfcm22'] ) ) {
-				$this->notices[] = 'bfcm22';
+			if ( ! isset( $closed['bf2021'] ) ) {
+				$this->notices[] = 'bf2021';
 			}
 		}
 
-		if ( [] === $this->notices ) {
+		if ( array() === $this->notices ) {
 			return;
 		}
 
@@ -378,9 +378,6 @@ class Advanced_Ads_Admin_Notices {
 				case 'plugin_error':
 					include ADVADS_BASE_PATH . '/admin/views/notices/plugin_error.php';
 					break;
-				case 'promo':
-					include ADVADS_BASE_PATH . '/admin/views/notices/promo.php';
-					break;
 				default:
 					include ADVADS_BASE_PATH . '/admin/views/notices/error.php';
 			}
@@ -398,7 +395,7 @@ class Advanced_Ads_Admin_Notices {
 	 */
 	public function options() {
 		if ( ! isset( $this->options ) ) {
-			$this->options = get_option( ADVADS_SLUG . '-notices', [] );
+			$this->options = get_option( ADVADS_SLUG . '-notices', array() );
 		}
 
 		return $this->options;
@@ -411,7 +408,7 @@ class Advanced_Ads_Admin_Notices {
 	 */
 	public function update_options( array $options ) {
 		// do not allow to clear options.
-		if ( [] === $options ) {
+		if ( array() === $options ) {
 			return;
 		}
 
@@ -439,21 +436,21 @@ class Advanced_Ads_Admin_Notices {
 			return sprintf( __( 'You don’t seem to have an email address. Please use <a href="%s" target="_blank">this form</a> to sign up.', 'advanced-ads' ), 'http://eepurl.com/bk4z4P' );
 		}
 
-		$data = [
+		$data = array(
 			'email'  => $user->user_email,
 			'notice' => $notice,
-		];
+		);
 
 		$result = wp_remote_post(
 			'https://wpadvancedads.com/remote/subscribe.php?source=plugin',
-			[
+			array(
 				'method'      => 'POST',
 				'timeout'     => 20,
 				'redirection' => 5,
 				'httpversion' => '1.1',
 				'blocking'    => true,
 				'body'        => $data,
-			]
+			)
 		);
 
 		if ( is_wp_error( $result ) ) {
@@ -535,7 +532,7 @@ class Advanced_Ads_Admin_Notices {
 	 * @param Advanced_Ads_Ad $ad ad object.
 	 * @param array           $types ad types.
 	 */
-	public function adsense_tutorial( $ad, $types = [] ) {
+	public function adsense_tutorial( $ad, $types = array() ) {
 
 		$options = $this->options();
 		$_notice = 'nl_adsense';

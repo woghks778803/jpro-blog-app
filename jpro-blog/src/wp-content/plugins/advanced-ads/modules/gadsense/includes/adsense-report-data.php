@@ -66,7 +66,7 @@ class Advanced_Ads_AdSense_Report_Data implements Serializable {
 	 *
 	 * @var array
 	 */
-	private $domains = [];
+	private $domains = array();
 
 	/**
 	 * Instance constructor.
@@ -110,13 +110,13 @@ class Advanced_Ads_AdSense_Report_Data implements Serializable {
 	 * @return string the serialized data.
 	 */
 	public function serialize() {
-		return serialize( [
+		return serialize( array(
 			'earnings'  => $this->earnings,
 			'type'      => $this->type,
 			'timestamp' => $this->timestamp,
 			'currency'  => $this->currency,
 			'domains'   => $this->domains,
-		] );
+		) );
 	}
 
 	/**
@@ -128,14 +128,14 @@ class Advanced_Ads_AdSense_Report_Data implements Serializable {
 		try {
 			$unwrapped = unserialize( $data );
 		} catch ( Exception $ex ) {
-			$unwrapped = [];
+			$unwrapped = array();
 		}
 
 		$this->earnings  = isset( $unwrapped['earnings'] ) ? $unwrapped['earnings'] : null;
 		$this->type      = isset( $unwrapped['type'] ) ? $unwrapped['type'] : null;
 		$this->timestamp = isset( $unwrapped['timestamp'] ) ? $unwrapped['timestamp'] : 0;
 		$this->currency  = isset( $unwrapped['currency'] ) ? $unwrapped['currency'] : '';
-		$this->domains   = isset( $unwrapped['domains'] ) ? $unwrapped['domains'] : [];
+		$this->domains   = isset( $unwrapped['domains'] ) ? $unwrapped['domains'] : array();
 	}
 
 	/**
@@ -144,7 +144,7 @@ class Advanced_Ads_AdSense_Report_Data implements Serializable {
 	 * @param array $response API call response from Google.
 	 */
 	public function update_data_from_response( $response ) {
-		$headers         = [];
+		$headers         = array();
 		$this->version   = $response['api_version'];
 		$this->timestamp = $response['timestamp'];
 		foreach ( $response['headers'] as $header ) {
@@ -153,7 +153,7 @@ class Advanced_Ads_AdSense_Report_Data implements Serializable {
 			}
 			$headers[] = $header['name'];
 		}
-		$earnings = [];
+		$earnings = array();
 
 		if ( ! empty( $response['rows'] ) ) {
 			foreach ( $response['rows'] as $row ) {
@@ -233,13 +233,13 @@ class Advanced_Ads_AdSense_Report_Data implements Serializable {
 		$yesterday = $today->sub( date_interval_create_from_date_string( '1 day' ) );
 		$prev7     = $today->sub( date_interval_create_from_date_string( '7 days' ) );
 		$prev28    = $today->sub( date_interval_create_from_date_string( '28 days' ) );
-		$sums      = [
+		$sums      = array(
 			'today'      => 0,
 			'yesterday'  => 0,
 			'7days'      => 0,
 			'this_month' => 0,
 			'28days'     => 0,
-		];
+		);
 
 		// Unit type reports should always have the ad unit id specified.
 		if ( $filter === '' && $this->type === 'unit' ) {
@@ -247,13 +247,9 @@ class Advanced_Ads_AdSense_Report_Data implements Serializable {
 		}
 
 		foreach ( $this->earnings as $value ) {
-			if (
-				( $this->type === 'unit' && false === strpos( $value->ad_unit_id, $filter ) )
-				|| ( ! empty( $filter ) && $this->type === 'domain' && $filter !== $value->domain_name )
-			) {
+			if ( ! empty( $filter ) && $this->type === 'unit' && false === strpos( $value->ad_unit_id, $filter ) ) {
 				continue;
 			}
-
 			if ( $this->date_ymd( $value->date ) === $this->date_ymd( $today ) ) {
 				$sums['today'] += $value->estimated_earning;
 			}

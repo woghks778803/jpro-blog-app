@@ -24,12 +24,12 @@ class Advanced_Ads_Admin_Licenses {
 	 */
 	private function __construct() {
 		if ( ! defined( 'DOING_AJAX' ) ) {
-			add_action( 'load-plugins.php', [ $this, 'check_plugin_licenses' ] );
+			add_action( 'load-plugins.php', array( $this, 'check_plugin_licenses' ) );
 		}
-		add_action( 'plugins_loaded', [ $this, 'wp_plugins_loaded' ] );
+		add_action( 'plugins_loaded', array( $this, 'wp_plugins_loaded' ) );
 
 		// todo: check if this is loaded late enough and all add-ons are registered already.
-		add_filter( 'upgrader_pre_download', [ $this, 'addon_upgrade_filter' ], 10, 3 );
+		add_filter( 'upgrader_pre_download', array( $this, 'addon_upgrade_filter' ), 10, 3 );
 	}
 
 	/**
@@ -38,9 +38,9 @@ class Advanced_Ads_Admin_Licenses {
 	public function wp_plugins_loaded() {
 
 		// check for add-on updates.
-		add_action( 'admin_init', [ $this, 'add_on_updater' ], 1 );
+		add_action( 'admin_init', array( $this, 'add_on_updater' ), 1 );
 		// react on API update checks
-		add_action( 'http_api_debug', [ $this, 'update_license_after_version_info' ], 10, 5 );
+		add_action( 'http_api_debug', array( $this, 'update_license_after_version_info' ), 10, 5 );
 	}
 
 	/**
@@ -68,14 +68,14 @@ class Advanced_Ads_Admin_Licenses {
 		}
 
 		// gather all add-on plugin files.
-		$add_ons = apply_filters( 'advanced-ads-add-ons', [] );
+		$add_ons = apply_filters( 'advanced-ads-add-ons', array() );
 		foreach ( $add_ons as $_add_on ) {
 
 			// check license status.
 			if ( $this->get_license_status( $_add_on['options_slug'] ) !== 'valid' ) {
 				// register warning.
 				$plugin_file = plugin_basename( $_add_on['path'] );
-				add_action( 'after_plugin_row_' . $plugin_file, [ $this, 'add_plugin_list_license_notice' ], 10, 2 );
+				add_action( 'after_plugin_row_' . $plugin_file, array( $this, 'add_plugin_list_license_notice' ), 10, 2 );
 			}
 		}
 	}
@@ -141,12 +141,12 @@ class Advanced_Ads_Admin_Licenses {
 		 */
 		remove_filter( 'home_url', 'mltlngg_get_url_translated' );
 
-		$api_params = [
+		$api_params = array(
 			'edd_action' => 'activate_license',
 			'license'    => $license_key,
 			'item_name'  => urlencode( $plugin_name ),
 			'url'        => home_url(),
-		];
+		);
 
 		/**
 		 * Re-add the filter removed from above
@@ -158,11 +158,11 @@ class Advanced_Ads_Admin_Licenses {
 		// Call the custom API.
 		$response = wp_remote_post(
 			self::API_ENDPOINT,
-			[
+			array(
 				'timeout'   => 15,
 				'sslverify' => false,
 				'body'      => $api_params,
-			]
+			)
 		);
 
 		// show license debug output if constant is set.
@@ -201,7 +201,7 @@ class Advanced_Ads_Admin_Licenses {
 		// display activation problem.
 		if ( ! empty( $license_data->error ) ) {
 			// user friendly texts for errors.
-			$errors = [
+			$errors = array(
 				'license_not_activable' => __( 'This is the bundle license key.', 'advanced-ads' ),
 				'item_name_mismatch'    => __( 'This is not the correct key for this add-on.', 'advanced-ads' ),
 				'no_activations_left'   => __( 'There are no activations left.', 'advanced-ads' )
@@ -209,16 +209,16 @@ class Advanced_Ads_Admin_Licenses {
 										. sprintf(
 											/* translators: %1$s is a starting link tag, %2$s is the closing one. */
 											__( 'You can manage activations in %1$syour account%2$s.', 'advanced-ads' ),
-											'<a href="' . ADVADS_URL . 'account/?utm_source=advanced-ads&utm_medium=link&utm_campaign=settings-licenses-activations-left" target="_blank">',
+											'<a href="' . ADVADS_URL . 'account/#utm_source=advanced-ads&utm_medium=link&utm_campaign=settings-licenses-activations-left" target="_blank">',
 											'</a>'
 										) . '&nbsp;'
 										. sprintf(
 											/* translators: %1$s is a starting link tag, %2$s is the closing one. */
 											__( '%1$sUpgrade%2$s for more activations.', 'advanced-ads' ),
-											'<a href="' . ADVADS_URL . 'account/upgrades/?utm_source=advanced-ads&utm_medium=link&utm_campaign=settings-licenses-activations-left" target="_blank">',
+											'<a href="' . ADVADS_URL . 'account/upgrades/#utm_source=advanced-ads&utm_medium=link&utm_campaign=settings-licenses-activations-left" target="_blank">',
 											'</a>'
 										),
-			];
+			);
 			$error  = isset( $errors[ $license_data->error ] ) ? $errors[ $license_data->error ] : $license_data->error;
 			if ( 'expired' === $license_data->error ) {
 				return 'ex';
@@ -261,7 +261,7 @@ class Advanced_Ads_Admin_Licenses {
 			if ( isset( $response['body'] ) ) {
 				// look for the IP address in this line: `<td><span>95.90.238.103</span></td>`.
 				$pattern = '/<span>([.0-9]*)<\/span>/';
-				$matches = [];
+				$matches = array();
 				preg_match( $pattern, $response['body'], $matches );
 				$ip                  = isset( $matches[1] ) ? $matches[1] : '–';
 				$blocked_information = 'IP: ' . $ip;
@@ -290,17 +290,17 @@ class Advanced_Ads_Admin_Licenses {
 			return apply_filters( 'advanced_ads_license_' . $options_slug, false, __METHOD__, $plugin_name, $options_slug, $license_key );
 		}
 
-		$api_params = [
+		$api_params = array(
 			'edd_action' => 'check_license',
 			'license'    => $license_key,
 			'item_name'  => urlencode( $plugin_name ),
-		];
+		);
 		$response   = wp_remote_get(
 			add_query_arg( $api_params, ADVADS_URL ),
-			[
+			array(
 				'timeout'   => 15,
 				'sslverify' => false,
-			]
+			)
 		);
 		if ( is_wp_error( $response ) ) {
 			return false;
@@ -340,19 +340,19 @@ class Advanced_Ads_Admin_Licenses {
 			return apply_filters( 'advanced_ads_license_' . $options_slug, false, __METHOD__, $plugin_name, $options_slug, $license_key );
 		}
 
-		$api_params = [
+		$api_params = array(
 			'edd_action' => 'deactivate_license',
 			'license'    => $license_key,
 			'item_name'  => urlencode( $plugin_name ),
-		];
+		);
 		// send the remote request.
 		$response = wp_remote_post(
 			self::API_ENDPOINT,
-			[
+			array(
 				'body'      => $api_params,
 				'timeout'   => 15,
 				'sslverify' => false,
-			]
+			)
 		);
 
 		// show license debug output if constant is set.
@@ -399,18 +399,37 @@ class Advanced_Ads_Admin_Licenses {
 	 * Get license keys for all add-ons
 	 *
 	 * @return string[]
+	 * @since 1.6.15
 	 */
 	public function get_licenses() {
-		return get_option( ADVADS_SLUG . '-licenses', [] );
+		$licenses = array();
+
+		if ( is_multisite() ) {
+			// if multisite, get option from main blog.
+			global $current_site;
+			$licenses = get_blog_option( $current_site->blog_id, ADVADS_SLUG . '-licenses', array() );
+		} else {
+			$licenses = get_option( ADVADS_SLUG . '-licenses', array() );
+		}
+
+		return $licenses;
 	}
 
 	/**
 	 * Save license keys for all add-ons
 	 *
 	 * @param array $licenses licenses.
+	 *
+	 * @since 1.7.2
 	 */
-	public function save_licenses( $licenses = [] ) {
-		update_option( ADVADS_SLUG . '-licenses', $licenses );
+	public function save_licenses( $licenses = array() ) {
+		if ( is_multisite() ) {
+			// if multisite, get option from main blog.
+			global $current_site;
+			update_blog_option( $current_site->blog_id, ADVADS_SLUG . '-licenses', $licenses );
+		} else {
+			update_option( ADVADS_SLUG . '-licenses', $licenses );
+		}
 	}
 
 	/**
@@ -418,10 +437,21 @@ class Advanced_Ads_Admin_Licenses {
 	 *
 	 * @param string $slug slug of the add-on.
 	 *
-	 * @return string|false license status, "valid", "invalid" or false if option doesn't exist.
+	 * @return string $status license status, e.g. "valid" or "invalid"
+	 * @since 1.6.15
 	 */
 	public function get_license_status( $slug = '' ) {
-		return get_option( $slug . '-license-status', false );
+		$status = false;
+
+		if ( is_multisite() ) {
+			// if multisite, get option from main blog.
+			global $current_site;
+			$status = get_blog_option( $current_site->blog_id, $slug . '-license-status', false );
+		} else {
+			$status = get_option( $slug . '-license-status', false );
+		}
+
+		return $status;
 	}
 
 	/**
@@ -438,7 +468,7 @@ class Advanced_Ads_Admin_Licenses {
 			ARRAY_FILTER_USE_KEY
 		);
 
-		return [] !== $valid && max( array_count_values( $valid ) ) > 1;
+		return array() !== $valid && max( array_count_values( $valid ) ) > 1;
 	}
 
 	/**
@@ -478,8 +508,16 @@ class Advanced_Ads_Admin_Licenses {
 	 * @param string $slug slug of the add-on.
 	 *
 	 * @return string $date expiry date of an add-on, empty string if no option exists
+	 * @since 1.6.15
 	 */
 	public function get_license_expires( $slug = '' ) {
+		// if multisite, get option from main blog.
+		if ( is_multisite() ) {
+			global $current_site;
+
+			return get_blog_option( $current_site->blog_id, $slug . '-license-expires', '' );
+		}
+
 		return get_option( $slug . '-license-expires', '' );
 	}
 
@@ -503,13 +541,13 @@ class Advanced_Ads_Admin_Licenses {
 		 *        options_slug
 		 *        short option slug (=key)
 		 */
-		$add_ons = apply_filters( 'advanced-ads-add-ons', [] );
+		$add_ons = apply_filters( 'advanced-ads-add-ons', array() );
 
-		if ( [] === $add_ons ) {
+		if ( array() === $add_ons ) {
 			return;
 		}
 
-		$licenses = get_option( ADVADS_SLUG . '-licenses', [] );
+		$licenses = get_option( ADVADS_SLUG . '-licenses', array() );
 
 		foreach ( $add_ons as $_add_on_key => $_add_on ) {
 
@@ -526,17 +564,17 @@ class Advanced_Ads_Admin_Licenses {
 
 			// by default, EDD looks every 3 hours for updates. The following code block changes that to 24 hours. set_expiration_of_update_option delivers that value.
 			$option_key = 'pre_update_option_edd_sl_' . md5( serialize( basename( $_add_on['path'], '.php' ) . $license_key ) );
-			add_filter( $option_key, [ $this, 'set_expiration_of_update_option' ] );
+			add_filter( $option_key, array( $this, 'set_expiration_of_update_option' ) );
 
 			new ADVADS_SL_Plugin_Updater(
 				self::API_ENDPOINT,
 				$_add_on['path'],
-				[
+				array(
 					'version'   => $_add_on['version'],
 					'license'   => $license_key,
 					'item_name' => $_add_on['name'],
 					'author'    => 'Advanced Ads',
-				]
+				)
 			);
 		}
 	}
@@ -602,7 +640,7 @@ class Advanced_Ads_Admin_Licenses {
 	 * @return  array    array with the add-on data
 	 */
 	private function get_installed_add_on_by_name( $name = '' ) {
-		$add_ons = apply_filters( 'advanced-ads-add-ons', [] );
+		$add_ons = apply_filters( 'advanced-ads-add-ons', array() );
 
 		if ( is_array( $add_ons ) ) {
 			foreach ( $add_ons as $key => $_add_on ) {
@@ -620,9 +658,9 @@ class Advanced_Ads_Admin_Licenses {
 	 * can be used to display information for any Pro user only, like link to direct support
 	 */
 	public static function any_license_valid() {
-		$add_ons = apply_filters( 'advanced-ads-add-ons', [] );
+		$add_ons = apply_filters( 'advanced-ads-add-ons', array() );
 
-		if ( [] === $add_ons ) {
+		if ( array() === $add_ons ) {
 			return false;
 		}
 
@@ -705,7 +743,7 @@ class Advanced_Ads_Admin_Licenses {
 			return $response;
 		}
 
-		$add_ons = apply_filters( 'advanced-ads-add-ons', [] );
+		$add_ons = apply_filters( 'advanced-ads-add-ons', array() );
 
 		// look for the add-on with the appropriate license key
 		foreach ( $add_ons as $_add_on_key => $_add_on ) {

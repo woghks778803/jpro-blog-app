@@ -1,13 +1,13 @@
 <?php
 
 /**
- * Advanced Ads AdSense Ad Type
+ * Advanced Ads dfp Ad Type
  *
  * @package   Advanced_Ads
  * @author    Thomas Maier <support@wpadvancedads.com>
  * @license   GPL-2.0+
  * @link      https://wpadvancedads.com
- * @copyright 2013-2022 Thomas Maier, Advanced Ads GmbH
+ * @copyright 2013-2018 Thomas Maier, Advanced Ads GmbH
  *
  * Class containing information about the adsense ad type
  *
@@ -33,37 +33,9 @@ class Advanced_Ads_Ad_Type_Adsense extends Advanced_Ads_Ad_Type_Abstract {
 	public function __construct() {
 		$this->title       = __( 'AdSense ad', 'advanced-ads' );
 		$this->description = __( 'Use ads from your Google AdSense account', 'advanced-ads' );
-		$this->parameters  = [
+		$this->parameters  = array(
 			'content' => '',
-		];
-	}
-
-	/**
-	 * Return an array with AdSense ad type keys and readable labels
-	 *
-	 * @return array
-	 */
-	public static function get_ad_types() {
-		return [
-			'normal'          => __( 'Normal', 'advanced-ads' ),
-			'responsive'      => __( 'Responsive', 'advanced-ads' ),
-			'matched-content' => __( 'Multiplex', 'advanced-ads' ),
-			'link'            => __( 'Link ads', 'advanced-ads' ),
-			'link-responsive' => __( 'Link ads (Responsive)', 'advanced-ads' ),
-			'in-article'      => __( 'In-article', 'advanced-ads' ),
-			'in-feed'         => __( 'In-feed', 'advanced-ads' ),
-		];
-	}
-
-	/**
-	 * Get readable names for each AdSense ad type
-	 *
-	 * @param string $ad_type ad type key.
-	 * @return string
-	 */
-	public static function get_ad_type_label( $ad_type ) {
-		$ad_types = self::get_ad_types();
-		return isset( $ad_types[ $ad_type ] ) ? $ad_types[ $ad_type ] : __( 'Normal', 'advanced-ads' );
+		);
 	}
 
 	/**
@@ -104,11 +76,11 @@ class Advanced_Ads_Ad_Type_Adsense extends Advanced_Ads_Ad_Type_Abstract {
 		$unit_height  = 0;
 		$json_content = '';
 		$unit_resize  = '';
-		$extra_params = [
+		$extra_params = array(
 			'default_width'  => '',
 			'default_height' => '',
-			'at_media'       => [],
-		];
+			'at_media'       => array(),
+		);
 
 		$db     = Advanced_Ads_AdSense_Data::get_instance();
 		$pub_id = trim( $db->get_adsense_id( $ad ) );
@@ -143,7 +115,7 @@ class Advanced_Ads_Ad_Type_Adsense extends Advanced_Ads_Ad_Type_Abstract {
 					$unit_width  = $ad->width;
 					$unit_height = $ad->height;
 				} else {
-					// Responsive && multiplex ads
+					// Responsive && matched content
 					$unit_resize = ( isset( $content->resize ) ) ? $content->resize : 'auto';
 					if ( 'auto' != $unit_resize ) {
 						$extra_params = apply_filters( 'advanced-ads-gadsense-ad-param-data', $extra_params, $content, $ad );
@@ -175,44 +147,6 @@ class Advanced_Ads_Ad_Type_Adsense extends Advanced_Ads_Ad_Type_Abstract {
 	}
 
 	/**
-	 * Render icon on the ad overview list
-	 *
-	 * @param Advanced_Ads_Ad $ad ad object.
-	 */
-	public function render_icon( Advanced_Ads_Ad $ad ) {
-		$image = 'adsense-display.svg';
-
-		$content = json_decode( wp_unslash( $ad->content ), true );
-		if ( isset( $content['unitType'] ) ) {
-			switch ( $content['unitType'] ) {
-				case 'matched-content':
-					$image = 'adsense-multiplex.svg';
-					break;
-				case 'in-article':
-					$image = 'adsense-in-article.svg';
-					break;
-				case 'in-feed':
-					$image = 'adsense-in-feed.svg';
-					break;
-			}
-		}
-
-		echo '<img src="' . esc_url( ADVADS_BASE_URL ) . '/modules/gadsense/admin/assets/img/' . esc_attr( $image ) . '" width="50" height="50">';
-	}
-
-	/**
-	 * Render additional information in the ad type tooltip on the ad overview page
-	 *
-	 * @param Advanced_Ads_Ad $ad ad object.
-	 */
-	public function render_ad_type_tooltip( Advanced_Ads_Ad $ad ) {
-		$content = json_decode( stripslashes( $ad->content ), true );
-		if ( isset( $content['unitType'] ) ) {
-			echo esc_html( self::get_ad_type_label( $content['unitType'] ) );
-		}
-	}
-
-	/**
 	 * Sanitize content field on save
 	 *
 	 * @param string $content ad content.
@@ -224,7 +158,7 @@ class Advanced_Ads_Ad_Type_Adsense extends Advanced_Ads_Ad_Type_Abstract {
 		$content = wp_unslash( $content );
 		$ad_unit = json_decode( $content, true );
 		if ( empty( $ad_unit ) ) {
-			$ad_unit = [];
+			$ad_unit = array();
 		}
 		// remove this slotId from unsupported_ads
 		$mapi_options = Advanced_Ads_AdSense_MAPI::get_option();
@@ -282,7 +216,7 @@ class Advanced_Ads_Ad_Type_Adsense extends Advanced_Ads_Ad_Type_Abstract {
 
 		// "link" was a static format until AdSense stopped filling them in March 2021. Their responsive format serves as a fallback recommended by AdSense
 		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-		$is_static_normal_content = ! in_array( $content->unitType, [ 'responsive', 'link', 'link-responsive', 'matched-content', 'in-article', 'in-feed' ], true );
+		$is_static_normal_content = ! in_array( $content->unitType, array( 'responsive', 'link', 'link-responsive', 'matched-content', 'in-article', 'in-feed' ), true );
 
 		$output = apply_filters( 'advanced-ads-gadsense-output', false, $ad, $pub_id, $content );
 		if ( false !== $output ) {
@@ -296,7 +230,7 @@ class Advanced_Ads_Ad_Type_Adsense extends Advanced_Ads_Ad_Type_Abstract {
 
 		// add notice when a link unit is used
 		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-		if ( in_array( $content->unitType, [ 'link', 'link-responsive' ], true ) ) {
+		if ( in_array( $content->unitType, array( 'link', 'link-responsive' ), true ) ) {
 			Advanced_Ads_Ad_Health_Notices::get_instance()->add( 'adsense_link_units_deprecated' );
 		}
 

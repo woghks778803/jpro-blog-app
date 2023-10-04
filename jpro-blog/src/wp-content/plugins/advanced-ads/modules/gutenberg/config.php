@@ -4,9 +4,9 @@
 
 $path = dirname( __FILE__ );
 
-return [
-	'classmap' => [
+return array(
+	'classmap' => array(
 		'Advanced_Ads_Gutenberg' => $path . '/includes/class-gutenberg.php',
-	],
+	),
 	'textdomain' => null,
-];
+);

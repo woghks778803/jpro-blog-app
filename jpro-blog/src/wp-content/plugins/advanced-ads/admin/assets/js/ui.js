@@ -30,7 +30,7 @@
 				var $label = jQuery( 'label[for="' + $changed.attr( 'id' ) + '"]', $ancestor );
 
 				if ( type === 'radio' ) {
-					$ancestor.find( 'label' ).removeClass( 'advads-ui-state-active' );
+					$buttonset.parent().find( 'label' ).removeClass( 'advads-ui-state-active' );
 				}
 
 				if ( $changed.is( ':checked' ) ) {
@@ -49,31 +49,16 @@
 		var $that = jQuery( this );
 
 		$that.each( function() {
-			$buttonset = jQuery( this );
+			$this = jQuery( this );
 
-			if ( $buttonset.data( 'advads_buttonset' ) ) {
+			if ( $this.data( 'advads_buttonset' ) ) {
 				return true;
 			}
-			$buttonset.data( 'advads_buttonset', true );
+			$this.data( 'advads_buttonset', true );
 
 			var items = 'input[type=checkbox], input[type=radio]';
-			var $all_buttons = $buttonset.find( items );
-
-			if ( ! $all_buttons.length ) {
-				return;
-			}
-
-			// Show selected checkboxes first.
-			if ( jQuery.escapeSelector ) {
-				$items = jQuery();
-				$all_buttons.filter( ':checked' ).each( function() {
-					$items = $items.add( $buttonset.find( 'label[for="' + jQuery.escapeSelector( this.id ) + '"]' ) );
-					$items = $items.add( this );
-				} );
-				$items.prependTo( $buttonset );
-			}
-
-			$buttonset.addClass( 'advads-buttonset' );
+			var $all_buttons = $this.find( items );
+			$this.addClass( 'advads-buttonset' );
 
 			$all_buttons.advads_button();
 		} );
@@ -115,9 +100,8 @@
 			var content = options.content.call( $target )
 			if ( content ) {
 				tooltip = $( '<div>' ).addClass( 'advads-tooltip' );
-				const parent = typeof options.parent === 'function' ? options.parent.call( this, $target ) : 'body';
 				$( '<div>' ).addClass( 'advads-tooltip-content' ).appendTo( tooltip );
-				tooltip.appendTo( parent );
+				tooltip.appendTo( 'body' );
 				tooltip.find( '.advads-tooltip-content' ).html( content );
 
 				position = $target.offset();

@@ -15,7 +15,7 @@ try {
 					class="button button-primary"><?php esc_attr_e( 'Create your first ad', 'advanced-ads' ); ?></a>
 			<ul>
 				<li>
-					<a href="<?php echo esc_url( ADVADS_URL ); ?>manual/first-ad/?utm_source=advanced-ads&utm_medium=link&utm_campaign=welcome-first-ad"
+					<a href="<?php echo esc_url( ADVADS_URL ); ?>manual/first-ad/#utm_source=advanced-ads&utm_medium=link&utm_campaign=welcome-first-ad"
 							target="_blank"><?php esc_attr_e( 'First ad tutorial', 'advanced-ads' ); ?></a></li>
 			</ul>
 		</div>
@@ -36,10 +36,10 @@ try {
 					class="button button-primary"><?php esc_attr_e( 'Import ads from AdSense', 'advanced-ads' ); ?></a>
 			<ul>
 				<li>
-					<a href="<?php echo esc_url( ADVADS_URL ); ?>adsense-auto-ads-wordpress/?utm_source=advanced-ads&utm_medium=link&utm_campaign=welcome-auto-ads"
+					<a href="<?php echo esc_url( ADVADS_URL ); ?>adsense-auto-ads-wordpress/#utm_source=advanced-ads&utm_medium=link&utm_campaign=welcome-auto-ads"
 							target="_blank"><?php esc_attr_e( 'Setting up Auto ads', 'advanced-ads' ); ?></a></li>
 				<li>
-					<a href="<?php echo esc_url( ADVADS_URL ); ?>place-adsense-ad-unit-manually/?utm_source=advanced-ads&utm_medium=link&utm_campaign=welcome-adsense"
+					<a href="<?php echo esc_url( ADVADS_URL ); ?>place-adsense-ad-unit-manually/#utm_source=advanced-ads&utm_medium=link&utm_campaign=welcome-adsense"
 							target="_blank"><?php esc_attr_e( 'Setting up AdSense ads manually', 'advanced-ads' ); ?></a>
 				</li>
 			</ul>

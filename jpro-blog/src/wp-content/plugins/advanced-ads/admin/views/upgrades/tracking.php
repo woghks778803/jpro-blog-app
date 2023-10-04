@@ -7,6 +7,6 @@
 	<li><span class="dashicons dashicons-yes"></span><?php esc_html_e( 'limit ads views by overall number of impressions or clicks', 'advanced-ads' ); ?></li>
 	<li><span class="dashicons dashicons-yes"></span><?php esc_html_e( 'spread impressions or clicks equally over a given period', 'advanced-ads' ); ?></li>
 </ul>
-<a class="button button-primary" href="<?php echo esc_url( ADVADS_URL ); ?>add-ons/tracking/?utm_source=advanced-ads&utm_medium=link&utm_campaign=pitch-tracking" target="_blank"><?php esc_html_e( 'See all features and pricing', 'advanced-ads' ); ?></a>
+<a class="button button-primary" href="<?php echo esc_url( ADVADS_URL ); ?>add-ons/tracking/#utm_source=advanced-ads&utm_medium=link&utm_campaign=pitch-tracking" target="_blank"><?php esc_html_e( 'See all features and pricing', 'advanced-ads' ); ?></a>
 </div>
 <div class="clear"></div>

@@ -1,9 +1,9 @@
 === In-feed ads for Google AdSense ===
-Contributors: advancedads, webzunft
-Tags: adsense, in-feed, in-feed ads, ads, google adsense, loop, post list, post lists, archive pages, category pages, tag pages
+Contributors: webzunft, advancedads
+Tags: adsense, in-feed, infeed, ads, google adsense
 Requires at least: 5.0
-Tested up to: 6.2
-Stable tag: 1.1.3
+Tested up to: 5.8
+Stable tag: 1.1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -11,9 +11,9 @@ Display Google AdSense In-feed ads between posts.
 
 == Description ==
 
-This plugin is an add-on for the also free [Advanced Ads](https://wordpress.org/plugins/advanced-ads/) ad management plugin. It extends the plugin with a placement to put Google AdSense In-feed ads in the loop between posts on your homepage, category pages, tag pages, or other archive pages, etc.
+This plugin is an add-on for the also free [Advanced Ads](https://wordpress.org/plugins/advanced-ads/) ad management plugin. It extends the plugin with a placement to put Google AdSense In-feed ads between posts on your homepage, archive pages, etc.
 
-Google AdSense InFeed ads are a dedicated Google AdSense ad type to monetize such post lists pages with a highly engaging layout and specialized options.
+Google AdSense InFeed ads are a dedicated Google AdSense ad type to monetize overview pages with a highly engaging layout and specialized options.
 
 Advanced Ads was developed to place, manage and test ads on pages to increase revenue and usability. 
 
@@ -40,11 +40,6 @@ Advanced Ads Pro and other add-on features include
 2. The placement can be used with many other features, like cache-busting, lazy load, and alternative ad blocker content in Advanced Ads Pro
 
 == Changelog ==
-
-= 1.1.3 =
-
-* Fix: update plugin icons
-* Fix: update plugin description
 
 = 1.1.2 =
 
