@@ -74,6 +74,7 @@ class Notification extends Model {
 	protected $columns = [
 		'id',
 		'slug',
+		'addon',
 		'title',
 		'content',
 		'type',
@@ -87,6 +88,7 @@ class Notification extends Model {
 		'button2_label',
 		'button2_action',
 		'dismissed',
+		'new',
 		'created',
 		'updated'
 	];
@@ -133,7 +135,7 @@ class Notification extends Model {
 	 */
 	public static function getNewNotifications( $reset = true ) {
 		$notifications = self::filterNotifications(
-			aioseo()->db
+			aioseo()->core->db
 				->start( 'aioseo_notifications' )
 				->where( 'dismissed', 0 )
 				->where( 'new', 1 )
@@ -159,7 +161,7 @@ class Notification extends Model {
 	 * @return void
 	 */
 	public static function resetNewNotifications() {
-		aioseo()->db
+		aioseo()->core->db
 			->update( 'aioseo_notifications' )
 			->where( 'new', 1 )
 			->set( 'new', 0 )
@@ -185,12 +187,12 @@ class Notification extends Model {
 				case 'review':
 					// If they intentionally dismissed the main notification, we don't show the repeat one.
 					$originalDismissed = get_user_meta( get_current_user_id(), '_aioseo_plugin_review_dismissed', true );
-					if ( '2' !== $originalDismissed ) {
+					if ( '4' !== $originalDismissed ) {
 						break;
 					}
 
 					$dismissed = get_user_meta( get_current_user_id(), '_aioseo_notification_plugin_review_dismissed', true );
-					if ( '1' === $dismissed ) {
+					if ( '3' === $dismissed ) {
 						break;
 					}
 
@@ -199,13 +201,14 @@ class Notification extends Model {
 					}
 
 					$activated = aioseo()->internalOptions->internal->firstActivated( time() );
-					if ( $activated > strtotime( '-30 days' ) ) {
+					if ( $activated > strtotime( '-20 days' ) ) {
 						break;
 					}
 
+					$isV3                  = get_option( 'aioseop_options' ) || get_option( 'aioseo_options_v3' );
 					$staticNotifications[] = [
 						'slug'      => 'notification-' . $notification,
-						'component' => 'notifications-' . $notification
+						'component' => 'notifications-' . $notification . ( $isV3 ? '' : '2' )
 					];
 					break;
 				case 'unlicensed-addons':
@@ -236,7 +239,7 @@ class Notification extends Model {
 	 */
 	public static function getActiveNotifications() {
 		return self::filterNotifications(
-			aioseo()->db
+			aioseo()->core->db
 				->start( 'aioseo_notifications' )
 				->where( 'dismissed', 0 )
 				->whereRaw( "(start <= '" . gmdate( 'Y-m-d H:i:s' ) . "' OR start IS NULL)" )
@@ -267,7 +270,7 @@ class Notification extends Model {
 	 */
 	public static function getDismissedNotifications() {
 		return self::filterNotifications(
-			aioseo()->db
+			aioseo()->core->db
 				->start( 'aioseo_notifications' )
 				->where( 'dismissed', 1 )
 				->orderBy( 'updated DESC' )
@@ -285,7 +288,7 @@ class Notification extends Model {
 	 * @return Notification       The notification.
 	 */
 	public static function getNotificationByName( $name ) {
-		return aioseo()->db
+		return aioseo()->core->db
 			->start( 'aioseo_notifications' )
 			->where( 'notification_name', $name )
 			->run()
@@ -304,7 +307,7 @@ class Notification extends Model {
 		// Set the dismissed status to false.
 		$fields['dismissed'] = 0;
 
-		$notification = new self;
+		$notification = new self();
 		$notification->set( $fields );
 		$notification->save();
 
@@ -320,7 +323,7 @@ class Notification extends Model {
 	 * @return void
 	 */
 	public static function deleteNotificationByName( $name ) {
-		aioseo()->db
+		aioseo()->core->db
 			->delete( 'aioseo_notifications' )
 			->where( 'notification_name', $name )
 			->run();
@@ -342,6 +345,11 @@ class Notification extends Model {
 				! aioseo()->options->advanced->announcements &&
 				'success' === $notification->type
 			) {
+				continue;
+			}
+
+			// If this is an addon notification and the addon is disabled, skip adding it and move on.
+			if ( ! empty( $notification->addon ) && ! aioseo()->addons->getLoadedAddon( $notification->addon ) ) {
 				continue;
 			}
 

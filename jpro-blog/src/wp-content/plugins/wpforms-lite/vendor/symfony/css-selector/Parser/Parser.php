@@ -27,8 +27,16 @@ use Symfony\Component\CssSelector\Parser\Tokenizer\Tokenizer;
  */
 class Parser implements ParserInterface
 {
+    /**
+     * @var Tokenizer
+     */
     private $tokenizer;
 
+    /**
+     * Constructor.
+     *
+     * @param null|Tokenizer $tokenizer
+     */
     public function __construct(Tokenizer $tokenizer = null)
     {
         $this->tokenizer = $tokenizer ?: new Tokenizer();
@@ -97,6 +105,8 @@ class Parser implements ParserInterface
     /**
      * Parses selector nodes.
      *
+     * @param TokenStream $stream
+     *
      * @return array
      */
     private function parseSelectorList(TokenStream $stream)
@@ -120,6 +130,8 @@ class Parser implements ParserInterface
 
     /**
      * Parses next selector or combined node.
+     *
+     * @param TokenStream $stream
      *
      * @return Node\SelectorNode
      *
@@ -169,7 +181,7 @@ class Parser implements ParserInterface
     {
         $stream->skipWhitespace();
 
-        $selectorStart = \count($stream->getUsed());
+        $selectorStart = count($stream->getUsed());
         $result = $this->parseElementNode($stream);
         $pseudoElement = null;
 
@@ -206,7 +218,7 @@ class Parser implements ParserInterface
                 }
 
                 $identifier = $stream->getNextIdentifier();
-                if (\in_array(strtolower($identifier), array('first-line', 'first-letter', 'before', 'after'))) {
+                if (in_array(strtolower($identifier), array('first-line', 'first-letter', 'before', 'after'))) {
                     // Special case: CSS 2.1 pseudo-elements can have a single ':'.
                     // Any new pseudo-element must have two.
                     $pseudoElement = $identifier;
@@ -272,7 +284,7 @@ class Parser implements ParserInterface
             }
         }
 
-        if (\count($stream->getUsed()) === $selectorStart) {
+        if (count($stream->getUsed()) === $selectorStart) {
             throw SyntaxErrorException::unexpectedToken('selector', $stream->getPeek());
         }
 
@@ -281,6 +293,8 @@ class Parser implements ParserInterface
 
     /**
      * Parses next element node.
+     *
+     * @param TokenStream $stream
      *
      * @return Node\ElementNode
      */
@@ -312,6 +326,9 @@ class Parser implements ParserInterface
 
     /**
      * Parses next attribute node.
+     *
+     * @param Node\NodeInterface $selector
+     * @param TokenStream        $stream
      *
      * @return Node\AttributeNode
      *

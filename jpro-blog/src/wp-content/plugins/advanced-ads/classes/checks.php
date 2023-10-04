@@ -81,9 +81,9 @@ class Advanced_Ads_Checks {
 	 */
 	public static function licenses_invalid() {
 
-		$add_ons = apply_filters( 'advanced-ads-add-ons', array() );
+		$add_ons = apply_filters( 'advanced-ads-add-ons', [] );
 
-		if ( array() === $add_ons ) {
+		if ( [] === $add_ons ) {
 			Advanced_Ads_Ad_Health_Notices::get_instance()->remove( 'license_invalid' );
 			return false;
 		}
@@ -203,7 +203,7 @@ class Advanced_Ads_Checks {
 	 * @return array $plugins names of conflicting plugins
 	 */
 	public static function conflicting_plugins() {
-		$conflicting_plugins = array();
+		$conflicting_plugins = [];
 
 		if ( defined( 'Publicize_Base' ) ) { // JetPack Publicize module.
 			$conflicting_plugins[] = 'Jetpack – Publicize';
@@ -233,7 +233,7 @@ class Advanced_Ads_Checks {
 		if ( isset( $options['disabled-ads'] ) && is_array( $options['disabled-ads'] ) ) {
 			foreach ( $options['disabled-ads'] as $_key => $_value ) {
 				// don’t warn if "RSS Feed", "404", or "REST API" option are enabled, because they are normally not critical.
-				if ( ! empty( $_value ) && ! in_array( (string) $_key, array( 'feed', '404', 'rest-api' ), true ) ) {
+				if ( ! empty( $_value ) && ! in_array( (string) $_key, [ 'feed', '404', 'rest-api' ], true ) ) {
 					return true;
 				}
 			}
@@ -248,7 +248,7 @@ class Advanced_Ads_Checks {
 	 */
 	public static function php_extensions() {
 
-		$missing_extensions = array();
+		$missing_extensions = [];
 
 		if ( ! extension_loaded( 'dom' ) ) {
 			$missing_extensions[] = 'dom';
@@ -269,7 +269,7 @@ class Advanced_Ads_Checks {
 	public static function get_defined_constants() {
 		$constants = apply_filters(
 			'advanced-ads-constants',
-			array(
+			[
 				'ADVADS_ADS_DISABLED',
 				'ADVADS_ALLOW_ADSENSE_ON_404',
 				'ADVADS_DISABLE_RESPONSIVE_IMAGES',
@@ -289,10 +289,10 @@ class Advanced_Ads_Checks {
 				'ADVANCED_ADS_SUPPRESS_PLUGIN_ERROR_NOTICES',
 				'ADVANCED_ADS_TRACKING_DEBUG',
 				'ADVANCED_ADS_TRACKING_NO_HOURLY_LIMIT',
-			)
+			]
 		);
 
-		$result = array();
+		$result = [];
 		foreach ( $constants as $constant ) {
 			if ( defined( $constant ) ) {
 				$result[] = $constant;
@@ -332,7 +332,7 @@ class Advanced_Ads_Checks {
 	 */
 	public static function ads_txt_plugins() {
 
-		$ads_txt_plugins = array();
+		$ads_txt_plugins = [];
 
 		// Ads.txt Manager.
 		if ( function_exists( 'tenup_display_ads_txt' ) ) {
@@ -356,7 +356,7 @@ class Advanced_Ads_Checks {
 	 */
 	public static function header_footer_plugins() {
 
-		$plugins = array();
+		$plugins = [];
 
 		// Header Footer Code Manager.
 		if ( function_exists( 'hfcm_options_install' ) ) {

@@ -24,7 +24,8 @@ class Links {
 			'prev' => '',
 			'next' => '',
 		];
-		if ( is_home() || is_archive() || is_paged() || is_search() ) {
+
+		if ( is_home() || is_archive() || is_paged() ) {
 			$links = $this->getHomeLinks();
 		}
 
@@ -74,6 +75,13 @@ class Links {
 		$prev = aioseo()->helpers->maybeRemoveTrailingSlash( $prev );
 		$next = aioseo()->helpers->maybeRemoveTrailingSlash( $next );
 
+		// Remove any query args that may be set on the URL, except if the site is using plain permalinks.
+		$permalinkStructure = get_option( 'permalink_structure' );
+		if ( ! empty( $permalinkStructure ) ) {
+			$prev = explode( '?', $prev )[0];
+			$next = explode( '?', $next )[0];
+		}
+
 		return [
 			'prev' => $prev,
 			'next' => $next,
@@ -85,15 +93,15 @@ class Links {
 	 *
 	 * @since 4.0.0
 	 *
-	 * @param  WP_Post $post The post.
-	 * @return array         An array of link data.
+	 * @param  \WP_Post $post The post.
+	 * @return array          An array of link data.
 	 */
 	private function getPostLinks( $post ) {
 		$prev     = '';
 		$next     = '';
-		$page     = aioseo()->helpers->getPageNumber();
 		$numpages = 1;
-		$content  = $post->post_content;
+		$page     = aioseo()->helpers->getPageNumber();
+		$content  = is_a( $post, 'WP_Post' ) ? $post->post_content : '';
 		if ( false !== strpos( $content, '<!--nextpage-->', 0 ) ) {
 			$content = str_replace( "\n<!--nextpage-->\n", '<!--nextpage-->', $content );
 			$content = str_replace( "\n<!--nextpage-->", '<!--nextpage-->', $content );
@@ -149,10 +157,12 @@ class Links {
 
 		if ( is_preview() ) {
 
+			// phpcs:disable HM.Security.NonceVerification.Recommended
 			if ( ( 'draft' !== $post->post_status ) && isset( $_GET['preview_id'], $_GET['preview_nonce'] ) ) {
 				$queryArgs['preview_id']    = sanitize_text_field( wp_unslash( $_GET['preview_id'] ) );
 				$queryArgs['preview_nonce'] = sanitize_text_field( wp_unslash( $_GET['preview_nonce'] ) );
 			}
+			// phpcs:enable
 
 			$url = get_preview_post_link( $post, $queryArgs, $url );
 		}

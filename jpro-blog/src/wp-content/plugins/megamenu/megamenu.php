@@ -3,7 +3,7 @@
  * Plugin Name: Max Mega Menu
  * Plugin URI:  https://www.megamenu.com
  * Description: An easy to use mega menu plugin. Written the WordPress way.
- * Version:     2.9.5
+ * Version:     3.2.3
  * Author:      megamenu.com
  * Author URI:  https://www.megamenu.com
  * License:     GPL-2.0+
@@ -35,7 +35,7 @@ if ( ! class_exists( 'Mega_Menu' ) ) :
 		 *
 		 * @var string
 		 */
-		public $version = '2.9.5';
+		public $version = '3.2.3';
 
 
 		/**
@@ -111,6 +111,7 @@ if ( ! class_exists( 'Mega_Menu' ) ) :
 					'Mega_Menu_Locations',
 					'Mega_Menu_Themes',
 					'Mega_Menu_Tools',
+					'Mega_Menu_Admin_Notices'
 				);
 
 				foreach ( $admin_classes as $class ) {
@@ -130,7 +131,6 @@ if ( ! class_exists( 'Mega_Menu' ) ) :
 			}
 
 		}
-
 
 		/**
 		 * Add a body class for each active mega menu location.
@@ -166,7 +166,6 @@ if ( ! class_exists( 'Mega_Menu' ) ) :
 				if ( in_array( $hook, array( 'nav-menus.php', 'gutenberg_page_gutenberg-navigation' ), true ) ) {
 					// load widget scripts and styles first to allow us to dequeue conflicting colorbox scripts from other plugins.
 					do_action( 'sidebar_admin_setup' );
-					do_action( 'admin_enqueue_scripts', 'widgets.php' );
 					do_action( 'megamenu_nav_menus_scripts', $hook );
 				}
 
@@ -232,7 +231,7 @@ if ( ! class_exists( 'Mega_Menu' ) ) :
 		 * Load TinyMCE assets on nav-menus.php page.
 		 *
 		 * @since  1.8
-.		 * @param  array $pages Pages to load tinymce scripts on
+		 * @param  array $pages Pages to load tinymce scripts on
 		 * @return array $pages
 		 */
 		public function megamenu_blackstudio_tinymce( $pages ) {
@@ -248,18 +247,18 @@ if ( ! class_exists( 'Mega_Menu' ) ) :
 		 */
 		public function install_upgrade_check() {
 			$version = get_option( 'megamenu_version' );
+			$install_date = get_option( 'megamenu_install_date');
+
+			if ( ! $install_date ) {
+				add_option( 'megamenu_install_date', time() );
+			}
 
 			if ( $version ) {
-
 				if ( version_compare( $this->version, $version, '!=' ) ) {
-
 					update_option( 'megamenu_version', $this->version );
-
 					do_action( 'megamenu_after_update' );
-
 				}
 			} else {
-
 				add_option( 'megamenu_version', $this->version );
 				add_option( 'megamenu_initial_version', $this->version );
 				add_option( 'megamenu_multisite_share_themes', 'false' );
@@ -289,14 +288,16 @@ if ( ! class_exists( 'Mega_Menu' ) ) :
 			if ( class_exists( 'Mega_Menu_Widget' ) ) {
 				register_widget( 'Mega_Menu_Widget' );
 			}
-			//register_widget( 'Mega_Menu_Widget_Reusable_Block' );
+
+			if ( class_exists( 'Mega_Menu_Widget_Reusable_Block' ) ) {
+				register_widget( 'Mega_Menu_Widget_Reusable_Block' );
+			}
 
 			// Check if Elementor installed and activated
 			//if ( did_action( 'elementor/loaded' ) ) {
 			//    register_widget( 'Mega_Menu_Widget_Elementor_Template' );
 			//}
 		}
-
 
 		/**
 		 * Create our own widget area to store all mega menu widgets.
@@ -386,6 +387,7 @@ if ( ! class_exists( 'Mega_Menu' ) ) :
 				'Mega_Menu_Widget_Reusable_Block'     => MEGAMENU_PATH . 'classes/widgets/widget-reusable-block.class.php',
 				'Mega_Menu_Widget_Elementor_Template' => MEGAMENU_PATH . 'classes/widgets/widget-elementor-template.class.php',
 				'Mega_Menu_toggle_Blocks'             => MEGAMENU_PATH . 'classes/toggle-blocks.class.php',
+				'Mega_Menu_Admin_Notices'             => MEGAMENU_PATH . 'classes/admin-notices.class.php'
 			);
 
 			return $classes;
@@ -421,7 +423,8 @@ if ( ! class_exists( 'Mega_Menu' ) ) :
 			}
 
 			// gutenberg block
-			//include_once MEGAMENU_PATH . "integration/location/location.php";
+			include_once MEGAMENU_PATH . 'integration/block/location/block.php';
+
 		}
 
 
@@ -514,11 +517,11 @@ if ( ! class_exists( 'Mega_Menu' ) ) :
 			$args = (object) $args;
 
 			// make sure we're working with a Mega Menu.
-			if ( ! $args->walker || ! is_a( $args->walker, 'Mega_Menu_Walker' ) ) {
+			if ( ! property_exists( $args, 'walker' ) || ! $args->walker || ! is_a( $args->walker, 'Mega_Menu_Walker' ) ) {
 				return $nav_menu;
 			}
 
-			$find = 'class="' . $args->container_class . '">';
+			$find = '<ul id="' . $args->menu_id . '"';
 
 			$theme_id = mmm_get_theme_id_for_location( $args->theme_location );
 
@@ -526,7 +529,7 @@ if ( ! class_exists( 'Mega_Menu' ) ) :
 
 			$content = apply_filters( 'megamenu_toggle_bar_content', $content, $nav_menu, $args, $theme_id );
 
-			$replace = $find . '<div class="mega-menu-toggle">' . $content . '</div>';
+			$replace = '<div class="mega-menu-toggle">' . $content . '</div>' . $find;
 
 			return str_replace( $find, $replace, $nav_menu );
 		}
@@ -941,7 +944,7 @@ if ( ! class_exists( 'Mega_Menu' ) ) :
 
 			if ( 'enabled' === $descriptions ) {
 				foreach ( $items as $item ) {
-					if ( property_exists( $item, 'description' ) && strlen( $item->description ) ) {
+					if ( property_exists( $item, 'description' ) && is_string( $item->description ) && strlen( $item->description ) ) {
 						$item->mega_description = $item->description;
 						$item->classes[]        = 'has-description';
 					}
@@ -1215,7 +1218,7 @@ if ( ! class_exists( 'Mega_Menu' ) ) :
 						'data-unbind'                => 'disabled' === $unbind ? 'false' : 'true',
 						'data-mobile-state'          => $mobile_state,
 						'data-hover-intent-timeout'  => absint( $hover_intent_params['timeout'] ),
-						'data-hover-intent-interval' => absint( $hover_intent_params['interval'] ),
+						'data-hover-intent-interval' => absint( $hover_intent_params['interval'] )
 					),
 					$menu_id,
 					$menu_settings,

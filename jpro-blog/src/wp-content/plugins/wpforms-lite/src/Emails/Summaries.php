@@ -51,14 +51,14 @@ class Summaries {
 	 */
 	public function hooks() {
 
-		\add_filter( 'wpforms_settings_defaults', array( $this, 'disable_summaries_setting' ) );
-		\add_action( 'wpforms_settings_updated', array( $this, 'deregister_fetch_info_blocks_task' ) );
+		add_filter( 'wpforms_settings_defaults', [ $this, 'disable_summaries_setting' ] );
+		add_action( 'wpforms_settings_updated', [ $this, 'deregister_fetch_info_blocks_task' ] );
 
 		if ( ! $this->is_disabled() ) {
-			\add_action( 'init', array( $this, 'preview' ) );
-			\add_filter( 'cron_schedules', array( $this, 'add_weekly_cron_schedule' ) );
-			\add_action( 'wpforms_email_summaries_cron', array( $this, 'cron' ) );
-			\add_filter( 'wpforms_tasks_get_tasks', array( $this, 'register_fetch_info_blocks_task' ) );
+			add_action( 'init', [ $this, 'preview' ] );
+			add_filter( 'cron_schedules', [ $this, 'add_weekly_cron_schedule' ] );
+			add_action( 'wpforms_email_summaries_cron', [ $this, 'cron' ] );
+			add_filter( 'wpforms_tasks_get_tasks', [ $this, 'register_fetch_info_blocks_task' ] );
 		}
 	}
 
@@ -89,26 +89,37 @@ class Summaries {
 			return $settings;
 		}
 
-		$url = \add_query_arg(
-			array(
+		$url = add_query_arg(
+			[
 				'wpforms_email_template' => 'summary',
 				'wpforms_email_preview'  => '1',
-			),
-			\admin_url()
+			],
+			admin_url()
 		);
 
-		$desc = \esc_html__( 'Disable Email Summaries weekly delivery.', 'wpforms-lite' );
+		$desc = esc_html__( 'Disable Email Summaries weekly delivery.', 'wpforms-lite' );
 
 		if ( ! $this->is_disabled() ) {
-			$desc .= '<br><a href="' . $url . '" target="_blank">' . \esc_html__( 'View Email Summary Example', 'wpforms-lite' ) . '</a>';
+			$desc .= ' <a href="' . $url . '" target="_blank">' . esc_html__( 'View Email Summary Example', 'wpforms-lite' ) . '</a>.';
 		}
 
-		$settings['misc']['email-summaries-disable'] = array(
-			'id'   => 'email-summaries-disable',
-			'name' => \esc_html__( 'Disable Email Summaries', 'wpforms-lite' ),
-			'desc' => $desc,
-			'type' => 'checkbox',
-		);
+		// Get the uninstall data setting.
+		$uninstall_data = $settings['misc']['uninstall-data'];
+
+		// Remove the uninstall data setting.
+		unset( $settings['misc']['uninstall-data'] );
+
+		// Add the email summaries setting.
+		$settings['misc']['email-summaries-disable'] = [
+			'id'     => 'email-summaries-disable',
+			'name'   => esc_html__( 'Disable Email Summaries', 'wpforms-lite' ),
+			'desc'   => $desc,
+			'type'   => 'toggle',
+			'status' => true,
+		];
+
+		// Add the uninstall data setting to the end.
+		$settings['misc']['uninstall-data'] = $uninstall_data;
 
 		return $settings;
 	}
@@ -186,10 +197,10 @@ class Summaries {
 	 */
 	public function add_weekly_cron_schedule( $schedules ) {
 
-		$schedules['wpforms_email_summaries_weekly'] = array(
+		$schedules['wpforms_email_summaries_weekly'] = [
 			'interval' => \WEEK_IN_SECONDS,
 			'display'  => \esc_html__( 'Weekly WPForms Email Summaries', 'wpforms-lite' ),
-		);
+		];
 
 		return $schedules;
 	}
@@ -257,7 +268,7 @@ class Summaries {
 		 *
 		 * @since 1.5.4
 		 *
-		 * @param string Default summaries recipient email address.
+		 * @param string $option Default summaries recipient email address.
 		 */
 		$to_email = apply_filters( 'wpforms_emails_summaries_cron_to_email', get_option( 'admin_email' ) );
 
@@ -281,7 +292,7 @@ class Summaries {
 	 */
 	protected function get_entries() {
 
-		if ( \wpforms()->pro ) {
+		if ( wpforms()->is_pro() ) {
 			$entries_count = new \WPForms\Pro\Reports\EntriesCount();
 			$results       = $entries_count->get_by( 'form', 0, 7, 'previous sunday' );
 		} else {

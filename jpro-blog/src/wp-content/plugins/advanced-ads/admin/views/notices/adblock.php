@@ -1,11 +1,13 @@
 <?php
-$advads_ad_blocker_id = Advanced_Ads_Plugin::get_instance()->get_frontend_prefix() ."abcheck-" . md5(microtime());
+/**
+ * The view to render the option.
+ *
+ * @var string $ad_blocker_notice_id Randomised ad blocker id.
+ */
 ?>
-<div id="<?php echo $advads_ad_blocker_id; ?>" class="message error update-message notice notice-alt notice-error" style="display: none;"><p><?php _e( 'Please disable your <strong>AdBlocker</strong> to prevent problems with your ad setup.', 'advanced-ads' ); ?></p></div>
-<script>
-jQuery( document ).ready( function() {
-	if ( typeof advanced_ads_adblocker_test == 'undefined' ) {
-		jQuery('#<?php echo $advads_ad_blocker_id; ?>.message').show();
-	}
-} );
-</script>
+<div id="<?php echo esc_attr( $ad_blocker_notice_id ); ?>" class="message error update-message notice notice-alt notice-error" style="display: none;">
+	<p>
+		<?php echo wp_kses_post( __( 'Please disable your <strong>AdBlocker</strong>. Otherwise, the features of Advanced Ads and the layout are broken.', 'advanced-ads' ) ); ?>
+		<a href="<?php echo esc_url( ADVADS_URL ); ?>manual/ad-blockers/?utm_source=advanced-ads&utm_medium=link&utm_campaign=adblock-enabled#How_do_you_know_if_you_are_using_an_ad_blocker" target="_blank" class="advads-manual-link"><?php esc_html_e( 'Manual', 'advanced-ads' ); ?></a>
+	</p>
+</div>

@@ -39,16 +39,16 @@ if ( count( $authors ) >= $max_authors ) :
 			wp_kses(
 			// translators: %1$d is the number of elements in the list and %2$s a URL.
 				__( 'Only %1$d elements are displayed above. Use the <code>advanced-ads-admin-max-terms</code> filter to change this limit according to <a href="%2$s" target="_blank">this page</a>.', 'advanced-ads' ),
-				array(
-					'code' => array(),
-					'a'    => array(
-						'href'   => array(),
-						'target' => array(),
-					),
-				)
+				[
+					'code' => [],
+					'a'    => [
+						'href'   => [],
+						'target' => [],
+					],
+				]
 			),
 			absint( $max_authors ),
-			esc_url( ADVADS_URL . 'codex/filter-hooks/#utm_source=advanced-ads&utm_medium=link&utm_campaign=author-term-limit' )
+			esc_url( ADVADS_URL . 'codex/filter-hooks/?utm_source=advanced-ads&utm_medium=link&utm_campaign=author-term-limit' )
 		);
 		?>
 	</p>

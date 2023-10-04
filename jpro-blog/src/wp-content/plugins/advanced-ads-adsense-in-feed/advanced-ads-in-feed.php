@@ -3,8 +3,8 @@
  * Plugin Name:       Advanced Ads – Google AdSense In-feed Placement
  * Plugin URI:        https://wpadvancedads.com
  * Description:       Display AdSense In-feed ads between posts
- * Version:           1.1.2
- * Author:            Thomas Maier
+ * Version:           1.1.3
+ * Author:            Advanced Ads
  * Author URI:        https://wpadvancedads.com
  * Text Domain:       advanced-ads-adsense-in-feed
  * Domain Path:       /languages

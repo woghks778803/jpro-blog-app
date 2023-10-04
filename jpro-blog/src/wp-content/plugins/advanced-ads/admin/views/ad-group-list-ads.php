@@ -15,11 +15,18 @@
  */
 
 ?><table class="advads-group-ads">
+	<?php if ( $ads_for_select ) : ?>	
 	<thead><tr><th>
 	<?php
 	esc_attr_e( 'Ad', 'advanced-ads' );
 	?>
-	</th><th colspan="2"><?php esc_attr_e( 'weight', 'advanced-ads' ); ?></th></tr></thead>
+	</th><th colspan="2">
+	
+		<?php esc_html_e( 'weight', 'advanced-ads' ); ?>
+	
+	</th></tr></thead>
+	<?php endif; ?>
+
 	<tbody>
 <?php
 if ( count( $ad_form_rows ) ) {
@@ -44,5 +51,7 @@ if ( count( $ad_form_rows ) ) {
 		<?php echo $new_ad_weights; ?>
 		<button type="button" class="button"><?php esc_attr_e( 'add', 'advanced-ads' ); ?></button>
 	</fieldset>
+<?php else: ?>
+	<a class="button" href="<?php echo esc_url( admin_url( 'post-new.php?post_type=advanced_ads' ) ); ?>"><?php esc_html_e( 'Create your first ad', 'advanced-ads' ); ?></a>
 	<?php
 endif;

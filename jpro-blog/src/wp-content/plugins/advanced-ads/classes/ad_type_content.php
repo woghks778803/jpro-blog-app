@@ -34,9 +34,9 @@ class Advanced_Ads_Ad_Type_Content extends Advanced_Ads_Ad_Type_Abstract{
 	public function __construct() {
 		$this->title = __( 'Rich Content', 'advanced-ads' );
 		$this->description = __( 'The full content editor from WordPress with all features like shortcodes, image upload or styling, but also simple text/html mode for scripts and code.', 'advanced-ads' );
-		$this->parameters = array(
+		$this->parameters = [
 			'content' => ''
-		);
+		];
 	}
 
 
@@ -67,11 +67,29 @@ class Advanced_Ads_Ad_Type_Content extends Advanced_Ads_Ad_Type_Abstract{
 			if ( ! user_can_richedit() ) {
 				$content = esc_textarea( $content );
 			}
-			$args = array(
+			add_filter( 'tiny_mce_before_init', function( array $init_array, $editor_id ) {
+				if ( $editor_id !== 'advanced-ad-parameters-content' ) {
+					return $init_array;
+				}
+				// add a JS listener to trigger an `input` event for the rich text textarea.
+				$init_array['setup'] = <<<'JS'
+[editor => {
+	const textarea = document.getElementById('advanced-ad-parameters-content');
+	editor.on('Dirty', event => {
+		textarea.value = editor.getContent();
+		textarea.dispatchEvent(new Event('input'));
+	});
+}][0]
+JS;
+
+				return $init_array;
+			}, 10, 2 );
+
+			$args = [
 				'textarea_name' => 'advanced_ad[content]',
 				'textarea_rows' => 10,
 				'drag_drop_upload' => true
-			);
+			];
 			wp_editor( $content, 'advanced-ad-parameters-content', $args );
 		}
         ?>

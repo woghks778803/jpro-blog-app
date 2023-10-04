@@ -7,33 +7,44 @@ var advads_wizard = {
 	'#post-body-content, #ad-main-box', // show title and type together
 	'#ad-parameters-box',
 	// '#ad-output-box',
-	'#ad-display-box, #ad-visitor-box', // display and visitor conditions
+	'#ad-targeting-box', // display and visitor conditions
 	// '#advanced_ads_groupsdiv',
 	// '#submitdiv'
     ],
     current_box: '#post-body-content, #ad-main-box', // current active box
     one_column: false, // whether the edit screen is in one-column mode
     status: false, // what is the current status? true if running, else false
-    init: function( status ){ // status can be "start" to start wizard or nothing to not start it
-	var _this = this;
-	jQuery('#advads-wizard-controls-next').on('click', function( ){ _this.next(); } );
-	jQuery('#advads-wizard-controls-prev').on('click', function( ){ _this.prev(); } );
-	jQuery('#advads-wizard-controls-save').on('click', function( e ){ e.preventDefault(); jQuery('#publish').trigger('click'); } ); // save ad
-	jQuery('#advads-wizard-display-conditions-show').on('click', function( ){ _this.show_conditions( '#ad-display-box' ); } );
-	jQuery('#advads-wizard-visitor-conditions-show').on('click', function( ){ _this.show_conditions( '#ad-visitor-box' ); } );
-	jQuery( '.advads-show-in-wizard').hide();
-	jQuery( '#advads-start-wizard' ).on('click', function(){
-	    _this.start();
-	});
-	// end wizard when the button was clicked
-	jQuery( '.advads-stop-wizard' ).on('click', function(){
-	    _this.close();
-	});
-	// jump to next box when ad type is selected
-	jQuery('#advanced-ad-type input').on('change', function(){
-	    _this.next();
-	});
-    },
+	init: function ( status ) { // status can be "start" to start wizard or nothing to not start it
+		var _this = this;
+		jQuery( '#advads-wizard-controls-next' ).on( 'click', function () {
+			_this.next();
+		} );
+		jQuery( '#advads-wizard-controls-prev' ).on( 'click', function () {
+			_this.prev();
+		} );
+		jQuery( '#advads-wizard-controls-save' ).on( 'click', function ( e ) {
+			e.preventDefault();
+			jQuery( '#publish' ).trigger( 'click' );
+		} ); // save ad
+		jQuery( '#advads-wizard-display-conditions-show' ).on( 'click', function () {
+			_this.show_conditions( '#ad-targeting-box' );
+		} );
+		jQuery( '#advads-wizard-visitor-conditions-show' ).on( 'click', function () {
+			_this.show_conditions( '#ad-targeting-box' );
+		} );
+		jQuery( '.advads-show-in-wizard' ).hide();
+		jQuery( '#advads-start-wizard' ).on( 'click', function () {
+			_this.start();
+		} );
+		// end wizard when the button was clicked
+		jQuery( '.advads-stop-wizard' ).on( 'click', function () {
+			_this.close();
+		} );
+		// jump to next box when ad type is selected
+		jQuery( '#advanced-ad-type input' ).on( 'change', function () {
+			_this.next();
+		} );
+	},
     show_current_box: function(){
 	jQuery( this.current_box ).removeClass('advads-hide');
     },

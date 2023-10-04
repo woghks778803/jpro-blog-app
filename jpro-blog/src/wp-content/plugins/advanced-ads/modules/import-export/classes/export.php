@@ -11,13 +11,13 @@ class Advanced_Ads_Export {
     /**
      * Status messages
      */
-    private $messages = array();
+    private $messages = [];
 
 	private function __construct() {
 
 		$page_hook = 'admin_page_advanced-ads-import-export';
 		// execute before headers are sent
-		add_action( 'load-' . $page_hook, array( $this, 'download_export_file' ) );
+		add_action( 'load-' . $page_hook, [ $this, 'download_export_file' ] );
 	}
 
 	/**
@@ -60,14 +60,14 @@ class Advanced_Ads_Export {
 		@set_time_limit( 0 );
 		@ini_set( 'memory_limit', apply_filters( 'admin_memory_limit', WP_MAX_MEMORY_LIMIT ) );
 
-		$export = array();
-		$advads_ad_groups = get_option( 'advads-ad-groups', array() );
+		$export = [];
+		$advads_ad_groups = get_option( 'advads-ad-groups', [] );
 
 		if ( in_array( 'ads', $content ) ) {
-			$advads_ad_weights =  get_option( 'advads-ad-weights', array() );
+			$advads_ad_weights =  get_option( 'advads-ad-weights', [] );
 
-			$ads = array();
-			$export_fields = implode( ', ', array(
+			$ads = [];
+			$export_fields = implode( ', ', [
 				'ID',
 				'post_date',
 				'post_date_gmt',
@@ -79,7 +79,7 @@ class Advanced_Ads_Export {
 				'post_modified',
 				'post_modified_gmt',
 				'guid'
-			) );
+			] );
 
 			$posts = $wpdb->get_results( $wpdb->prepare( "SELECT $export_fields FROM {$wpdb->posts} where post_type = '%s' and post_status not in ('trash', 'auto-draft')", Advanced_Ads::POST_TYPE_SLUG ), ARRAY_A );
 
@@ -99,11 +99,11 @@ class Advanced_Ads_Export {
 				    $terms = wp_get_object_terms( $post['ID'], 'advanced_ads_groups' );
 
 					foreach ( (array) $terms as $term ) {
-						$group_info = array(
+						$group_info = [
 							'term_id' => $term->term_id,
 							'slug' => $term->slug,
 							'name' => $term->name,
-						);
+						];
 
 						if ( isset( $advads_ad_groups[ $term->term_id ] ) ) {
 							$group_info += $advads_ad_groups[ $term->term_id ];
@@ -146,11 +146,11 @@ class Advanced_Ads_Export {
 	    if ( in_array( 'groups', $content ) ) {
 			$terms = Advanced_Ads::get_instance()->get_model()->get_ad_groups();
 			foreach ( $terms as $term ) {
-				$group_info = array(
+				$group_info = [
 					'term_id' => $term->term_id,
 					'slug' => $term->slug,
 					'name' => $term->name,
-				);
+				];
 
 				if ( isset( $advads_ad_groups[ $term->term_id ] ) ) {
 					$group_info += $advads_ad_groups[ $term->term_id ];
@@ -177,15 +177,15 @@ class Advanced_Ads_Export {
 			 *
 			 * @param $options An array of options
 			 */
-			$export['options'] = array_filter( apply_filters( 'advanced-ads-export-options', array(
+			$export['options'] = array_filter( apply_filters( 'advanced-ads-export-options', [
 				ADVADS_SLUG                           => get_option( ADVADS_SLUG ),
 				GADSENSE_OPT_NAME                     => get_option( GADSENSE_OPT_NAME ),
 				Advanced_Ads_Privacy::OPTION_KEY      => get_option( Advanced_Ads_Privacy::OPTION_KEY ),
 				Advanced_Ads_Ads_Txt_Strategy::OPTION => get_option( Advanced_Ads_Ads_Txt_Strategy::OPTION ),
-			) ) );
+			] ) );
 		}
 
-		do_action_ref_array( 'advanced-ads-export', array( $content, &$export ) );
+		do_action_ref_array( 'advanced-ads-export', [ $content, &$export ] );
 
 		if ( $export ) {
 			if ( defined( 'IMPORT_DEBUG' ) && IMPORT_DEBUG ) {
@@ -193,10 +193,19 @@ class Advanced_Ads_Export {
 				error_log( print_r( $export, true) );
 			}
 
-			$filename = 'advanced-ads-' . date( 'Y-m-d' ) . '.xml';
+			// add the root domain and the current date to the filename.
+			$filename = sprintf(
+				'%s-advanced-ads-export-%s.xml',
+				sanitize_title( preg_replace(
+					'#^(?:[^:]+:)?//(?:www\.)?([^/]+)#',
+					'$1',
+					get_bloginfo( 'url' )
+				) ),
+				gmdate( 'Y-m-d' )
+			);
 
 			try {
-				$encoded = Advanced_Ads_XmlEncoder::get_instance()->encode( $export, array( 'encoding' => get_option( 'blog_charset' ) ) );
+				$encoded = Advanced_Ads_XmlEncoder::get_instance()->encode( $export, [ 'encoding' => get_option( 'blog_charset' ) ] );
 
 				header( 'Content-Description: File Transfer' );
 				header( 'Content-Disposition: attachment; filename=' . $filename );
@@ -212,7 +221,7 @@ class Advanced_Ads_Export {
 				exit();
 
 			} catch ( Exception $e ) {
-				$this->messages[] = array( 'error', $e->getMessage() );
+				$this->messages[] = [ 'error', $e->getMessage() ];
 			}
 		}
 	}

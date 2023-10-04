@@ -18,7 +18,9 @@ class PreUpdates {
 	 * @since 4.1.5
 	 */
 	public function __construct() {
-		if ( wp_doing_ajax() || wp_doing_cron() ) {
+		// We don't want an AJAX request check here since the plugin might be installed/activated for the first time via AJAX (e.g. EDD/BLC).
+		// If that's the case, the cache table needs to be created before the activation hook runs.
+		if ( wp_doing_cron() ) {
 			return;
 		}
 
@@ -41,7 +43,7 @@ class PreUpdates {
 	 * @return void
 	 */
 	public function createCacheTable() {
-		$db             = aioseo()->db->db;
+		$db             = aioseo()->core->db->db;
 		$charsetCollate = '';
 
 		if ( ! empty( $db->charset ) ) {
@@ -51,11 +53,11 @@ class PreUpdates {
 			$charsetCollate .= " COLLATE {$db->collate}";
 		}
 
-		$tableName = aioseo()->cache->getTableName();
-		if ( ! aioseo()->db->tableExists( $tableName ) ) {
+		$tableName = aioseo()->core->cache->getTableName();
+		if ( ! aioseo()->core->db->tableExists( $tableName ) ) {
 			$tableName = $db->prefix . $tableName;
 
-			aioseo()->db->execute(
+			aioseo()->core->db->execute(
 				"CREATE TABLE {$tableName} (
 					`id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
 					`key` varchar(80) NOT NULL,

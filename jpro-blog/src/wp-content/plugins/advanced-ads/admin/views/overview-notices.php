@@ -31,11 +31,11 @@ Advanced_Ads_Ad_Health_Notices::get_instance()->display_notices();
 																wp_kses(
 																	// translators: %s includes a number and markup like <span class="count">6</span>.
 																	esc_html__( 'Show %s hidden notices', 'advanced-ads' ),
-																	array(
-																		'span' => array(
+																	[
+																		'span' => [
 																			'class',
-																		),
-																	)
+																		],
+																	]
 																),
 																'<span class="count">' . absint( $ignored_count ) . '</span>'
 															);

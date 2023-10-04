@@ -2,6 +2,7 @@
 
 namespace WPForms\Integrations\Divi;
 
+use WPForms_Field_Select;
 use WPForms\Integrations\IntegrationInterface;
 
 /**
@@ -62,6 +63,9 @@ class Divi implements IntegrationInterface {
 
 			add_filter( 'wpforms_global_assets', '__return_true' );
 			add_filter( 'wpforms_frontend_missing_assets_error_js_disable', '__return_true', PHP_INT_MAX );
+
+			// Hide CAPTCHA badge in Divi Builder.
+			add_filter( 'wpforms_frontend_recaptcha_disable', '__return_true' );
 		}
 	}
 
@@ -91,15 +95,14 @@ class Divi implements IntegrationInterface {
 
 		$disable_css = absint( wpforms_setting( 'disable-css', 1 ) );
 
-		if ( $disable_css === 1 ) {
-			return 'full';
+		if ( $disable_css === 3 ) {
+			return '';
 		}
 
-		if ( $disable_css === 2 ) {
-			return 'base';
-		}
+		$styles_name  = wpforms_get_render_engine() . '-';
+		$styles_name .= $disable_css === 1 ? 'full' : 'base';
 
-		return '';
+		return $styles_name;
 	}
 
 	/**
@@ -115,7 +118,38 @@ class Divi implements IntegrationInterface {
 			return false;
 		}
 
-		return function_exists( 'et_is_builder_plugin_active' ) && et_is_builder_plugin_active();
+		return defined( 'ET_BUILDER_PLUGIN_ACTIVE' ) || defined( 'ET_BUILDER_THEME' );
+	}
+
+	/**
+	 * WPForms frontend styles special for Divi.
+	 *
+	 * @since 1.8.1
+	 */
+	protected function divi_frontend_styles() {
+
+		$min = wpforms_get_min_suffix();
+
+		$styles_name = $this->get_current_styles_name();
+
+		wp_enqueue_style(
+			'wpforms-choicesjs',
+			WPFORMS_PLUGIN_URL . "assets/css/integrations/divi/choices{$min}.css",
+			[],
+			WPForms_Field_Select::CHOICES_VERSION
+		);
+
+		if ( empty( $styles_name ) ) {
+			return;
+		}
+
+		// Load CSS per global setting.
+		wp_register_style(
+			"wpforms-{$styles_name}",
+			WPFORMS_PLUGIN_URL . "assets/css/integrations/divi/wpforms-{$styles_name}{$min}.css",
+			[],
+			WPFORMS_VERSION
+		);
 	}
 
 	/**
@@ -130,26 +164,7 @@ class Divi implements IntegrationInterface {
 			return;
 		}
 
-		$min = wpforms_get_min_suffix();
-
-		$styles_name = $this->get_current_styles_name();
-
-		if ( $styles_name ) {
-			// Load CSS per global setting.
-			wp_register_style(
-				"wpforms-{$styles_name}",
-				WPFORMS_PLUGIN_URL . "assets/css/integrations/divi/wpforms-{$styles_name}{$min}.css",
-				[],
-				WPFORMS_VERSION
-			);
-		}
-
-		wp_register_style(
-			'wpforms-choicesjs',
-			WPFORMS_PLUGIN_URL . "assets/css/integrations/divi/choices{$min}.css",
-			[],
-			\WPForms_Field_Select::CHOICES_VERSION
-		);
+		$this->divi_frontend_styles();
 	}
 
 	/**
@@ -168,17 +183,7 @@ class Divi implements IntegrationInterface {
 			WPFORMS_VERSION
 		);
 
-		$styles_name = $this->get_current_styles_name();
-
-		if ( $styles_name ) {
-			// Load CSS per global setting.
-			wp_register_style(
-				"wpforms-{$styles_name}",
-				WPFORMS_PLUGIN_URL . "assets/css/integrations/divi/wpforms-{$styles_name}{$min}.css",
-				[],
-				WPFORMS_VERSION
-			);
-		}
+		$this->divi_frontend_styles();
 	}
 
 	/**
@@ -188,10 +193,11 @@ class Divi implements IntegrationInterface {
 	 */
 	public function builder_scripts() {
 
+		$min = wpforms_get_min_suffix();
+
 		wp_enqueue_script(
 			'wpforms-divi',
-			// The unminified version is not supported by the browser.
-			WPFORMS_PLUGIN_URL . 'assets/js/integrations/divi/formselector.min.js',
+			WPFORMS_PLUGIN_URL . "assets/js/integrations/divi/formselector.es5{$min}.js",
 			[ 'react', 'react-dom' ],
 			WPFORMS_VERSION,
 			true

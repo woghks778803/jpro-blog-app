@@ -505,11 +505,10 @@ if ( ! class_exists( 'Mega_Menu_Style_Manager' ) ) :
 
 				$css = apply_filters( 'megamenu_compiled_css', $css );
 
-				$this->set_cached_css( $css );
+				$css .= ".wp-block {}"; // hack required for loading CSS in site editor https://github.com/WordPress/gutenberg/issues/40603#issuecomment-1112807162
 
-				if ( $this->get_css_output_method() == 'fs' ) {
-					$this->save_to_filesystem( $css );
-				}
+				$this->set_cached_css( $css );
+				$this->save_to_filesystem( $css );
 			}
 
 			return $css;
@@ -722,6 +721,11 @@ if ( ! class_exists( 'Mega_Menu_Style_Manager' ) ) :
 			$vars['elementor_pro_active'] = 'false';
 			$vars['arrow_font']           = 'dashicons';
 			$vars['arrow_font_weight']    = 'normal';
+			$vars['arrow_combinator']     = "'>'";
+
+			if ( defined('MEGAMENU_EXPERIMENTAL_TABBABLE_ARROW') && MEGAMENU_EXPERIMENTAL_TABBABLE_ARROW ) {
+				$vars['arrow_combinator'] = "'+'";
+			}
 
 			$current_theme = wp_get_theme();
 			$theme_id      = $current_theme->template;
@@ -783,6 +787,20 @@ if ( ! class_exists( 'Mega_Menu_Style_Manager' ) ) :
 				if ( in_array( $name, array( 'menu_item_link_font', 'panel_font_family', 'panel_header_font', 'panel_second_level_font', 'panel_third_level_font', 'panel_third_level_font', 'flyout_link_family', 'tabbed_link_family' ) ) ) {
 
 					$vars[ $name ] = "'" . stripslashes( htmlspecialchars_decode( $value ) ) . "'";
+
+					// find font names that end with/contain a number, e.g. Baloo 2, and add extra quotes so that they still retain quotes when CSS is compiled.
+					$font_name_with_single_quotes = $vars[ $name ];
+					$font_name_with_no_quotes = str_replace( "'", "", $font_name_with_single_quotes );
+					$font_name_parts = explode( " ", $font_name_with_no_quotes );
+
+					if ( is_array( $font_name_parts) ) {
+						foreach ( $font_name_parts as $part ) {
+							if ( is_numeric ($part) ) {
+								$vars[ $name ] = "\"{$font_name_with_single_quotes}\"";
+								continue;
+							}
+						}
+					}
 
 					continue;
 				}
@@ -905,9 +923,6 @@ if ( ! class_exists( 'Mega_Menu_Style_Manager' ) ) :
 		 * @since 1.0
 		 */
 		public function enqueue_scripts() {
-
-			wp_enqueue_script( 'hoverIntent' );
-
 			$js_path = MEGAMENU_BASE_URL . 'js/maxmegamenu.js';
 
 			$dependencies = apply_filters( 'megamenu_javascript_dependencies', array( 'jquery', 'hoverIntent' ) );

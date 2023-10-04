@@ -34,7 +34,6 @@
 			endif;
 			?>
 		</select>
-		<button type="button" class="button"><?php esc_attr_e( 'add', 'advanced-ads' ); ?></button>
 		<span class="advads-loader" style="display: none;"></span>
 	</div>
 </fieldset>

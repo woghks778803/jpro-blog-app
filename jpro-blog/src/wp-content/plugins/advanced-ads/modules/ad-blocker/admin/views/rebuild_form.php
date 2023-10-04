@@ -9,10 +9,8 @@
  */
 ?>
 
-<h3 class="title"><?php esc_html_e( 'Ad blocker file folder', 'advanced-ads' ); ?></h3>
-
 <?php if ( ! empty( $message ) && isset( $success ) ) : ?>
-	<div class="<?php echo $success ? '' : 'error'; ?> advads-notice notice is-dismissible">
+	<div class="<?php echo $success ? 'advads-check' : 'advads-error'; ?> advads-notice-inline is-dismissible">
 		<p><?php echo esc_html( $message ); ?></p>
 	</div>
 <?php endif; ?>

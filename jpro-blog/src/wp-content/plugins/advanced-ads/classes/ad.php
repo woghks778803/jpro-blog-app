@@ -53,6 +53,13 @@ class Advanced_Ads_Ad {
 	public $type = 'content';
 
 	/**
+	 * Notes about the ad usage
+	 *
+	 * @var string $description
+	 */
+	public $description = '';
+
+	/**
 	 * Ad width
 	 *
 	 * @var int $width width of the ad.
@@ -76,7 +83,7 @@ class Advanced_Ads_Ad {
 	/**
 	 * Object of current ad type
 	 *
-	 * @var object $type_obj object of the current ad type.
+	 * @var Advanced_Ads_Ad_Type_Abstract $type_obj object of the current ad type.
 	 */
 	protected $type_obj;
 
@@ -94,7 +101,7 @@ class Advanced_Ads_Ad {
 	 *
 	 * @var array $conditions display and visitor conditions.
 	 */
-	public $conditions = array();
+	public $conditions = [];
 
 	/**
 	 * Status of the ad (e.g. publish, pending)
@@ -122,7 +129,7 @@ class Advanced_Ads_Ad {
 	 *
 	 * @var array $args
 	 */
-	public $args = array();
+	public $args = [];
 
 	/**
 	 * Multidimensional array contains information about the wrapper
@@ -130,7 +137,7 @@ class Advanced_Ads_Ad {
 	 *
 	 * @var array $wrapper options of the ad wrapper.
 	 */
-	public $wrapper = array();
+	public $wrapper = [];
 
 	/**
 	 * Will the ad be tracked?
@@ -174,89 +181,59 @@ class Advanced_Ads_Ad {
 	private $ad_expiration;
 
 	/**
-	 * Init ad object
+	 * The saved output options.
 	 *
-	 * @param int   $id id of the ad.
-	 * @param array $args additional arguments.
+	 * @var array
 	 */
-	public function __construct( $id, $args = array() ) {
-		$this->id   = (int) $id;
-		$this->args = is_array( $args ) ? $args : array();
-
-		// whether the ad will be tracked.
-		$this->global_output = isset( $this->args['global_output'] ) ? (bool) $this->args['global_output'] : true;
-
-		// Run constructor to check early if ajax cache busting already created inline css.
-		$this->inline_css = new Advanced_Ads_Inline_Css();
-
-		if ( ! empty( $this->id ) ) {
-			$this->load( $this->id );
-		}
-
-		// dynamically add sanitize filters for condition types.
-		$_types = array();
-		// -TODO use model
-		$advanced_ads_ad_conditions = Advanced_Ads::get_ad_conditions();
-		foreach ( $advanced_ads_ad_conditions as $_condition ) {
-			// add unique.
-			$_types[ $_condition['type'] ] = false;
-		}
-		// iterate types.
-		foreach ( array_keys( $_types ) as $_type ) {
-			// -TODO might be faster to use __call() method or isset()-test class method array
-			$method_name = 'sanitize_condition_' . $_type;
-			if ( method_exists( $this, $method_name ) ) {
-				add_filter( 'advanced-ads-sanitize-condition-' . $_type, array( $this, $method_name ), 10, 1 );
-			} elseif ( function_exists( 'advads_sanitize_condition_' . $_type ) ) {
-				// check for public function to sanitize this.
-				add_filter( 'advanced-ads-sanitize-condition-' . $_type, 'advads_sanitize_condition_' . $_type, 10, 1 );
-			}
-		}
-	}
+	public $output;
 
 	/**
-	 * Load an ad object by id based on its ad type
+	 * Whether the current ad is in a head placement.
 	 *
-	 * @param int $id ad id.
-	 *
-	 * @return bool false if ad could not be loaded.
+	 * @var bool
 	 */
-	private function load( $id = 0 ) {
+	public $is_head_placement;
 
-		$_data = get_post( $id );
-		if ( null === $_data ) {
-			return false;
+	/**
+	 * Advanced_Ads_Ad constructor.
+	 *
+	 * @param int      $id   Ad ID.
+	 * @param iterable $args Additional arguments.
+	 */
+	public function __construct( int $id, iterable $args = [] ) {
+		if ( empty( $id ) ) {
+			return;
 		}
 
-		// return, if not an ad.
-		if ( Advanced_Ads::POST_TYPE_SLUG !== $_data->post_type ) {
-			return false;
-		} else {
-			$this->is_ad = true;
+		$this->id   = $id;
+		$this->args = is_array( $args ) ? $args : [];
+
+		$post_data = get_post( $id );
+		if ( $post_data === null || $post_data->post_type !== Advanced_Ads::POST_TYPE_SLUG ) {
+			return;
 		}
 
-		$this->type  = $this->options( 'type' );
-		$this->title = $_data->post_title;
-		/* load ad type object */
-		$types = Advanced_Ads::get_instance()->ad_types;
-		if ( isset( $types[ $this->type ] ) ) {
-			$this->type_obj = $types[ $this->type ];
-		} else {
-			$this->type_obj = new Advanced_Ads_Ad_Type_Abstract();
-		}
+		$this->is_ad    = true;
+		$this->type     = $this->options( 'type' );
+		$this->title    = $post_data->post_title;
+		$this->type_obj = Advanced_Ads::get_instance()->ad_types[ $this->type ] ?? new Advanced_Ads_Ad_Type_Abstract();
+
+		// filter the positioning options.
+		new Advanced_Ads_Ad_Positioning( $this );
+
 		$this->url                  = $this->get_url();
 		$this->width                = absint( $this->options( 'width' ) );
 		$this->height               = absint( $this->options( 'height' ) );
 		$this->conditions           = $this->options( 'conditions' );
 		$this->description          = $this->options( 'description' );
 		$this->output               = $this->options( 'output' );
-		$this->status               = $_data->post_status;
+		$this->status               = $post_data->post_status;
 		$this->expiry_date          = (int) $this->options( 'expiry_date' );
 		$this->is_head_placement    = isset( $this->args['placement_type'] ) && 'header' === $this->args['placement_type'];
 		$this->args['is_top_level'] = ! isset( $this->args['is_top_level'] );
 
 		// load content based on ad type.
-		$this->content = $this->type_obj->load_content( $_data );
+		$this->content = $this->type_obj->load_content( $post_data );
 
 		if ( ! $this->is_head_placement ) {
 			$this->maybe_create_label();
@@ -266,7 +243,7 @@ class Advanced_Ads_Ad {
 			$this->wrapper = apply_filters( 'advanced-ads-set-wrapper', $this->wrapper, $this );
 			// add unique wrapper id.
 			if ( is_array( $this->wrapper )
-				 && array() !== $this->wrapper
+				 && [] !== $this->wrapper
 				 && ! isset( $this->wrapper['id'] ) ) {
 				// create unique id if not yet given.
 				$this->wrapper['id'] = $this->create_wrapper_id();
@@ -274,6 +251,24 @@ class Advanced_Ads_Ad {
 		}
 
 		$this->ad_expiration = new Advanced_Ads_Ad_Expiration( $this );
+
+		// dynamically add sanitize filters for condition types.
+		$condition_types = array_unique( array_column( Advanced_Ads::get_instance()->get_model()->get_ad_conditions(), 'type' ) );
+		foreach ( $condition_types as $condition_type ) {
+			$method_name = 'sanitize_condition_' . $condition_type;
+			if ( method_exists( $this, $method_name ) ) {
+				add_filter( 'advanced-ads-sanitize-condition-' . $condition_type, [ $this, $method_name ], 10, 1 );
+			} elseif ( function_exists( 'advads_sanitize_condition_' . $condition_type ) ) {
+				// check for public function to sanitize this.
+				add_filter( 'advanced-ads-sanitize-condition-' . $condition_type, 'advads_sanitize_condition_' . $condition_type, 10, 1 );
+			}
+		}
+
+		// whether the ad will be tracked.
+		$this->global_output = ! isset( $this->args['global_output'] ) || (bool) $this->args['global_output'];
+
+		// Run constructor to check early if ajax cache busting already created inline css.
+		$this->inline_css = new Advanced_Ads_Inline_Css();
 	}
 
 	/**
@@ -291,7 +286,7 @@ class Advanced_Ads_Ad {
 			$meta = get_post_meta( $this->id, self::$options_meta_field, true );
 			if ( $meta && is_array( $meta ) ) {
 				// merge meta with arguments given on ad load.
-				$this->options = Advanced_Ads_Utils::merge_deep_array( array( $meta, $this->args ) );
+				$this->options = Advanced_Ads_Utils::merge_deep_array( [ $meta, $this->args ] );
 			} else {
 				// load arguments given on ad load.
 				$this->options = $this->args;
@@ -300,10 +295,10 @@ class Advanced_Ads_Ad {
 			if ( isset( $this->options['change-ad'] ) ) {
 				// some options was provided by the user.
 				$this->options = Advanced_Ads_Utils::merge_deep_array(
-					array(
+					[
 						$this->options,
 						$this->options['change-ad'],
-					)
+					]
 				);
 			}
 		}
@@ -370,7 +365,7 @@ class Advanced_Ads_Ad {
 	 * @return string $output ad output
 	 * @since 1.0.0
 	 */
-	public function output( $output_options = array() ) {
+	public function output( $output_options = [] ) {
 		if ( ! $this->is_ad ) {
 			return '';
 		}
@@ -393,12 +388,12 @@ class Advanced_Ads_Ad {
 		// add the ad to the global output array.
 		$advads = Advanced_Ads::get_instance();
 		if ( $output_options['global_output'] ) {
-			$new_ad = array(
+			$new_ad = [
 				'type'   => 'ad',
 				'id'     => $this->id,
 				'title'  => $this->title,
 				'output' => $output,
-			);
+			];
 			// if ( method_exists( 'Advanced_Ads_Tracking_Plugin' , 'check_ad_tracking_enabled' ) ) {
 			// if ( class_exists( 'Advanced_Ads_Tracking_Plugin', false ) ) {
 			if ( defined( 'AAT_VERSION' ) && - 1 < version_compare( AAT_VERSION, '1.4.2' ) ) {
@@ -428,13 +423,13 @@ class Advanced_Ads_Ad {
 	 * @return bool $can_display true if can be displayed in frontend
 	 * @since 1.0.0
 	 */
-	public function can_display( $check_options = array() ) {
+	public function can_display( $check_options = [] ) {
 		$check_options = wp_parse_args(
 			$check_options,
-			array(
+			[
 				'passive_cache_busting' => false,
 				'ignore_debugmode'      => false,
-			)
+			]
 		);
 
 		// prevent ad to show up through wp_head, if this is not a header placement.
@@ -485,54 +480,33 @@ class Advanced_Ads_Ad {
 			return true;
 		}
 
-		// check old "visitor" and new "visitors" conditions.
-		if ( ( empty( $this->options['visitors'] ) ||
-			   ! is_array( $this->options['visitors'] ) )
-			 && ( empty( $this->options['visitor'] ) ||
-				  ! is_array( $this->options['visitor'] )
-			 ) ) {
+		$visitor_conditions = $this->options( 'visitors', [] );
+		if ( empty( $visitor_conditions ) ) {
 			return true;
 		}
 
-		if ( isset( $this->options['visitors'] ) && is_array( $this->options['visitors'] ) ) {
+		$last_result = false;
+		$length      = count( $visitor_conditions );
 
-			$visitor_conditions = $this->options['visitors'];
-
-			$last_result = false;
-			$length      = count( $visitor_conditions );
-
-			for ( $i = 0; $i < $length; ++ $i ) {
-				$_condition = current( $visitor_conditions );
-				// ignore OR if last result was true.
-				if ( $last_result && isset( $_condition['connector'] ) && 'or' === $_condition['connector'] ) {
-					next( $visitor_conditions );
-					continue;
+		for ( $i = 0; $i < $length; ++ $i ) {
+			$_condition = current( $visitor_conditions );
+			// ignore OR if last result was true.
+			if ( $last_result && isset( $_condition['connector'] ) && 'or' === $_condition['connector'] ) {
+				next( $visitor_conditions );
+				continue;
+			}
+			$result      = Advanced_Ads_Visitor_Conditions::frontend_check( $_condition, $this );
+			$last_result = $result;
+			if ( ! $result ) {
+				// return false only, if the next condition doesn’t have an OR operator.
+				$next = next( $visitor_conditions );
+				if ( ! isset( $next['connector'] ) || 'or' !== $next['connector'] ) {
+					return false;
 				}
-				$result      = Advanced_Ads_Visitor_Conditions::frontend_check( $_condition, $this );
-				$last_result = $result;
-				if ( ! $result ) {
-					// return false only, if the next condition doesn’t have an OR operator.
-					$next = next( $visitor_conditions );
-					if ( ! isset( $next['connector'] ) || 'or' !== $next['connector'] ) {
-						return false;
-					}
-				} else {
-					next( $visitor_conditions );
-				}
+			} else {
+				next( $visitor_conditions );
 			}
 		}
-
-		/**
-		 * "old" visitor conditions
-		 *
-		 * @deprecated since version 1.5.4
-		 */
-
-		if ( empty( $this->options['visitor'] ) ||
-			 ! is_array( $this->options['visitor'] ) ) {
-			return true;
-		}
-		$visitor_conditions = $this->options( 'visitor' );
 
 		// check mobile condition.
 		if ( isset( $visitor_conditions['mobile'] ) ) {
@@ -574,8 +548,8 @@ class Advanced_Ads_Ad {
 		// remove slashes from content.
 		$this->content = $this->prepare_content_to_save();
 
-		$where = array( 'ID' => $this->id );
-		$wpdb->update( $wpdb->posts, array( 'post_content' => $this->content ), $where );
+		$where = [ 'ID' => $this->id ];
+		$wpdb->update( $wpdb->posts, [ 'post_content' => $this->content ], $where );
 
 		// clean post from object cache.
 		clean_post_cache( $this->id );
@@ -596,6 +570,9 @@ class Advanced_Ads_Ad {
 		$options['conditions']  = $conditions;
 		$options['expiry_date'] = $this->expiry_date;
 		$options['description'] = $this->description;
+
+		// save the plugin version, with every ad save.
+		$options['last_save_version'] = ADVADS_VERSION;
 
 		// sanitize container ID option.
 		$options['output']['wrapper-id'] = isset( $options['output']['wrapper-id'] ) ? sanitize_key( $options['output']['wrapper-id'] ) : '';
@@ -619,7 +596,7 @@ class Advanced_Ads_Ad {
 	public static function save_ad_options( $ad_id, array $options ) {
 
 		// don’t allow to clear options by accident.
-		if ( array() === $options ) {
+		if ( [] === $options ) {
 			return;
 		}
 
@@ -687,7 +664,7 @@ class Advanced_Ads_Ad {
 
 		// don’t deliver anything, if main ad content is empty.
 		if ( empty( $output ) ) {
-			return;
+			return '';
 		}
 
 		if ( ! $this->is_head_placement ) {
@@ -698,8 +675,10 @@ class Advanced_Ads_Ad {
 			$output = $this->add_wrapper( $output );
 
 			// add a clearfix, if set.
-			if ( ( isset( $this->output['clearfix'] ) && $this->output['clearfix'] )
-				 || ( ! empty( $this->args['is_top_level'] ) && ! empty( $this->args['placement_clearfix'] ) ) ) {
+			if (
+				( ! empty( $this->args['is_top_level'] ) && ! empty( $this->args['placement_clearfix'] ) )
+				|| $this->options( 'output.clearfix' )
+			) {
 				$output .= '<br style="clear: both; display: block; float: none;"/>';
 			}
 		}
@@ -718,28 +697,28 @@ class Advanced_Ads_Ad {
 	 * @return array with sanitized conditions
 	 * @since 1.0.0
 	 */
-	public function sanitize_conditions_on_save( $conditions = array() ) {
+	public function sanitize_conditions_on_save( $conditions = [] ) {
 
 		global $advanced_ads_ad_conditions;
 
-		if ( ! is_array( $conditions ) || array() === $conditions ) {
-			return array();
+		if ( ! is_array( $conditions ) || [] === $conditions ) {
+			return [];
 		}
 
 		foreach ( $conditions as $_key => $_condition ) {
 			if ( 'postids' === $_key ) {
 				// sanitize single post conditions
 				if ( empty( $_condition['ids'] ) ) { // remove, if empty.
-					$_condition['include'] = array();
-					$_condition['exclude'] = array();
+					$_condition['include'] = [];
+					$_condition['exclude'] = [];
 				} elseif ( isset( $_condition['method'] ) ) {
 					switch ( $_condition['method'] ) {
 						case 'include':
 							$_condition['include'] = $_condition['ids'];
-							$_condition['exclude'] = array();
+							$_condition['exclude'] = [];
 							break;
 						case 'exclude':
-							$_condition['include'] = array();
+							$_condition['include'] = [];
 							$_condition['exclude'] = $_condition['ids'];
 							break;
 					}
@@ -825,9 +804,9 @@ class Advanced_Ads_Ad {
 	 * @since 1.3
 	 */
 	protected function load_wrapper_options() {
-		$wrapper = array();
+		$wrapper = [];
 
-		$position          = ! empty( $this->output['position'] ) ? $this->output['position'] : '';
+		$position          = $this->options( 'output.position', '' );
 		$use_placement_pos = false;
 
 		if ( $this->args['is_top_level'] ) {
@@ -843,18 +822,23 @@ class Advanced_Ads_Ad {
 
 		switch ( $position ) {
 			case 'left':
+			case 'left_float':
+			case 'left_nofloat':
 				$wrapper['style']['float'] = 'left';
 				break;
 			case 'right':
+			case 'right_float':
+			case 'right_nofloat':
 				$wrapper['style']['float'] = 'right';
 				break;
 			case 'center':
+			case 'center_nofloat':
+			case 'center_float':
 				$wrapper['style']['margin-left']  = 'auto';
 				$wrapper['style']['margin-right'] = 'auto';
 
-				$width = (int) $this->width;
 				if (
-					( ! $width || empty( $this->output['add_wrapper_sizes'] ) )
+					( ! $this->width || empty( $this->output['add_wrapper_sizes'] ) )
 					|| $use_placement_pos
 				) {
 					$wrapper['style']['text-align'] = 'center';
@@ -890,14 +874,11 @@ class Advanced_Ads_Ad {
 		}
 
 		if ( ! empty( $this->output['add_wrapper_sizes'] ) ) {
-			$width = (int) $this->width;
-			$height = (int) $this->height;
-
-			if ( $width ) {
-				$wrapper['style']['width']  = $width . 'px';
+			if ( ! empty( $this->width ) ) {
+				$wrapper['style']['width'] = $this->width . 'px';
 			}
-			if ( $height ) {
-				$wrapper['style']['height'] = $height . 'px';
+			if ( ! empty( $this->height ) ) {
+				$wrapper['style']['height'] = $this->height . 'px';
 			}
 		}
 
@@ -921,7 +902,7 @@ class Advanced_Ads_Ad {
 
 		if ( $this->label && ! empty( $wrapper_options['style']['height'] ) ) {
 			// Create another wrapper so that the label does not reduce the height of the ad wrapper.
-			$height = array( 'style' => array( 'height' => $wrapper_options['style']['height'] ) );
+			$height = [ 'style' => [ 'height' => $wrapper_options['style']['height'] ] ];
 			unset( $wrapper_options['style']['height'] );
 			$ad_content = '<div' . Advanced_Ads_Utils::build_html_attributes( $height ) . '>' . $ad_content . '</div>';
 		}
@@ -944,7 +925,7 @@ class Advanced_Ads_Ad {
 		}
 
 		if ( ( ! isset( $this->output['wrapper-id'] ) || '' === $this->output['wrapper-id'] )
-			 && array() === $wrapper_options || ! is_array( $wrapper_options ) ) {
+			 && [] === $wrapper_options || ! is_array( $wrapper_options ) ) {
 			return $this->label . $ad_content;
 		}
 
@@ -959,7 +940,7 @@ class Advanced_Ads_Ad {
 		// build the box
 		$wrapper = '<' . $wrapper_element . Advanced_Ads_Utils::build_html_attributes( array_merge(
 			$wrapper_options,
-			isset( $this->output['wrapper_attrs'] ) ? $this->output['wrapper_attrs'] : array()
+			isset( $this->output['wrapper_attrs'] ) ? $this->output['wrapper_attrs'] : []
 		) ) . '>';
 		$wrapper .= $this->label;
 		$wrapper .= apply_filters( 'advanced-ads-output-wrapper-before-content', '', $this );
@@ -1018,12 +999,12 @@ class Advanced_Ads_Ad {
 			if ( 'post.php' !== $pagenow && 'post-new.php' !== $pagenow ) {
 				// Remove placeholders.
 				$this->url = str_replace(
-					array(
+					[
 						'[POST_ID]',
 						'[POST_SLUG]',
 						'[CAT_SLUG]',
 						'[AD_ID]',
-					),
+					],
 					'',
 					$this->url
 				);

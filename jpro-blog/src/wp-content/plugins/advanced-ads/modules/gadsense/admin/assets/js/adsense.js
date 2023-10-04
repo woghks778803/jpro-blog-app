@@ -427,48 +427,48 @@ class AdvancedAdsNetworkAdsense extends AdvancedAdsAdNetwork {
 	 * Legacy method
 	 */
 	updateAdsenseType() {
-		const type = jQuery( '#unit-type' ).val();
-		jQuery( '.advads-adsense-layout' ).hide();
-		jQuery( '.advads-adsense-layout' ).next( 'div' ).hide();
-		jQuery( '.advads-adsense-layout-key' ).hide();
-		jQuery( '.advads-adsense-layout-key' ).next( 'div' ).hide();
+		const $         = jQuery;
+		const type      = $( '#unit-type' ).val();
+		const layout    = $( '.advads-adsense-layout' );
+		const layoutKey = $( '.advads-adsense-layout-key' );
+		const size      = $( '#advanced-ads-ad-parameters-size' );
+		const width     = $( '[name="advanced_ad\[width\]"]' );
+		const height    = $( '[name="advanced_ad\[height\]"]' );
+
+		layout.hide().next( 'div' ).hide();
+		layoutKey.hide().next( 'div' ).hide();
+
 		jQuery( '.advads-ad-notice-in-feed-add-on' ).hide();
 		if ( type === 'responsive' || type === 'link-responsive' || type === 'matched-content' ) {
-			jQuery( '#advanced-ads-ad-parameters-size' ).hide();
-			jQuery( '#advanced-ads-ad-parameters-size' ).prev( '.label' ).hide();
-			jQuery( '#advanced-ads-ad-parameters-size' ).next( '.hr' ).hide();
-			jQuery( '.clearfix-before' ).show();
+			size.hide().prev( '.label' ).hide();
+			size.next( '.hr' ).hide();
+			$( '.clearfix-before' ).show();
 		} else if ( type === 'in-feed' ) {
-			jQuery( '.advads-adsense-layout' ).hide();
-			jQuery( '.advads-adsense-layout' ).next( 'div' ).hide();
-			jQuery( '.advads-adsense-layout-key' ).show();
-			jQuery( '.advads-adsense-layout-key' ).next( 'div' ).show();
-			jQuery( '.advads-adsense-layout-key' ).next( 'div' ).show();
-			jQuery( '#advanced-ads-ad-parameters-size' ).hide();
-			jQuery( '#advanced-ads-ad-parameters-size' ).prev( '.label' ).hide();
-			jQuery( '#advanced-ads-ad-parameters-size' ).next( '.hr' ).hide();
-			// show add-on notice
-			jQuery( '.advads-ad-notice-in-feed-add-on' ).show();
-			jQuery( '.clearfix-before' ).show();
-		} else if ( type === 'in-article' ) {
-			jQuery( '#advanced-ads-ad-parameters-size' ).hide();
-			jQuery( '#advanced-ads-ad-parameters-size' ).prev( '.label' ).hide();
-			jQuery( '#advanced-ads-ad-parameters-size' ).next( '.hr' ).hide();
-			jQuery( '.clearfix-before' ).show();
-		} else if ( type === 'normal' || type === 'link' ) {
-			jQuery( '#advanced-ads-ad-parameters-size' ).show()
-			jQuery( '#advanced-ads-ad-parameters-size' ).prev( '.label' ).show();
-			jQuery( '#advanced-ads-ad-parameters-size' ).next( '.hr' ).show();
-			jQuery( '.clearfix-before' ).hide();
+			layout.hide().next( 'div' ).hide();
+			layoutKey.show().next( 'div' ).show();
+			size.hide().prev( '.label' ).hide();
+			size.next( '.hr' ).hide();
 
-			if ( ! jQuery( '[name="advanced_ad\[width\]"]' ).val() ) {
-				jQuery( '[name="advanced_ad\[width\]"]' ).val( '300' );
+			// show add-on notice
+			$( '.advads-ad-notice-in-feed-add-on' ).show();
+			$( '.clearfix-before' ).show();
+		} else if ( type === 'in-article' ) {
+			size.hide().prev( '.label' ).hide();
+			size.next( '.hr' ).hide();
+			$( '.clearfix-before' ).show();
+		} else if ( type === 'normal' || type === 'link' ) {
+			size.show().prev( '.label' ).show();
+			size.next( '.hr' ).show();
+			$( '.clearfix-before' ).hide();
+
+			if ( ! width.val() ) {
+				width.val( '300' );
 			}
-			if ( ! jQuery( '[name="advanced_ad\[height\]"]' ).val() ) {
-				jQuery( '[name="advanced_ad\[height\]"]' ).val( '250' );
+			if ( ! height.val() ) {
+				height.val( '250' );
 			}
 		}
-		jQuery( document ).trigger( 'gadsenseUnitChanged' );
+		$( document ).trigger( 'gadsenseUnitChanged' );
 		AdvancedAdsNetworkAdsense.gadsenseFormatAdContent();
 
 		this.show_float_warnings( type );
@@ -481,13 +481,13 @@ class AdvancedAdsNetworkAdsense extends AdvancedAdsAdNetwork {
 	 */
 	show_float_warnings( unit_type ) {
 		const resize_type = jQuery( '#ad-resize-type' ).val();
-		const position    = jQuery( '#advanced-ad-output-position input[name="advanced_ad[output][position]"]:checked' ).val();
+		const position    = jQuery( 'input[name="advanced_ad[output][position]"]:checked' ).val();
 
 		if (
 			( ['link-responsive', 'matched-content', 'in-article', 'in-feed'].indexOf( unit_type ) !== - 1
 				|| ( unit_type === 'responsive' && resize_type !== 'manual' )
 			)
-			&& ( position === 'left' || position === 'right' )
+			&& ( position.startsWith( 'left' ) || position.startsWith( 'right' ) )
 		) {
 			jQuery( '#ad-parameters-box-notices .advads-ad-notice-responsive-position' ).show();
 		} else {

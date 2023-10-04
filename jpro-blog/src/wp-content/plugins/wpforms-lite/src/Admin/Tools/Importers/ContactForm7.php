@@ -129,8 +129,10 @@ class ContactForm7 extends Base {
 					1 => [
 						'notification_name' => esc_html__( 'Notification 1', 'wpforms-lite' ),
 						'email'             => '{admin_email}',
-						/* translators: %s - form name. */
-						'subject'           => sprintf( esc_html__( 'New Entry: %s', 'wpforms-lite' ), $cf7_form_name ),
+						'subject'           => sprintf( /* translators: %s - form name. */
+							esc_html__( 'New Entry: %s', 'wpforms-lite' ),
+							$cf7_form_name
+						),
 						'sender_name'       => get_bloginfo( 'name' ),
 						'sender_address'    => '{admin_email}',
 						'replyto'           => '',
@@ -179,10 +181,10 @@ class ContactForm7 extends Base {
 			// Now check if this install is Lite. If it is Lite and it's a
 			// field type not included, make a note then continue to the next
 			// field.
-			if ( ! wpforms()->pro && in_array( $cf7_field->basetype, $fields_pro_plain, true ) ) {
+			if ( ! wpforms()->is_pro() && in_array( $cf7_field->basetype, $fields_pro_plain, true ) ) {
 				$upgrade_plain[] = $label;
 			}
-			if ( ! wpforms()->pro && in_array( $cf7_field->basetype, $fields_pro_omit, true ) ) {
+			if ( ! wpforms()->is_pro() && in_array( $cf7_field->basetype, $fields_pro_omit, true ) ) {
 				$upgrade_omit[] = $label;
 
 				continue;
@@ -204,7 +206,7 @@ class ContactForm7 extends Base {
 				case 'textarea':
 					$type = $cf7_field->basetype;
 
-					if ( $type === 'url' && ! wpforms()->pro ) {
+					if ( $type === 'url' && ! wpforms()->is_pro() ) {
 						$type = 'text';
 					}
 
@@ -218,7 +220,6 @@ class ContactForm7 extends Base {
 						'default_value' => $this->get_field_placeholder_default( $cf7_field, 'default' ),
 						'cf7_name'      => $cf7_field->name,
 					];
-
 					break;
 
 				// Phone number field.
@@ -234,12 +235,11 @@ class ContactForm7 extends Base {
 						'default_value' => $this->get_field_placeholder_default( $cf7_field, 'default' ),
 						'cf7_name'      => $cf7_field->name,
 					];
-
 					break;
 
 				// Date field.
 				case 'date':
-					$type = wpforms()->pro ? 'date-time' : 'text';
+					$type = wpforms()->is_pro() ? 'date-time' : 'text';
 
 					$form['fields'][ $field_id ] = [
 						'id'               => $field_id,
@@ -255,7 +255,6 @@ class ContactForm7 extends Base {
 						'time_interval'    => 30,
 						'cf7_name'         => $cf7_field->name,
 					];
-
 					break;
 
 				// Select, radio, and checkbox fields.
@@ -326,7 +325,6 @@ class ContactForm7 extends Base {
 						'required'   => $cf7_field->is_required() ? '1' : '',
 						'cf7_name'   => $cf7_field->name,
 					];
-
 					break;
 
 				// Acceptance field.
@@ -346,7 +344,6 @@ class ContactForm7 extends Base {
 						'label_hide' => '1',
 						'cf7_name'   => $cf7_field->name,
 					];
-
 					break;
 
 				// ReCAPTCHA field.
@@ -444,8 +441,10 @@ class ContactForm7 extends Base {
 			$form['settings']['notifications'][2] = [
 				'notification_name' => esc_html__( 'Notification 2', 'wpforms-lite' ),
 				'email'             => '{admin_email}',
-				/* translators: %s - form name. */
-				'subject'           => sprintf( esc_html__( 'New Entry: %s', 'wpforms-lite' ), $cf7_form_name ),
+				'subject'           => sprintf( /* translators: %s - form name. */
+					esc_html__( 'New Entry: %s', 'wpforms-lite' ),
+					$cf7_form_name
+				),
 				'sender_name'       => get_bloginfo( 'name' ),
 				'sender_address'    => '{admin_email}',
 				'replyto'           => '',
@@ -533,7 +532,7 @@ class ContactForm7 extends Base {
 			}
 		}
 
-		$label = sprintf( /* translators: %1$s - field type; %2$s - field name if available. */
+		$label = sprintf( /* translators: %1$s - field type, %2$s - field name if available. */
 			esc_html__( '%1$s Field %2$s', 'wpforms-lite' ),
 			ucfirst( $type ),
 			! empty( $name ) ? "($name)" : ''

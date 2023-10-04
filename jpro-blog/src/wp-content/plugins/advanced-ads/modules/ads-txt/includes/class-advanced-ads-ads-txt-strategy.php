@@ -146,9 +146,9 @@ class Advanced_Ads_Ads_Txt_Strategy {
 
 		$blog_id       = get_current_blog_id();
 		$tmp_options   = Advanced_Ads_Ads_Txt_Utils::remove_duplicate_lines(
-			array(
+			[
 				$blog_id => $this->options,
-			)
+			]
 		);
 		$this->options = $tmp_options[ $blog_id ];
 
@@ -183,10 +183,10 @@ class Advanced_Ads_Ads_Txt_Strategy {
 		if ( is_multisite() ) {
 			$options = get_site_meta( get_current_blog_id(), self::OPTION, true );
 		} else {
-			$options = get_option( self::OPTION, array() );
+			$options = get_option( self::OPTION, [] );
 		}
 		if ( ! is_array( $options ) ) {
-			$options = array();
+			$options = [];
 		}
 		$this->options = $this->load_default_options( $options );
 
@@ -211,7 +211,7 @@ class Advanced_Ads_Ads_Txt_Strategy {
 			$options['custom'] = '';
 		}
 		if ( ! isset( $options['networks'] ) || ! is_array( $options['networks'] ) ) {
-			$options['networks'] = array();
+			$options['networks'] = [];
 		}
 
 		return $options;

@@ -18,7 +18,7 @@ if ( ! isset( $hide_idle_ads ) ) {
 	$hide_idle_ads = true;
 }
 if ( ! isset( $ad_units ) ) {
-	$ad_units = array();
+	$ad_units = [];
 }
 
 ?>
@@ -31,19 +31,6 @@ if ( ! isset( $ad_units ) ) {
     <div id="mapi-loading-overlay" class="aa-select-list-loading-overlay">
         <img alt="..." src="<?php echo ADVADS_BASE_URL . 'admin/assets/img/loader.gif'; ?>" style="margin-top:8em;" />
     </div>
-    <?php if ( !empty( $ad_units ) ) :
-        //  this div is referenced in the legacy mapi code. not sure if it is needed at all, it doesn't make much sense right now...
-        //  the texts of the span elements were shifted to the right and did not really match well with the ads list (table)
-        //  it was removed in favor of the table header below, that was used for empty ad units display only
-        //  TODO: make sure the div is not needed anymore, and what it's purpose is, then remove it, if possible
-        ?>
-        <div id="mapi-list-header" class="aa-select-list-header" style="display:none;">
-            <span><?php esc_html_e( 'Name', 'advanced-ads' ); ?></span>
-            <?php if ($display_slot_id):?><span><?php echo esc_html_x( 'Slot ID', 'AdSense ad', 'advanced-ads' ); ?></span><?php endif;?>
-            <span><?php echo esc_html_x( 'Type', 'AdSense ad', 'advanced-ads' ); ?></span>
-            <span><?php esc_html_e( 'Size', 'advanced-ads' ); ?></span>
-        </div>
-    <?php endif; ?>
     <div id="mapi-table-wrap" class="aa-select-list-table-wrap">
         <table class="widefat striped">
             <thead>
@@ -127,10 +114,10 @@ if ( ! isset( $ad_units ) ) {
 		<li>
 			<?php
 			/* Translators: 1: opening tag for a link to create an ad manually 2: closing a tag   */
-			printf( wp_kses( __( '%1$sCreate an AdSense code manually%2$s: Select the <em>Normal</em> or <em>Responsive</em> type and the size.', 'advanced-ads' ), array(
-				'em'     => array(),
-				'strong' => array(),
-            ) ), '<a href="#" class="mapi-close-selector-link prevent-default">', '</a>' );
+			printf( wp_kses( __( '%1$sCreate an AdSense code manually%2$s: Select the <em>Normal</em> or <em>Responsive</em> type and the size.', 'advanced-ads' ), [
+				'em'     => [],
+				'strong' => [],
+            ] ), '<a href="#" class="mapi-close-selector-link prevent-default">', '</a>' );
 			?>
 		</li>
 		<li>

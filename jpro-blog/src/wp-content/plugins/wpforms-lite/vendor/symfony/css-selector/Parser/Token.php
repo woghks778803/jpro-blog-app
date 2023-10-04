@@ -31,8 +31,19 @@ class Token
     const TYPE_NUMBER = 'number';
     const TYPE_STRING = 'string';
 
+    /**
+     * @var int
+     */
     private $type;
+
+    /**
+     * @var string
+     */
     private $value;
+
+    /**
+     * @var int
+     */
     private $position;
 
     /**
@@ -80,6 +91,8 @@ class Token
     }
 
     /**
+     * @param array $values
+     *
      * @return bool
      */
     public function isDelimiter(array $values = array())
@@ -92,7 +105,7 @@ class Token
             return true;
         }
 
-        return \in_array($this->value, $values);
+        return in_array($this->value, $values);
     }
 
     /**

@@ -1,9 +1,9 @@
 === Advanced Heading ===
-Contributors: wpdevteam, re_enter_rupok, Asif2BD, rahat89, jamilbd07
+Contributors: wpdevteam, re_enter_rupok, Asif2BD, rahat89, jamilbd07, fencermonir
 Tags: block, blocks, heading, Advanced Heading, title, title block, title with subtitle, separator, gutenberg, gutenberg blocks, Gutenberg block library, essential blocks
 Requires at least: 5.0
-Tested up to: 5.8
-Stable tag: 1.1.0
+Tested up to: 6.2
+Stable tag: 1.1.4
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -21,14 +21,14 @@ Create Advanced Heading with Title, Subtitle and Separator Controls
 
 ## 🚀 BACKED BY A TRUSTED TEAM ##
 
-This Block is brought to you by [WPDeveloper](https://wpdeveloper.net), the team behind the most popular elements library [Essential Addons for Elementor](https://wordpress.org/plugins/essential-addons-for-elementor-lite/) (used by almost 700,000 happy users from 180+ countries).
+This Block is brought to you by [WPDeveloper](https://wpdeveloper.com), the team behind the most popular elements library [Essential Addons for Elementor](https://wordpress.org/plugins/essential-addons-for-elementor-lite/) (used by almost 1 million+ happy users from 180+ countries).
 
 ## 👨‍💻 DOCUMENTATION AND SUPPORT ##
 
 - For documentation and tutorials go to our [documentation](https://essential-blocks.com/docs/)
 - To report issue and contribution visit [Github](https://github.com/EssentialBlocks/advanced-heading/).
 - If you have any more questions, visit our support on the [Plugin's Forum](https://wordpress.org/support/plugin/advanced-heading/).
-- For more information about features, FAQs and documentation, check out our website at [WPDeveloper](https://wpdeveloper.net/).
+- For more information about features, FAQs and documentation, check out our website at [WPDeveloper](https://wpdeveloper.com/).
 
 ## 🙌 JOIN THE COMMUNITY ##
 
@@ -79,6 +79,20 @@ Yes, it will work with any standard WordPress theme.
 
 
 == Changelog ==
+
+= 1.1.4 - 03/04/2023 =
+* Improved: font loader and controls
+
+= 1.1.3 - 4/12/2022 =
+* Improved: Update controls and structure
+* Fixed: Minor bug fixing
+
+= 1.1.2 - 13/09/2022 =
+* Improved: Update controls and structure
+
+= 1.1.1 - 02/08/2022 =
+* Improved: Updated to style handler version 2 for working perfectly with Reusable blocks and FSE
+* Improved: Update controls
 
 = 1.1.0 - 07/02/2022 =
 * Fixed: Block Base theme support

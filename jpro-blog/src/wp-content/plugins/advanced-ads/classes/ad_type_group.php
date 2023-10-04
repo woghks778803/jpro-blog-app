@@ -29,12 +29,12 @@ class Advanced_Ads_Ad_Type_Group extends Advanced_Ads_Ad_Type_Abstract{
 	public function __construct() {
 		$this->title = __( 'Ad Group', 'advanced-ads' );
 		$this->description = __( 'Choose an existing ad group. Use this type when you want to assign the same display and visitor conditions to all ads in that group.', 'advanced-ads' );
-		$this->parameters = array(
+		$this->parameters = [
 		    'group_id' => 0
-		);
+		];
 
 		// on save, remove the group in which the ad is itself to prevent infinite loops
-		add_action( 'save_post_advanced_ads', array($this, 'remove_from_ad_group'), 1 );
+		add_action( 'save_post_advanced_ads', [$this, 'remove_from_ad_group'], 1 );
 	}
 
 	/**
@@ -76,7 +76,7 @@ class Advanced_Ads_Ad_Type_Group extends Advanced_Ads_Ad_Type_Abstract{
 
 		$group_id = ( isset( $ad->output['group_id'] ) ) ? $ad->output['group_id'] : '';
 
-		$select = array();
+		$select = [];
 		$model = Advanced_Ads::get_instance()->get_model();
 
 		// load all ad groups

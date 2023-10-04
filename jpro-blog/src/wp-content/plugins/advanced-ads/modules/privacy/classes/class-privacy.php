@@ -29,7 +29,7 @@ class Advanced_Ads_Privacy {
 	 * Initialize the module
 	 */
 	private function __construct() {
-		add_filter( 'advanced-ads-can-display', array( $this, 'can_display_by_consent' ), 10, 3 );
+		add_filter( 'advanced-ads-can-display', [ $this, 'can_display_by_consent' ], 10, 3 );
 
 		$this->options();
 
@@ -37,7 +37,7 @@ class Advanced_Ads_Privacy {
 			add_filter( 'advanced-ads-activate-advanced-js', '__return_true' );
 
 			if ( $this->options['consent-method'] === 'iab_tcf_20' ) {
-				add_filter( 'advanced-ads-output-final', array( $this, 'final_ad_output' ), 10, 2 );
+				add_filter( 'advanced-ads-output-final', [ $this, 'final_ad_output' ], 10, 2 );
 			}
 		}
 	}
@@ -73,10 +73,10 @@ class Advanced_Ads_Privacy {
 	 * @return string
 	 */
 	public function encode_ad( $output, Advanced_Ads_Ad $ad ) {
-		$data_attributes = array(
+		$data_attributes = [
 			'id'  => $ad->id,
 			'bid' => get_current_blog_id(),
-		);
+		];
 		if ( ! empty( $ad->output['placement_id'] ) ) {
 			$data_attributes['placement'] = $ad->output['placement_id'];
 		}
@@ -136,7 +136,7 @@ class Advanced_Ads_Privacy {
 	 */
 	public function options() {
 		if ( ! isset( $this->options ) ) {
-			$this->options = get_option( self::OPTION_KEY, array() );
+			$this->options = get_option( self::OPTION_KEY, [] );
 			if ( isset( $this->options['enabled'] ) && empty( $this->options['consent-method'] ) ) {
 				$this->options['enabled'] = false;
 			}
@@ -203,7 +203,7 @@ class Advanced_Ads_Privacy {
 	 * @return bool
 	 */
 	public function ad_type_needs_consent( $type ) {
-		return ! in_array( $type, array( 'image', 'dummy', 'group' ), true );
+		return ! in_array( $type, [ 'image', 'dummy', 'group' ], true );
 	}
 
 	/**

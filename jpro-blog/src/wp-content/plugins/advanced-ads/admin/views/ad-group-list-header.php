@@ -8,10 +8,10 @@
  * @link      https://wpadvancedads.com
  * @copyright since 2013 Thomas Maier, Advanced Ads GmbH
  */
-
 ?><thead>
 	<tr>
-		<th><?php esc_attr_e( 'Ad Group', 'advanced-ads' ); ?></th>
+		<th class="column-group-type"><?php esc_html_e( 'Type', 'advanced-ads' ); ?></th>
+		<th><?php esc_attr_e( 'Name', 'advanced-ads' ); ?></th>
 		<th><?php esc_attr_e( 'Details', 'advanced-ads' ); ?></th>
 		<th><?php esc_attr_e( 'Ads', 'advanced-ads' ); ?></th>
 	</tr>

@@ -26,9 +26,9 @@ class Advanced_Ads_Ad_Debug {
 			$wrapper_id = Advanced_Ads_Plugin::get_instance()->get_frontend_prefix() . mt_rand();
 		}			
 
-		$content = array();
+		$content = [];
 
-		if ( $ad->can_display( array( 'ignore_debugmode' => true ) ) ) {
+		if ( $ad->can_display( [ 'ignore_debugmode' => true ] ) ) {
 			$content[] = __( 'The ad is displayed on the page', 'advanced-ads' );
 		} else {
 			$content[] = __( 'The ad is not displayed on the page', 'advanced-ads' );
@@ -146,7 +146,7 @@ class Advanced_Ads_Ad_Debug {
 
 		$conditions = array_values( $options['conditions'] );
 		$display_conditions = Advanced_Ads_Display_Conditions::get_instance()->conditions;
-		$the_query = Advanced_Ads_Display_Conditions::get_instance()->ad_select_args_callback( array() );
+		$the_query = Advanced_Ads_Display_Conditions::get_instance()->ad_select_args_callback( [] );
 
 		ob_start();
 		_e( 'Display Conditions', 'advanced-ads' ); ?>
@@ -177,7 +177,7 @@ class Advanced_Ads_Ad_Debug {
 					break;
 				case 'check_general':
 					if ( isset( $the_query['wp_the_query'] ) && is_array( $the_query['wp_the_query'] ) ) {
-						$ad_vars = ( isset( $_condition['value'] ) && is_array( $_condition['value'] ) ) ? $_condition['value'] : array();
+						$ad_vars = ( isset( $_condition['value'] ) && is_array( $_condition['value'] ) ) ? $_condition['value'] : [];
 
 						if ( in_array( 'is_front_page', $ad_vars ) ) {
 							$ad_vars[] = 'is_home';

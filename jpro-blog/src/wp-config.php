@@ -2,9 +2,12 @@
 
 // BEGIN iThemes Security - Do not modify or remove this line
 // iThemes Security Config Details: 2
-define( 'FORCE_SSL_ADMIN', true ); // Redirect All HTTP Page Requests to HTTPS - Security > Settings > Enforce SSL
-define( 'DISALLOW_FILE_EDIT', true ); // Disable File Editor - Security > Settings > WordPress Tweaks > File Editor
+define( 'FORCE_SSL_ADMIN', filter_var(getenv('FORCE_SSL_ADMIN'), FILTER_VALIDATE_BOOLEAN) ); // Redirect All HTTP Page Requests to HTTPS - Security > Settings > Enforce SSL
+define( 'DISALLOW_FILE_EDIT', filter_var(getenv('DISALLOW_FILE_EDIT'), FILTER_VALIDATE_BOOLEAN) ); // Disable File Editor - Security > Settings > WordPress Tweaks > File Editor
 // END iThemes Security - Do not modify or remove this line
+
+// FTP 우회
+// Define( 'FS_METHOD', 'direct' );
 
 /**
  * The base configuration for WordPress
@@ -34,8 +37,8 @@ define( 'WP_AUTO_UPDATE_CORE', false );
 // aws iam 인증
 define( 'AS3CF_SETTINGS', serialize( array(
     'provider' => 'aws',
-    'access-key-id' => getenv('AWS_ACCESS_KEY_ID'),
-    'secret-access-key' => getenv('AWS_SECRET_ACCESS_KEY'),
+    // 'access-key-id' => getenv('AWS_ACCESS_KEY_ID'),
+    // 'secret-access-key' => getenv('AWS_SECRET_ACCESS_KEY'),
 ) ) );
 
 // so check for https existence  
@@ -50,13 +53,13 @@ define( 'DB_NAME', getenv('MYSQL_DATABASE') );
 define( 'DB_USER', getenv('MYSQL_USER') );
 
 /** MySQL database password */
-define( 'DB_PASSWORD', getenv('MYSQL_ROOT_PASSWORD') );
+define( 'DB_PASSWORD', getenv('MYSQL_PASSWORD') );
 
 /** MySQL hostname */
 define( 'DB_HOST', getenv('MYSQL_HOST') );
 
 /** Database charset to use in creating database tables. */
-define( 'DB_CHARSET', 'utf8mb4' );
+define( 'DB_CHARSET', getenv('MYSQL_CHARSET') );
 
 /** The database collate type. Don't change this if in doubt. */
 define( 'DB_COLLATE', '' );

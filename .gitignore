@@ -13,3 +13,5 @@
 /nginx/conf.d/nginx-dev.conf
 
 /.vscode
+/env
+/nginx/conf.ex

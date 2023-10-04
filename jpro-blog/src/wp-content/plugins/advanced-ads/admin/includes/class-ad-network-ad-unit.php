@@ -90,7 +90,7 @@ class Advanced_Ads_Ad_Network_Ad_Unit {
 					return 1;
 				}
 
-				return strcmp( $a->name, $b->name );
+				return strcasecmp( $a->name, $b->name );
 			}
 		);
 

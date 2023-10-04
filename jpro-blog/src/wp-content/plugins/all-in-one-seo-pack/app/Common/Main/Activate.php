@@ -39,14 +39,14 @@ class Activate {
 	 */
 	public function init() {
 		// If Pro just deactivated the lite version, we need to manually run the activation hook, because it doesn't run here.
-		$proDeactivatedLite = (bool) aioseo()->cache->get( 'pro_just_deactivated_lite' );
+		$proDeactivatedLite = (bool) aioseo()->core->cache->get( 'pro_just_deactivated_lite' );
 		if ( ! $proDeactivatedLite ) {
 			// Also check for the old transient in the options table (because a user might switch from an older Lite version that lacks the Cache class).
 			$proDeactivatedLite = (bool) get_option( '_aioseo_cache_pro_just_deactivated_lite' );
 		}
 
 		if ( $proDeactivatedLite ) {
-			aioseo()->cache->delete( 'pro_just_deactivated_lite', true );
+			aioseo()->core->cache->delete( 'pro_just_deactivated_lite' );
 			$this->activate( false );
 		}
 	}
@@ -73,10 +73,7 @@ class Activate {
 			aioseo()->internalOptions->internal->firstActivated = $time;
 		}
 
-		// Bust the tableExists and columnExists cache.
-		aioseo()->internalOptions->database->installedTables = '';
-
-		aioseo()->cache->clear();
+		aioseo()->core->cache->clear();
 
 		$this->maybeRunSetupWizard();
 	}
@@ -90,7 +87,6 @@ class Activate {
 	 */
 	public function deactivate() {
 		aioseo()->access->removeCapabilities();
-		\AIOSEO\Plugin\Common\Sitemap\Rewrite::removeRewriteRules( [], true );
 	}
 
 	/**
@@ -114,12 +110,12 @@ class Activate {
 			return;
 		}
 
-		if ( isset( $_GET['activate-multi'] ) ) {
+		if ( isset( $_GET['activate-multi'] ) ) { // phpcs:ignore HM.Security.NonceVerification.Recommended
 			return;
 		}
 
 		// Sets 30 second transient for welcome screen redirect on activation.
-		aioseo()->cache->update( 'activation_redirect', true, 30 );
+		aioseo()->core->cache->update( 'activation_redirect', true, 30 );
 	}
 
 	/**
@@ -133,12 +129,12 @@ class Activate {
 	public function addCapabilitiesOnUpgrade() {
 		// In case the user is switching to Pro via the AIOSEO Connect feature,
 		// we need to set this transient here as the regular activation hooks won't run and Pro otherwise won't clear the cache and add the required capabilities.
-		aioseo()->cache->update( 'pro_just_deactivated_lite', true );
+		aioseo()->core->cache->update( 'pro_just_deactivated_lite', true );
 
 		// Doing the above isn't sufficient because the current user will be lacking the capabilities on the first request. Therefore, we add them manually just for him.
 		$userId = function_exists( 'get_current_user_id' ) && get_current_user_id()
 			? get_current_user_id() // If there is a logged in user, the user is switching from Lite to Pro via the Plugins menu.
-			: aioseo()->cache->get( 'connect_active_user' ); // If there is no logged in user, we're upgrading via AIOSEO Connect.
+			: aioseo()->core->cache->get( 'connect_active_user' ); // If there is no logged in user, we're upgrading via AIOSEO Connect.
 
 		$user = get_userdata( $userId );
 		if ( is_object( $user ) ) {
@@ -148,6 +144,6 @@ class Activate {
 			}
 		}
 
-		aioseo()->cache->delete( 'connect_active_user' );
+		aioseo()->core->cache->delete( 'connect_active_user' );
 	}
 }

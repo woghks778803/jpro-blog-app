@@ -9,7 +9,7 @@ class Advanced_Ads_Network_Adsense extends Advanced_Ads_Ad_Network {
 	 *
 	 * @var array
 	 */
-	private static $status_codes_active = array( 'ACTIVE', 'NEW' );
+	private static $status_codes_active = [ 'ACTIVE', 'NEW' ];
 
 	/**
 	 * A globally usable instance, that will be created when calling {$link Advanced_Ads_Ad_Network#get_instance) for the first time
@@ -17,6 +17,20 @@ class Advanced_Ads_Network_Adsense extends Advanced_Ads_Ad_Network {
 	 * @var Advanced_Ads_Ad_Type_Adsense
 	 */
 	private static $instance;
+
+	/**
+	 * AdSense options handling class.
+	 *
+	 * @var Advanced_Ads_AdSense_Data
+	 */
+	private $data;
+
+	/**
+	 * The AdSense network’s settings section ID
+	 *
+	 * @var string
+	 */
+	protected $settings_section_id;
 
 	/**
 	 * Instance of Advanced_Ads_Network_Adsense
@@ -52,7 +66,7 @@ class Advanced_Ads_Network_Adsense extends Advanced_Ads_Ad_Network {
 		add_settings_field(
 			'adsense-id',
 			__( 'AdSense account', 'advanced-ads' ),
-			array( $this, 'render_settings_adsense_id' ),
+			[ $this, 'render_settings_adsense_id' ],
 			$hook,
 			$section_id
 		);
@@ -61,7 +75,7 @@ class Advanced_Ads_Network_Adsense extends Advanced_Ads_Ad_Network {
 		add_settings_field(
 			'adsense-page-level',
 			__( 'Auto ads', 'advanced-ads' ),
-			array( $this, 'render_settings_adsense_page_level' ),
+			[ $this, 'render_settings_adsense_page_level' ],
 			$hook,
 			$section_id
 		);
@@ -72,7 +86,7 @@ class Advanced_Ads_Network_Adsense extends Advanced_Ads_Ad_Network {
 			add_settings_field(
 				'top_anchor_ad',
 				__( 'Auto ads', 'advanced-ads' ) . ':&nbsp;' . __( 'Disable top anchor ad', 'advanced-ads' ),
-				array( $this, 'render_settings_adsense_top_anchor_ad' ),
+				[ $this, 'render_settings_adsense_top_anchor_ad' ],
 				$hook,
 				$section_id
 			);
@@ -82,7 +96,7 @@ class Advanced_Ads_Network_Adsense extends Advanced_Ads_Ad_Network {
 		add_settings_field(
 			'hide_stats',
 			__( 'Disable stats', 'advanced-ads' ),
-			array( $this, 'render_settings_adsense_hide_stats' ),
+			[ $this, 'render_settings_adsense_hide_stats' ],
 			$hook,
 			$section_id
 		);
@@ -94,7 +108,7 @@ class Advanced_Ads_Network_Adsense extends Advanced_Ads_Ad_Network {
 			add_settings_field(
 				'adsense-limit',
 				__( 'Limit to 3 ads', 'advanced-ads' ),
-				array( $this, 'render_settings_adsense_limit' ),
+				[ $this, 'render_settings_adsense_limit' ],
 				$hook,
 				$section_id
 			);
@@ -104,7 +118,7 @@ class Advanced_Ads_Network_Adsense extends Advanced_Ads_Ad_Network {
 		add_settings_field(
 			'adsense-warnings-disable',
 			__( 'Disable violation warnings', 'advanced-ads' ),
-			array( $this, 'render_settings_adsense_warnings_disable' ),
+			[ $this, 'render_settings_adsense_warnings_disable' ],
 			$hook,
 			$section_id
 		);
@@ -112,7 +126,7 @@ class Advanced_Ads_Network_Adsense extends Advanced_Ads_Ad_Network {
 		add_settings_field(
 			'adsense-background',
 			__( 'Transparent background', 'advanced-ads' ),
-			array( $this, 'render_settings_adsense_background' ),
+			[ $this, 'render_settings_adsense_background' ],
 			$hook,
 			$section_id
 		);
@@ -120,7 +134,7 @@ class Advanced_Ads_Network_Adsense extends Advanced_Ads_Ad_Network {
 		add_settings_field(
 			'adsense-full-width',
 			__( 'Full width responsive ads on mobile', 'advanced-ads' ),
-			array( $this, 'render_settings_adsense_fullwidth' ),
+			[ $this, 'render_settings_adsense_fullwidth' ],
 			$hook,
 			'advanced_ads_adsense_setting_section'
 		);
@@ -189,6 +203,7 @@ class Advanced_Ads_Network_Adsense extends Advanced_Ads_Ad_Network {
 		<label>
 			<input type="checkbox" name="<?php echo esc_attr( GADSENSE_OPT_NAME ); ?>[top-anchor-ad]" value="1" <?php checked( $anchor_ad ); ?> />
 			<?php esc_html_e( 'Enable this box if you don’t want Google Auto ads to place anchor ads at the top of your page.', 'advanced-ads' ); ?>
+			<?php Advanced_Ads_Admin::show_deprecated_notice('top Anchor Ad'); ?>
 		</label>
 		<?php
 	}
@@ -221,8 +236,8 @@ class Advanced_Ads_Network_Adsense extends Advanced_Ads_Ad_Network {
 			<?php esc_attr_e( 'Insert the AdSense header code to enable Auto ads and verify your website.', 'advanced-ads' ); ?>
 		</label>
 		<ul>
-			<li><a href="<?php echo esc_url( ADVADS_URL ) . 'adsense-auto-ads-wordpress/#Display_Auto_Ads_only_on_specific_pages'; ?>" target="_blank"><?php esc_attr_e( 'Display Auto ads only on specific pages', 'advanced-ads' ); ?></a></li>
-			<li><a href="<?php echo esc_url( ADVADS_URL ) . 'adsense-in-random-positions-auto-ads/#utm_source=advanced-ads&utm_medium=link&utm_campaign=backend-autoads-ads'; ?>" target="_blank"><?php esc_attr_e( 'Why are ads appearing in random positions?', 'advanced-ads' ); ?></a></li>
+			<li><a href="<?php echo esc_url( ADVADS_URL ) . 'adsense-auto-ads-wordpress/?utm_source=advanced-ads&utm_medium=link&utm_campaign=settings-adsense-specific-pages#Display_AdSense_Auto_Ads_only_on_specific_pages'; ?>" target="_blank"><?php esc_attr_e( 'Display Auto ads only on specific pages', 'advanced-ads' ); ?></a></li>
+			<li><a href="<?php echo esc_url( ADVADS_URL ) . 'adsense-in-random-positions-auto-ads/?utm_source=advanced-ads&utm_medium=link&utm_campaign=backend-autoads-ads'; ?>" target="_blank"><?php esc_attr_e( 'Why are ads appearing in random positions?', 'advanced-ads' ); ?></a></li>
 			<?php
 			if ( ! empty( $options['adsense-id'] ) ) :
 				?>
@@ -281,14 +296,14 @@ class Advanced_Ads_Network_Adsense extends Advanced_Ads_Ad_Network {
 				wp_kses(
 				/* translators: %s is a URL. */
 					__( 'Our <a href="%s" target="_blank">Ad Health</a> feature monitors if AdSense is implemented correctly on your site. It also considers ads not managed with Advanced Ads. Enable this option to remove these checks', 'advanced-ads' ),
-					array(
-						'a' => array(
+					[
+						'a' => [
 							'href'   => true,
 							'target' => true,
-						),
-					)
+						],
+					]
 				),
-				esc_url( ADVADS_URL ) . 'manual/ad-health/#utm_source=advanced-ads&utm_medium=link&utm_campaign=backend-autoads-ads'
+				esc_url( ADVADS_URL ) . 'manual/ad-health/?utm_source=advanced-ads&utm_medium=link&utm_campaign=backend-autoads-ads'
 			);
 			?>
 		</p>
@@ -330,12 +345,12 @@ class Advanced_Ads_Network_Adsense extends Advanced_Ads_Ad_Network {
 					__( "Whether your responsive ad unit may expand to <a href='%s' target='blank'>use the full width</a> of your visitor's mobile device screen", 'advanced-ads' ),
 					esc_url( 'https://support.google.com/adsense/answer/7445870' )
 				),
-				array(
-					'a' => array(
+				[
+					'a' => [
 						'href'   => true,
 						'target' => true,
-					),
-				)
+					],
+				]
 			);
 			?>
 		</p>
@@ -377,7 +392,7 @@ class Advanced_Ads_Network_Adsense extends Advanced_Ads_Ad_Network {
 		// Save AdSense publisher ID if there is no one stored yet.
 		if ( ! empty( $ad_settings_post['output']['adsense-pub-id'] ) ) {
 			// Get options.
-			$adsense_options = get_option( 'advanced-ads-adsense', array() );
+			$adsense_options = get_option( 'advanced-ads-adsense', [] );
 
 			if ( empty( $adsense_options['adsense-id'] ) ) {
 				$adsense_options['adsense-id'] = $ad_settings_post['output']['adsense-pub-id'];
@@ -406,7 +421,7 @@ class Advanced_Ads_Network_Adsense extends Advanced_Ads_Ad_Network {
 		$db         = Advanced_Ads_AdSense_Data::get_instance();
 		$adsense_id = trim( $db->get_adsense_id() );
 
-		$units        = array();
+		$units        = [];
 		$mapi_options = Advanced_Ads_AdSense_MAPI::get_option();
 
 		if (
@@ -510,13 +525,13 @@ class Advanced_Ads_Network_Adsense extends Advanced_Ads_Ad_Network {
 		$pub_id            = Advanced_Ads_AdSense_Data::get_instance()->get_adsense_id();
 		$data['pubId']     = $pub_id;
 		$data['connected'] = $this->is_account_connected();
-		$data['ad_types']  = array(
-			'matched_content' => _x( 'Matched Content', 'AdSense ad type', 'advanced-ads' ),
+		$data['ad_types']  = [
+			'matched_content' => _x( 'Multiplex', 'AdSense ad type', 'advanced-ads' ),
 			'in_article'      => _x( 'In-article', 'AdSense ad type', 'advanced-ads' ),
 			'in_feed'         => _x( 'In-feed', 'AdSense ad type', 'advanced-ads' ),
 			'display'         => _x( 'Display', 'AdSense ad type', 'advanced-ads' ),
 			'link'            => _x( 'Link', 'AdSense ad type', 'advanced-ads' ),
-		);
+		];
 
 		return $data;
 	}
@@ -528,5 +543,36 @@ class Advanced_Ads_Network_Adsense extends Advanced_Ads_Ad_Network {
 	 */
 	public function supports_manual_ad_setup() {
 		return true;
+	}
+
+	/**
+	 * Get the ad unit associated with a given ad ID.
+	 *
+	 * @param int $ad_id The ID of the ad.
+	 * @return object|null The ad unit object associated with the given ad ID, or null if not found.
+	 */
+	function get_ad_unit( $ad_id ){
+		$ad_repository = new \Advanced_Ads\Ad_Repository();
+		$adense_ad = $ad_repository->get( $ad_id );
+		// Early bail!!
+		if ( ! $adense_ad || 'adsense' !== ( $adense_ad->type ?? '' ) || ! isset( $adense_ad->content ) ) {
+			return null;
+		}
+		
+		$ad_units = $this->get_external_ad_units();
+		if ( empty( $ad_units ) ) {
+			return null;
+		}
+	
+		$json_content = json_decode( $adense_ad->content );
+		$unit_code = $json_content->slotId ?? null;
+	
+		foreach( $ad_units as $ad_unit ) {
+			if( $ad_unit->slot_id === $unit_code){
+				return $ad_unit;
+			}
+		}
+	
+		return null;
 	}
 }

@@ -25,8 +25,8 @@ class Analyze {
 		$analyzeUrl       = ! empty( $body['url'] ) ? esc_url_raw( urldecode( $body['url'] ) ) : null;
 		$refreshResults   = ! empty( $body['refresh'] ) ? (bool) $body['refresh'] : false;
 		$analyzeOrHomeUrl = ! empty( $analyzeUrl ) ? $analyzeUrl : home_url();
-		$responseCode     = null === aioseo()->cache->get( 'analyze_site_code' ) ? [] : aioseo()->cache->get( 'analyze_site_code' );
-		$responseBody     = null === aioseo()->cache->get( 'analyze_site_body' ) ? [] : aioseo()->cache->get( 'analyze_site_body' );
+		$responseCode     = null === aioseo()->core->cache->get( 'analyze_site_code' ) ? [] : aioseo()->core->cache->get( 'analyze_site_code' );
+		$responseBody     = null === aioseo()->core->cache->get( 'analyze_site_body' ) ? [] : aioseo()->core->cache->get( 'analyze_site_body' );
 		if (
 			empty( $responseCode ) ||
 			empty( $responseCode[ $analyzeOrHomeUrl ] ) ||
@@ -35,27 +35,23 @@ class Analyze {
 			$refreshResults
 		) {
 			$token      = aioseo()->internalOptions->internal->siteAnalysis->connectToken;
-			$license    = aioseo()->options->has( 'general' ) && aioseo()->options->general->has( 'licenseKey' )
-				? aioseo()->options->general->licenseKey
-				: '';
 			$url        = defined( 'AIOSEO_ANALYZE_URL' ) ? AIOSEO_ANALYZE_URL : 'https://analyze.aioseo.com';
-			$response   = wp_remote_post( $url . '/v1/analyze/', [
+			$response   = aioseo()->helpers->wpRemotePost( $url . '/v1/analyze/', [
+				'timeout' => 60,
 				'headers' => [
-					'X-AIOSEO-Key'     => $token,
-					'X-AIOSEO-License' => $license,
-					'Content-Type'     => 'application/json'
+					'X-AIOSEO-Key' => $token,
+					'Content-Type' => 'application/json'
 				],
 				'body'    => wp_json_encode( [
 					'url' => $analyzeOrHomeUrl
 				] ),
-				'timeout' => 60
 			] );
 
 			$responseCode[ $analyzeOrHomeUrl ] = wp_remote_retrieve_response_code( $response );
 			$responseBody[ $analyzeOrHomeUrl ] = json_decode( wp_remote_retrieve_body( $response ) );
 
-			aioseo()->cache->update( 'analyze_site_code', $responseCode, 10 * MINUTE_IN_SECONDS );
-			aioseo()->cache->update( 'analyze_site_body', $responseBody, 10 * MINUTE_IN_SECONDS );
+			aioseo()->core->cache->update( 'analyze_site_code', $responseCode, 10 * MINUTE_IN_SECONDS );
+			aioseo()->core->cache->update( 'analyze_site_body', $responseBody, 10 * MINUTE_IN_SECONDS );
 		}
 
 		if ( 200 !== $responseCode[ $analyzeOrHomeUrl ] || empty( $responseBody[ $analyzeOrHomeUrl ]->success ) || ! empty( $responseBody[ $analyzeOrHomeUrl ]->error ) ) {
@@ -83,8 +79,15 @@ class Analyze {
 			return new \WP_REST_Response( $competitors, 200 );
 		}
 
+		$results = $responseBody[ $analyzeOrHomeUrl ]->results;
+
+		// Image alt attributes get stripped by sanitize_text_field, so we need to adjust the way they are stored to keep them intact.
+		if ( ! empty( $results->basic->noImgAltAtts->value ) ) {
+			$results->basic->noImgAltAtts->value = array_map( 'htmlentities', $results->basic->noImgAltAtts->value );
+		}
+
+		aioseo()->internalOptions->internal->siteAnalysis->results = wp_json_encode( $results );
 		aioseo()->internalOptions->internal->siteAnalysis->score   = $responseBody[ $analyzeOrHomeUrl ]->score;
-		aioseo()->internalOptions->internal->siteAnalysis->results = wp_json_encode( $responseBody[ $analyzeOrHomeUrl ]->results );
 
 		return new \WP_REST_Response( $responseBody[ $analyzeOrHomeUrl ], 200 );
 	}
@@ -131,10 +134,16 @@ class Analyze {
 			], 400 );
 		}
 
-		$result = aioseo()->headlineAnalyzer->getResult( $headline );
+		$result = aioseo()->standalone->headlineAnalyzer->getResult( $headline );
 
 		$headlines = aioseo()->internalOptions->internal->headlineAnalysis->headlines;
 		$headlines = array_reverse( $headlines, true );
+
+		// Remove a headline from the list if it already exists.
+		// This will ensure the new analysis is the first and open/highlighted.
+		if ( array_key_exists( $headline, $headlines ) ) {
+			unset( $headlines[ $headline ] );
+		}
 
 		$headlines[ $headline ] = wp_json_encode( $result );
 

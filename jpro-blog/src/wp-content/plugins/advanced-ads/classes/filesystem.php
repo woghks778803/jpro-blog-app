@@ -32,9 +32,9 @@ class Advanced_Ads_Filesystem {
 	 *                                            not exist, a WP_Error object will be returned.
 	 * @return bool|WP_Error True if able to connect, false or a WP_Error otherwise.
 	 */
-	public function fs_connect( $directories = array() ) {
+	public function fs_connect( $directories = [] ) {
 		global $wp_filesystem;
-		$directories = ( is_array( $directories ) && count( $directories ) ) ? $directories : array( WP_CONTENT_DIR );
+		$directories = ( is_array( $directories ) && count( $directories ) ) ? $directories : [ WP_CONTENT_DIR ];
 
 		// This will output a credentials form in event of failure, We don't want that, so just hide with a buffer.
 		ob_start();

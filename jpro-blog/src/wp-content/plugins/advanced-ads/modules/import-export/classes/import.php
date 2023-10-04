@@ -17,26 +17,26 @@ class Advanced_Ads_Import {
     /**
      * Status messages
      */
-	private $messages = array();
+	private $messages = [];
 
 	/**
 	 * Imported data mapped with previous data, e.g. ['ads'][ new_ad_id => old_ad_id (or null if does not exist) ]
 	 */
-	public $imported_data = array(
-		'ads' => array(),
-		'groups' => array(),
-		'placements' => array()
-	);
+	public $imported_data = [
+		'ads' => [],
+		'groups' => [],
+		'placements' => []
+	];
 
 	/**
 	 * Created groups during this import session ['slug' => 'id']
 	 */
-	private $created_groups = array();
+	private $created_groups = [];
 
     /**
      * Attachments, created for Image Ads and images in ad content
      */
-	private $created_attachments = array();
+	private $created_attachments = [];
 
 	private function __construct() {}
 
@@ -67,7 +67,7 @@ class Advanced_Ads_Import {
 		switch ( $_POST['import_type'] ) {
 			case 'xml_content':
 				if ( empty( $_POST['xml_textarea'] ) ) {
-					$this->messages[] = array( 'error', __( 'Please enter XML content', 'advanced-ads' ) );
+					$this->messages[] = [ 'error', __( 'Please enter XML content', 'advanced-ads' ) ];
 					return;
 				}
 				// see wp_magic_quotes()
@@ -104,7 +104,7 @@ class Advanced_Ads_Import {
 			$decoded = Advanced_Ads_XmlEncoder::get_instance()->decode( $xml_content );
 		} catch ( Exception $e ) {
 			error_log( $e->getMessage() );
-			$this->messages[] = array ( 'error', $e->getMessage() );
+			$this->messages[] =  [ 'error', $e->getMessage() ];
 			return;
 		}
 
@@ -118,7 +118,7 @@ class Advanced_Ads_Import {
 		$this->import_placements( $decoded );
 		$this->import_options( $decoded );
 
-		do_action_ref_array( 'advanced-ads-import', array( &$decoded, &$this->imported_data, &$this->messages ) );
+		do_action_ref_array( 'advanced-ads-import', [ &$decoded, &$this->imported_data, &$this->messages ] );
 
 		wp_cache_flush();
 	}
@@ -151,7 +151,7 @@ class Advanced_Ads_Import {
 						$attachment_id = $this->created_attachments[ $attached_img_url ]['post_id'];
 					} else if ( $attachment = $this->upload_image_from_url( $attached_img_url ) ) {
 						$link = ( $link = get_attachment_link( $attachment['post_id'] ) ) ? sprintf( '<a href="%s">%s</a>', esc_url( $link ), __( 'Edit', 'advanced-ads' ) ) : '';
-						$this->messages[] = array( 'update', sprintf( __( 'New attachment created <em>%s</em> %s', 'advanced-ads' ), $attachment['post_id'], $link ) );
+						$this->messages[] = [ 'update', sprintf( __( 'New attachment created <em>%s</em> %s', 'advanced-ads' ), $attachment['post_id'], $link ) ];
 						$this->created_attachments[ $attached_img_url ] = $attachment;
 						$attachment_id = $attachment['post_id'];
 					}
@@ -161,7 +161,7 @@ class Advanced_Ads_Import {
 					}
 				}
 
-				$insert_ad = array(
+				$insert_ad = [
 					'post_title' => $ad_title,
 					'post_date' => $ad_date,
 					'post_date_gmt' => isset( $ad['post_date_gmt'] ) ? $ad['post_date_gmt'] : '',
@@ -177,21 +177,21 @@ class Advanced_Ads_Import {
 					'comment_status' => 'closed',
 					'ping_status' => 'closed',
 					'meta_input' => isset( $ad['meta_input'] ) ? $ad['meta_input'] : '',
-				);
+				];
 
 
 				$post_id = wp_insert_post( $insert_ad, true );
 
 				if ( is_wp_error( $post_id ) ) {
-					$this->messages[] = array( 'error', sprintf( __( 'Failed to import <em>%s</em>', 'advanced-ads' ), esc_html($ad['post_title'] ) ) );
+					$this->messages[] = [ 'error', sprintf( __( 'Failed to import <em>%s</em>', 'advanced-ads' ), esc_html($ad['post_title'] ) ) ];
 					if ( defined('IMPORT_DEBUG') && IMPORT_DEBUG ) {
-						$this->messages[] = array( 'error', ' > ' . $post_id->get_error_message() );
+						$this->messages[] = [ 'error', ' > ' . $post_id->get_error_message() ];
 					}
 
 					continue;
 				} else {
 					$link = ( $link = get_edit_post_link( $post_id ) ) ? sprintf( '<a href="%s">%s</a>', esc_url( $link ), __( 'Edit', 'advanced-ads' ) ) : '';
-					$this->messages[] = array( 'update', sprintf( __( 'New ad created: <em>%s</em> %s', 'advanced-ads' ), $post_id, $link ) );
+					$this->messages[] = [ 'update', sprintf( __( 'New ad created: <em>%s</em> %s', 'advanced-ads' ), $post_id, $link ) ];
 				}
 
 				// new ad id => old ad id, if exists
@@ -199,9 +199,9 @@ class Advanced_Ads_Import {
 
 				// import ad groups
 				if ( ! empty( $ad['groups'] ) && is_array( $ad['groups'] ) ) {
-					$groups_to_set = array();
-					$advads_ad_groups = get_option( 'advads-ad-groups', array() );
-					$advads_ad_weights = get_option( 'advads-ad-weights', array() );
+					$groups_to_set = [];
+					$advads_ad_groups = get_option( 'advads-ad-groups', [] );
+					$advads_ad_weights = get_option( 'advads-ad-weights', [] );
 
 					foreach ( $ad['groups'] as $_group ) {
 						if ( ! $group_id = $this->create_group_term( $_group ) ) {
@@ -219,11 +219,11 @@ class Advanced_Ads_Import {
 						}
 
 						if ( ! isset( $advads_ad_groups[ $group_id ] ) ) {
-							$advads_ad_groups[ $group_id ] = array (
+							$advads_ad_groups[ $group_id ] =  [
 								'type' => isset( $_group['type']) ? $_group['type'] : 'default',
 								'ad_count' => isset($_group['ad_count']) ? $_group['ad_count'] : 1,
-								'options' => isset($_group['options']) ? $_group['options'] : array()
-							);
+								'options' => isset($_group['options']) ? $_group['options'] : []
+							];
 
 							update_option( 'advads-ad-groups', $advads_ad_groups );
 						}
@@ -234,7 +234,7 @@ class Advanced_Ads_Import {
 
 					update_option( 'advads-ad-weights', $advads_ad_weights );
 
-					$this->messages[] = array( 'update', sprintf( __( 'Assigned terms: <em>%s</em>, to post: <em>%s</em>', 'advanced-ads' ), implode(',',$groups_to_set), $post_id ) );
+					$this->messages[] = [ 'update', sprintf( __( 'Assigned terms: <em>%s</em>, to post: <em>%s</em>', 'advanced-ads' ), implode(',',$groups_to_set), $post_id ) ];
 
 					$tt_ids = wp_set_post_terms( $post_id, $groups_to_set, Advanced_Ads::AD_GROUP_TAXONOMY  );
 				}
@@ -249,16 +249,16 @@ class Advanced_Ads_Import {
 	 */
 	private function import_empty_groups( &$decoded ) {
 		if ( isset( $decoded['groups'] ) && is_array( $decoded['groups'] ) ) {
-			$advads_ad_groups = get_option( 'advads-ad-groups', array() );
+			$advads_ad_groups = get_option( 'advads-ad-groups', [] );
 
 			foreach ( $decoded['groups'] as $_group ) {
 				if ( $group_id = $this->create_group_term( $_group ) ) {
 					if ( ! isset( $advads_ad_groups[ $group_id ] ) ) {
-						$advads_ad_groups[ $group_id ] = array (
+						$advads_ad_groups[ $group_id ] =  [
 							'type' => isset( $_group['type']) ? $_group['type'] : 'default',
 							'ad_count' => isset( $_group['ad_count'] ) ? $_group['ad_count'] : 1,
-							'options' => isset( $_group['options'] ) ? $_group['options'] : array()
-						);
+							'options' => isset( $_group['options'] ) ? $_group['options'] : []
+						];
 					}
 				}
 			}
@@ -291,16 +291,16 @@ class Advanced_Ads_Import {
 			$slug = $slug . '_' . $count;
 		}
 
-		$t = wp_insert_term( $_group['name'], Advanced_Ads::AD_GROUP_TAXONOMY, array( 'slug' => $slug) );
+		$t = wp_insert_term( $_group['name'], Advanced_Ads::AD_GROUP_TAXONOMY, [ 'slug' => $slug] );
 
 		if ( ! is_wp_error( $t ) ) {
 			$this->created_groups[ $original_slug ] = $t['term_id'];
 			$group_id = $t['term_id'];
-			$this->messages[] = array( 'update', sprintf( __( 'New group created, id: <em>%s</em>, name: <em>%s</em>', 'advanced-ads' ), $group_id, esc_html( $_group['name'] ) ) );
+			$this->messages[] = [ 'update', sprintf( __( 'New group created, id: <em>%s</em>, name: <em>%s</em>', 'advanced-ads' ), $group_id, esc_html( $_group['name'] ) ) ];
 		} else {
-			$this->messages[] = array( 'error', sprintf( __( 'Failed to import taxonomy: <em>%s</em>, term: <em>%s</em>', 'advanced-ads' ), esc_html(Advanced_Ads::AD_GROUP_TAXONOMY), esc_html($_group['name'] ) ) );
+			$this->messages[] = [ 'error', sprintf( __( 'Failed to import taxonomy: <em>%s</em>, term: <em>%s</em>', 'advanced-ads' ), esc_html(Advanced_Ads::AD_GROUP_TAXONOMY), esc_html($_group['name'] ) ) ];
 				if ( defined('IMPORT_DEBUG') && IMPORT_DEBUG ) {
-					$this->messages[] = array( 'error', ' > ' . $t->get_error_message() );
+					$this->messages[] = [ 'error', ' > ' . $t->get_error_message() ];
 				}
 
 			return false;
@@ -363,7 +363,7 @@ class Advanced_Ads_Import {
 						$placement_key_uniq .= '_' . $count;
 					}
 
-					$this->messages[] = array( 'update', sprintf( __( 'Placement <em>%s</em> created', 'advanced-ads' ), esc_html( $placement['name'] ) ) );
+					$this->messages[] = [ 'update', sprintf( __( 'Placement <em>%s</em> created', 'advanced-ads' ), esc_html( $placement['name'] ) ) ];
 
 					// new placement key => old placement key
 					$this->imported_data['placements'][ $placement_key_uniq ] = $placement['key'];
@@ -391,7 +391,7 @@ class Advanced_Ads_Import {
 										$_item_existing = explode( '_', $placement['item'] );
 
 										if ( ! empty( $_item_existing[1] ) && $_item_existing[0] === Advanced_Ads_Select::GROUP ) {
-											$advads_ad_weights = get_option( 'advads-ad-weights', array() );
+											$advads_ad_weights = get_option( 'advads-ad-weights', [] );
 
 											if ( term_exists( absint( $_item_existing[1] ), Advanced_Ads::AD_GROUP_TAXONOMY ) ) {
 												wp_set_post_terms( $found, $_item_existing[1], Advanced_Ads::AD_GROUP_TAXONOMY, true );
@@ -495,19 +495,19 @@ class Advanced_Ads_Import {
 					continue;
 				}
 
-				$existing_option = get_option( $option_name, array() );
+				$existing_option = get_option( $option_name, [] );
 
 				if ( ! is_array( $imported_option ) ) {
-					$imported_option = array();
+					$imported_option = [];
 				}
 				if ( ! is_array( $existing_option ) ) {
-					$existing_option = array();
+					$existing_option = [];
 				}
 
 				$option_to_import = array_merge( $existing_option, $imported_option );
 
 				/* translators: %s: Option name. */
-				$this->messages[] = array( 'update', sprintf( __( 'Option was updated: <em>%s</em>', 'advanced-ads' ), $option_name ) );
+				$this->messages[] = [ 'update', sprintf( __( 'Option was updated: <em>%s</em>', 'advanced-ads' ), $option_name ) ];
 				update_option( $option_name, maybe_unserialize( $option_to_import ) );
 			}
 		}
@@ -521,7 +521,7 @@ class Advanced_Ads_Import {
 	private function handle_upload() {
 		$uploads_dir = wp_upload_dir();
 		if ( ! empty( $uploads_dir['error'] ) ) {
-			$this->messages[] = array( 'error', $uploads_dir['error'] );
+			$this->messages[] = [ 'error', $uploads_dir['error'] ];
 			return;
 		}
 
@@ -529,12 +529,12 @@ class Advanced_Ads_Import {
 		$this->import_id = $import_dir . '/' . md5( time() . NONCE_SALT );
 
 		if ( ! is_dir( $import_dir) && ! wp_mkdir_p( $import_dir ) ) {
-			$this->messages[] = array( 'error',  sprintf( __( 'Failed to create import directory <em>%s</em>', 'advanced-ads' ), $import_dir ) );
+			$this->messages[] = [ 'error',  sprintf( __( 'Failed to create import directory <em>%s</em>', 'advanced-ads' ), $import_dir ) ];
 			return;
 		}
 
 		if ( ! is_writable( $import_dir ) ) {
-			$this->messages[] = array( 'error',  sprintf( __( 'Import directory is not writable: <em>%s</em>', 'advanced-ads' ), $import_dir ) );
+			$this->messages[] = [ 'error',  sprintf( __( 'Import directory is not writable: <em>%s</em>', 'advanced-ads' ), $import_dir ) ];
 			return;
 		}
 
@@ -542,7 +542,7 @@ class Advanced_Ads_Import {
 
 
 		if ( ! isset( $_FILES['import'] ) ) {
-			$this->messages[] = array( 'error', __( 'File is empty, uploads are disabled or post_max_size is smaller than upload_max_filesize in php.ini', 'advanced-ads' ) );
+			$this->messages[] = [ 'error', __( 'File is empty, uploads are disabled or post_max_size is smaller than upload_max_filesize in php.ini', 'advanced-ads' ) ];
 			return;
 		}
 
@@ -552,17 +552,17 @@ class Advanced_Ads_Import {
 		$file = apply_filters( "wp_handle_upload_prefilter", $file );
 
 		if ( ! empty( $file['error'] ) ) {
-			$this->messages[] = array( 'error', sprintf( __( 'Failed to upload file, error: <em>%s</em>', 'advanced-ads' ), $file['error'] ) );
+			$this->messages[] = [ 'error', sprintf( __( 'Failed to upload file, error: <em>%s</em>', 'advanced-ads' ), $file['error'] ) ];
 			return;
 		}
 
 		if ( ! ( $file['size'] > 0 ) ) {
-			$this->messages[] = array( 'error', __( 'File is empty.', 'advanced-ads' ), $file['error'] );
+			$this->messages[] = [ 'error', __( 'File is empty.', 'advanced-ads' ), $file['error'] ];
 			return;
 		}
 
 		if ( ! is_uploaded_file( $file['tmp_name'] ) || ! @ move_uploaded_file( $file['tmp_name'], $this->import_id ) || ! is_readable( $this->import_id  ) ) {
-			$this->messages[] = array( 'error', sprintf( __( 'The file could not be created: <em>%s</em>. This is probably a permissions problem', 'advanced-ads' ), $this->import_id ) );
+			$this->messages[] = [ 'error', sprintf( __( 'The file could not be created: <em>%s</em>. This is probably a permissions problem', 'advanced-ads' ), $this->import_id ) ];
 			return;
 		}
 
@@ -572,7 +572,7 @@ class Advanced_Ads_Import {
 		@ chmod( $this->import_id, $perms );
 
 		// cleanup in case of failed import
-		wp_schedule_single_event( time() + 10 * MINUTE_IN_SECONDS, 'advanced-ads-cleanup-import-file', array( $this->import_id ) );
+		wp_schedule_single_event( time() + 10 * MINUTE_IN_SECONDS, 'advanced-ads-cleanup-import-file', [ $this->import_id ] );
 
 		return true;
 	}
@@ -585,7 +585,7 @@ class Advanced_Ads_Import {
 	 */
 	private function process_ad_content( $content ) {
 		// download images, replace old image urls with urls of these new images
-		$replacement_map = array();
+		$replacement_map = [];
 
 		if ( preg_match_all( '/\<advads_import_img\>(\S+?)\<\/advads_import_img\>/i', $content, $matches ) ) {
 			foreach ( $matches[1] as $k => $url ) {
@@ -593,14 +593,14 @@ class Advanced_Ads_Import {
 					$replacement_map[ $url ] = $this->created_attachments[ $url ]['attachment_url'];
 				} else if ( $attachment = $this->upload_image_from_url( $url ) ) {
 					$link = ( $link = get_attachment_link( $attachment['post_id'] ) ) ? sprintf( '<a href="%s">%s</a>', esc_url( $link ), __( 'Edit', 'advanced-ads' ) ) : '';
-					$this->messages[] = array( 'update', sprintf( __( 'New attachment created <em>%s</em> %s', 'advanced-ads' ), $attachment['post_id'], $link ) );
+					$this->messages[] = [ 'update', sprintf( __( 'New attachment created <em>%s</em> %s', 'advanced-ads' ), $attachment['post_id'], $link ) ];
 					$this->created_attachments[ $url ] = $attachment;
 					$replacement_map[ $url ] = $attachment['attachment_url'];
 				}
 			}
 		}
 
-		$content = str_replace( array( '<advads_import_img>', '</advads_import_img>' ), '', $content );
+		$content = str_replace( [ '<advads_import_img>', '</advads_import_img>' ], '', $content );
 
 		if ( count( $replacement_map ) ) {
 			$content = str_replace( array_keys( $replacement_map ), array_values( $replacement_map ), $content );
@@ -635,19 +635,19 @@ class Advanced_Ads_Import {
 
 
 		if ( ! $wp_filetype['type'] ) {
-			$this->messages[] = array(  'error', sprintf( __( 'Invalid filetype <em>%s</em>', 'advanced-ads' ), $image_url ) );
+			$this->messages[] = [  'error', sprintf( __( 'Invalid filetype <em>%s</em>', 'advanced-ads' ), $image_url ) ];
 			return false;
 		}
 
 		if ( ! $parsed_url || ! is_array( $parsed_url ) ) {
-			$this->messages[] = array(  'error', sprintf( __( 'Error getting remote image <em>%s</em>', 'advanced-ads' ), $image_url ) );
+			$this->messages[] = [  'error', sprintf( __( 'Error getting remote image <em>%s</em>', 'advanced-ads' ), $image_url ) ];
 			return false;
 		}
 
-		$response = wp_safe_remote_get( $image_url, array( 'timeout' => 20 ) );
+		$response = wp_safe_remote_get( $image_url, [ 'timeout' => 20 ] );
 
 		if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
-			$this->messages[] = array(  'error', sprintf( __( 'Error getting remote image <em>%s</em>', 'advanced-ads' ), $image_url ) );
+			$this->messages[] = [  'error', sprintf( __( 'Error getting remote image <em>%s</em>', 'advanced-ads' ), $image_url ) ];
 			return false;
 		}
 
@@ -655,7 +655,7 @@ class Advanced_Ads_Import {
 		$upload = wp_upload_bits( $file_name, '', wp_remote_retrieve_body( $response ) );
 
 		if ( $upload['error'] ) {
-			$this->messages[] = array(  'error', sprintf( __( 'Error getting remote image <em>%s</em>', 'advanced-ads' ), $image_url ) );
+			$this->messages[] = [  'error', sprintf( __( 'Error getting remote image <em>%s</em>', 'advanced-ads' ), $image_url ) ];
 			return false;
 		}
 
@@ -664,7 +664,7 @@ class Advanced_Ads_Import {
 
 		if ( 0 == $filesize ) {
 			@unlink( $upload['file'] );
-			$this->messages[] = array(  'error', sprintf( __( 'Zero size file downloaded <em>%s</em>', 'advanced-ads' ), $image_url ) );
+			$this->messages[] = [  'error', sprintf( __( 'Zero size file downloaded <em>%s</em>', 'advanced-ads' ), $image_url ) ];
 			return false;
 		}
 
@@ -681,17 +681,17 @@ class Advanced_Ads_Import {
 		if ( ! $fileinfo || ! in_array( $fileinfo['mime'], $mime_types, true ) ) {
 			@unlink( $upload['file'] );
 			/* translators: 1: image url */
-			$this->messages[] = array( 'error', sprintf( __( 'Error getting remote image <em>%s</em>', 'advanced-ads' ), $image_url ) );
+			$this->messages[] = [ 'error', sprintf( __( 'Error getting remote image <em>%s</em>', 'advanced-ads' ), $image_url ) ];
 
 			return false;
 		}
 
 		// create new post
-		$new_post = array(
+		$new_post = [
 			'post_title' => $file_name,
 			'post_mime_type' => $wp_filetype['type'],
 			'guid' => $upload['url'],
-		);
+		];
 
 		if ( ! function_exists( 'wp_generate_attachment_metadata' ) ) {
 			require_once( ABSPATH . 'wp-admin/includes/image.php' );
@@ -700,7 +700,7 @@ class Advanced_Ads_Import {
 		$post_id = wp_insert_attachment( $new_post, $upload['file'] );
 		wp_update_attachment_metadata( $post_id, wp_generate_attachment_metadata( $post_id, $upload['file'] ) );
 
-		return array( 'post_id' => $post_id, 'attachment_url' => wp_get_attachment_url( $post_id ) );
+		return [ 'post_id' => $post_id, 'attachment_url' => wp_get_attachment_url( $post_id ) ];
 	}
 
 	public function get_messages(){

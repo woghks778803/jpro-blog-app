@@ -5,5 +5,5 @@ endif; ?>
 <div id="<?php echo $wrapper_id; ?>" style="<?php echo $style; ?>">
 <strong><?php _e( 'Ad debug output', 'advanced-ads' ); ?></strong>
 <?php echo '<br /><br />' . implode( '<br /><br />', $content ); ?>
-<br /><br /><a style="color: green;" href="<?php echo ADVADS_URL; ?>manual/ad-debug-mode/#utm_source=advanced-ads&utm_medium=link&utm_campaign=ad-debug-mode" target="_blank"><?php _e( 'Find solutions in the manual', 'advanced-ads' ); ?></a>
+<br /><br /><a style="color: green;" href="<?php echo esc_url( ADVADS_URL ); ?>manual/ad-debug-mode/?utm_source=advanced-ads&utm_medium=link&utm_campaign=ad-debug-mode" target="_blank" rel="nofollow"><?php esc_html_e( 'Find solutions in the manual', 'advanced-ads' ); ?></a>
 </div>

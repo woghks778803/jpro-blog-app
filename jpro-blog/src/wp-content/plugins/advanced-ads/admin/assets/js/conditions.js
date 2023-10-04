@@ -7,7 +7,7 @@ jQuery( document ).ready(
 		/**
 		 * Pressing the button to add a new condition to the list of conditions
 		 */
-		$( '.advads-conditions-new button' ).on( 'click', function () {
+		$( '.advads-conditions-new select' ).on( 'change', function () {
 				// get the form fieldset and values.
 				var condition_form_container     = $( this ).parents( 'fieldset' )
 				var condition_type               = condition_form_container.find( '.advads-conditions-new select' ).val()
@@ -22,7 +22,6 @@ jQuery( document ).ready(
 					return
 				}
 				condition_form_container.find( '.advads-loader' ).show() // show loader.
-				condition_form_container.find( 'button' ).hide() // hide add button.
 				$.ajax(
 					{
 						type: 'POST',
@@ -62,7 +61,6 @@ jQuery( document ).ready(
 						},
 						complete: function ( MLHttpRequest, textStatus ) {
 							condition_form_container.find( '.advads-conditions-new .advads-loader' ).hide() // hide loader.
-							condition_form_container.find( '.advads-conditions-new button' ).show() // display add button.
 						}
 					}
 				)
@@ -99,7 +97,7 @@ jQuery( document ).ready(
 					minLength: 1,
 					select: function ( event, ui ) {
 						// append new line with input fields.
-						$( '<label class="button advads-ui-state-active">' + ui.item.label + '<input type="hidden" name="' + self.data( 'inputName' ) + '" value="' + ui.item.value + '"></label>' ).appendTo( self.siblings( '.advads-conditions-terms-buttons' ) )
+						$( '<label class="button advads-button advads-ui-state-active"><span class="advads-button-text">' + ui.item.label + '<input type="hidden" name="' + self.data( 'inputName' ) + '" value="' + ui.item.value + '"></span></label>' ).appendTo( self.siblings( '.advads-conditions-terms-buttons' ) )
 
 						// show / hide other elements
 						// $( '.advads-display-conditions-individual-post' ).hide();
@@ -137,7 +135,7 @@ jQuery( document ).ready(
 							minLength: 1,
 							select: function ( event, ui ) {
 								// append new line with input fields
-								var newline = $( '<label class="button advads-ui-state-active">' + ui.item.label + '</label>' )
+								var newline = $( '<label class="button advads-button advads-ui-state-active"><span class="advads-button-text">' + ui.item.label + '</span></label>' )
 								$( '<input type="hidden" name="' + self.dataset.fieldName + '[value][]" value="' + ui.item.value + '"/>' ).appendTo( newline )
 								newline.insertBefore( $( self ).parent( '.advads-conditions-postids-search-line' ) )
 							},

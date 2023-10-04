@@ -41,28 +41,28 @@ class Advanced_Ads_Ad_Health_Notices {
 	 *
 	 * @var    array
 	 */
-	public $notices = array();
+	public $notices = [];
 
 	/**
 	 * All ignored notices
 	 *
 	 * @var    array
 	 */
-	public $ignore = array();
+	public $ignore = [];
 
 	/**
 	 * All displayed notices ($notices minus $hidden)
 	 *
 	 * @var    array
 	 */
-	public $displayed_notices = array();
+	public $displayed_notices = [];
 
 	/**
 	 * Load default notices
 	 *
 	 * @var    array
 	 */
-	public $default_notices = array();
+	public $default_notices = [];
 
 	/**
 	 * The last notice key saved
@@ -101,7 +101,7 @@ class Advanced_Ads_Ad_Health_Notices {
 		}
 
 		// load default notices.
-		if ( array() === $this->default_notices ) {
+		if ( [] === $this->default_notices ) {
 			include ADVADS_BASE_PATH . '/admin/includes/ad-health-notices.php';
 			$this->default_notices = $advanced_ads_ad_health_notices;
 		}
@@ -114,10 +114,10 @@ class Advanced_Ads_Ad_Health_Notices {
 		 * needs to run after plugins_loaded with priority 10
 		 * current_screen seems like the perfect hook
 		 */
-		add_action( 'current_screen', array( $this, 'run_checks' ), 20 );
+		add_action( 'current_screen', [ $this, 'run_checks' ], 20 );
 
 		// add notification when an ad expires.
-		add_action( 'advanced-ads-ad-expired', array( $this, 'ad_expired' ), 10, 2 );
+		add_action( 'advanced-ads-ad-expired', [ $this, 'ad_expired' ], 10, 2 );
 	}
 
 	/**
@@ -154,7 +154,7 @@ class Advanced_Ads_Ad_Health_Notices {
 		$options = $this->options();
 
 		// load notices from "notices".
-		$this->notices = isset( $options['notices'] ) ? $options['notices'] : array();
+		$this->notices = isset( $options['notices'] ) ? $options['notices'] : [];
 
 		/**
 		 * Cleanup notices
@@ -181,7 +181,7 @@ class Advanced_Ads_Ad_Health_Notices {
 			}
 
 			// check if notice still exists.
-			if ( array() === $this->get_notice_array_for_key( $_key ) ) {
+			if ( [] === $this->get_notice_array_for_key( $_key ) ) {
 				unset( $this->notices[ $_key ] );
 			}
 		}
@@ -191,7 +191,7 @@ class Advanced_Ads_Ad_Health_Notices {
 			&& isset( $_GET['advads-show-hidden-notices'] ) && 'true' === $_GET['advads-show-hidden-notices'] ) {
 			$this->unignore();
 			// remove the argument from the URL.
-			add_filter( 'removable_query_args', array( $this, 'remove_query_vars_after_notice_update' ) );
+			add_filter( 'removable_query_args', [ $this, 'remove_query_vars_after_notice_update' ] );
 		}
 
 		// load hidden notices.
@@ -331,7 +331,7 @@ class Advanced_Ads_Ad_Health_Notices {
 	 *  - append_text    text added to the default message
 	 *  - ad_id        ID of an ad, attaches the link to the ad edit page to the message
 	 */
-	public function add( $notice_key, $atts = array() ) {
+	public function add( $notice_key, $atts = [] ) {
 
 		// stop here if notices are disabled.
 		if ( empty( $notice_key ) || ! self::notices_enabled() ) {
@@ -348,7 +348,7 @@ class Advanced_Ads_Ad_Health_Notices {
 		$options_before = $options = $this->options();
 
 		// load notices from "queue".
-		$notices = isset( $options['notices'] ) ? $options['notices'] : array();
+		$notices = isset( $options['notices'] ) ? $options['notices'] : [];
 
 		// check if notice_key was already saved, this prevents the same notice from showing up in different forms.
 		if ( isset( $notices[ $notice_key ] ) ) {
@@ -356,7 +356,7 @@ class Advanced_Ads_Ad_Health_Notices {
 		}
 
 		// save the new notice key.
-		$notices[ $notice_key ] = array();
+		$notices[ $notice_key ] = [];
 
 		// save text, if given.
 		if ( ! empty( $atts['text'] ) ) {
@@ -366,7 +366,7 @@ class Advanced_Ads_Ad_Health_Notices {
 		// attach link to ad, if given.
 		if ( ! empty( $atts['ad_id'] ) ) {
 			$id = absint( $atts['ad_id'] );
-			$ad = new Advanced_Ads_Ad( $id );
+			$ad = \Advanced_Ads\Ad_Repository::get( $id );
 			if ( $id && isset( $ad->title ) && '' !== $ad->title ) {
 				$edit_link                             = ' <a href="' . get_edit_post_link( $id ) . '">' . $ad->title . '</a>';
 				$notices[ $notice_key ]['append_text'] = isset( $notices[ $notice_key ]['append_text'] ) ? $notices[ $notice_key ]['append_text'] . $edit_link : $edit_link;
@@ -407,7 +407,7 @@ class Advanced_Ads_Ad_Health_Notices {
 	 *  attributes:
 	 *  - append_text – text added to the default message
 	 */
-	public function update( $notice_key, $atts = array() ) {
+	public function update( $notice_key, $atts = [] ) {
 
 		// stop here if notices are disabled.
 		if ( empty( $notice_key ) || ! self::notices_enabled() ) {
@@ -420,7 +420,7 @@ class Advanced_Ads_Ad_Health_Notices {
 		$options_before = $options;
 
 		// load notices from "queue".
-		$notices = isset( $options['notices'] ) ? $options['notices'] : array();
+		$notices = isset( $options['notices'] ) ? $options['notices'] : [];
 
 		// check if notice_key was already saved, this prevents the same notice from showing up in different forms.
 		if ( ! isset( $notices[ $notice_key ] ) ) {
@@ -470,7 +470,7 @@ class Advanced_Ads_Ad_Health_Notices {
 		// handle notices with a timeout.
 		// set `closed` timestamp if the notice definition has a timeout information.
 		if ( isset( $notice_array['timeout'] ) ) {
-			$this->update( $notice_key, array( 'closed' => current_time( 'timestamp', 0 ) ) );
+			$this->update( $notice_key, [ 'closed' => current_time( 'timestamp', 0 ) ] );
 
 			return;
 		}
@@ -536,7 +536,7 @@ class Advanced_Ads_Ad_Health_Notices {
 		// get options.
 		$options        = $this->options();
 		$options_before = $options;
-		$ignored        = isset( $options['ignore'] ) && is_array( $options['ignore'] ) ? $options['ignore'] : array();
+		$ignored        = isset( $options['ignore'] ) && is_array( $options['ignore'] ) ? $options['ignore'] : [];
 
 		// adds notice key to ignore array if it doesn’t exist already.
 		if ( false === array_search( $notice_key, $ignored, true ) ) {
@@ -565,7 +565,7 @@ class Advanced_Ads_Ad_Health_Notices {
 		$options_before = $options;
 
 		// empty ignore value.
-		$options['ignore'] = array();
+		$options['ignore'] = [];
 
 		// only update if changed.
 		if ( $options_before !== $options ) {
@@ -613,7 +613,7 @@ class Advanced_Ads_Ad_Health_Notices {
 																					$notice_array = $this->get_notice_array_for_key( $_notice_key );
 
 																					// remove the notice if key doesn’t exist anymore.
-																					if ( array() === $notice_array ) {
+																					if ( [] === $notice_array ) {
 																						$this->remove( $_notice_key );
 																					}
 
@@ -678,10 +678,10 @@ class Advanced_Ads_Ad_Health_Notices {
 	 */
 	public function options() {
 		if ( ! isset( $this->options ) ) {
-			$this->options = get_option( ADVADS_SLUG . '-ad-health-notices', array() );
+			$this->options = get_option( ADVADS_SLUG . '-ad-health-notices', [] );
 		}
 		if ( ! is_array( $this->options ) ) {
-			$this->options = array();
+			$this->options = [];
 		}
 
 		return $this->options;
@@ -694,7 +694,7 @@ class Advanced_Ads_Ad_Health_Notices {
 	 */
 	public function update_options( array $options ) {
 		// do not allow to clear options.
-		if ( array() === $options ) {
+		if ( [] === $options ) {
 			return;
 		}
 
@@ -723,7 +723,7 @@ class Advanced_Ads_Ad_Health_Notices {
 		$options        = $this->options();
 		$options_before = $options;
 
-		$ignore_before = isset( $options['ignore'] ) ? $options['ignore'] : array();
+		$ignore_before = isset( $options['ignore'] ) ? $options['ignore'] : [];
 
 		// get keys from notices.
 		$notice_keys = array_keys( $this->notices );
@@ -764,7 +764,7 @@ class Advanced_Ads_Ad_Health_Notices {
 	public function get_visible_notices_by_type( $type = 'problem' ) {
 
 		// get all notices with a given type.
-		$notices_by_type = array();
+		$notices_by_type = [];
 
 		foreach ( $this->notices as $_key => $_notice ) {
 			$notice_array = $this->get_notice_array_for_key( $_key );
@@ -822,7 +822,7 @@ class Advanced_Ads_Ad_Health_Notices {
 		// check if there is an original key.
 		$orig_key = isset( $this->notices[ $notice_key ]['orig_key'] ) ? $this->notices[ $notice_key ]['orig_key'] : $notice_key;
 
-		return isset( $this->default_notices[ $orig_key ] ) ? $this->default_notices[ $orig_key ] : array();
+		return isset( $this->default_notices[ $orig_key ] ) ? $this->default_notices[ $orig_key ] : [];
 	}
 
 	/**
@@ -835,10 +835,10 @@ class Advanced_Ads_Ad_Health_Notices {
 		$id = ! empty( $ad_id ) ? absint( $ad_id ) : 0;
 		$this->update(
 			'ad_expired',
-			array(
+			[
 				'append_key' => $id,
 				'ad_id'      => $id,
-			)
+			]
 		);
 	}
 
@@ -863,7 +863,7 @@ class Advanced_Ads_Ad_Health_Notices {
 		return sprintf(
 		// translators: %1$s is an anchor (link) opening tag, %2$s is the closing tag.
 			esc_attr__( 'Learn more about AdSense account issues %1$shere%2$s.', 'advanced-ads' ),
-			'<a href="' . ADVADS_URL . 'adsense-errors/#utm_source=advanced-ads&utm_medium=link&utm_campaign=adsense-error' . $code . '" target="_blank">',
+			'<a href="' . ADVADS_URL . 'adsense-errors/?utm_source=advanced-ads&utm_medium=link&utm_campaign=adsense-error' . $code . '" target="_blank">',
 			'</a>'
 		);
 	}

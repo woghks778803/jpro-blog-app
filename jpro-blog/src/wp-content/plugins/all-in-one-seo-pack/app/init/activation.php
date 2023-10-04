@@ -13,7 +13,7 @@ if ( ! function_exists( 'aioseo_lite_just_activated' ) ) {
 	 * @since 4.0.0
 	 */
 	function aioseo_lite_just_activated() {
-		aioseo()->cache->update( 'lite_just_activated', true );
+		aioseo()->core->cache->update( 'lite_just_activated', true );
 	}
 }
 
@@ -28,10 +28,10 @@ if ( ! function_exists( 'aioseo_lite_just_deactivated' ) ) {
 	function aioseo_lite_just_deactivated() {
 		global $aioseoLiteJustActivated, $aioseoLiteJustDeactivated;
 
-		$aioseoLiteJustActivated   = (bool) aioseo()->cache->get( 'lite_just_activated' );
+		$aioseoLiteJustActivated   = (bool) aioseo()->core->cache->get( 'lite_just_activated' );
 		$aioseoLiteJustDeactivated = true;
 
-		aioseo()->cache->delete( 'lite_just_activated' );
+		aioseo()->core->cache->delete( 'lite_just_activated' );
 	}
 }
 
@@ -49,13 +49,13 @@ if ( ! function_exists( 'aioseo_pro_just_activated' ) ) {
 			// Add capabilities for the current user on upgrade so that the menu is visible on the first request.
 			aioseo()->activate->addCapabilitiesOnUpgrade();
 
-			aioseo()->cache->update( 'pro_just_deactivated_lite', true );
+			aioseo()->core->cache->update( 'pro_just_deactivated_lite', true );
 		}
 	}
 }
 
 // If we detect that V3 is active, let's deactivate it now.
 if ( defined( 'AIOSEOP_VERSION' ) && defined( 'AIOSEO_PLUGIN_FILE' ) ) {
-	require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
+	require_once ABSPATH . 'wp-admin/includes/plugin.php';
 	deactivate_plugins( plugin_basename( AIOSEO_PLUGIN_FILE ) );
 }

@@ -1,8 +1,17 @@
 <?php
 /**
  * Shortcode generator for TinyMCE editor
+ *
+ * Includes the shortcode plugin inline to prevent it from being blocked by ad blockers.
  */
 class Advanced_Ads_Shortcode_Creator {
+	/**
+	 * Contains ids of the editors that contains the Advanced Ads button.
+	 *
+	 * @var array
+	 */
+	private $editors_with_buttons = [];
+
 	/**
 	 * Instance of this class.
 	 *
@@ -14,7 +23,7 @@ class Advanced_Ads_Shortcode_Creator {
 	 * Advanced_Ads_Shortcode_Creator constructor.
 	 */
 	private function __construct() {
-		add_action( 'init', array( $this, 'init' ) );
+		add_action( 'init', [ $this, 'init' ] );
 	}
 
 	/**
@@ -45,13 +54,14 @@ class Advanced_Ads_Shortcode_Creator {
 			return;
 		}
 
-		add_action( 'wp_ajax_advads_content_for_shortcode_creator', array( $this, 'get_content_for_shortcode_creator' ) );
+		add_action( 'wp_ajax_advads_content_for_shortcode_creator', [ $this, 'get_content_for_shortcode_creator' ] );
 
-		// @see self::hooks_exist
-		add_filter( 'mce_buttons', array( $this, 'register_buttons' ) );
-		add_filter( 'tiny_mce_plugins', array( $this, 'tiny_mce_plugins' ) );
-		add_action( 'wp_tiny_mce_init', array( $this, 'print_shortcode_plugin' ) );
-		add_action( 'print_default_editor_scripts', array( $this, 'print_shortcode_plugin' ) );
+		add_filter( 'mce_buttons', [ $this, 'register_buttons' ], 10, 2 );
+		add_filter( 'tiny_mce_plugins', [ $this, 'tiny_mce_plugins' ] );
+		add_filter( 'tiny_mce_before_init', [ $this, 'tiny_mce_before_init' ], 10, 2 );
+
+		add_action( 'wp_tiny_mce_init', [ $this, 'print_shortcode_plugin' ] );
+		add_action( 'print_default_editor_scripts', [ $this, 'print_shortcode_plugin' ] );
 	}
 
 	/**
@@ -61,14 +71,12 @@ class Advanced_Ads_Shortcode_Creator {
 	 */
 	private function hooks_exist() {
 		if (
-			(
-				has_action( 'wp_tiny_mce_init', array( $this, 'print_shortcode_plugin' ) )
-				|| has_action( 'print_default_editor_scripts', array( $this, 'print_shortcode_plugin' ) )
-			)
-			&& has_filter( 'mce_buttons', array( $this, 'register_buttons' ) )
-			&& has_filter( 'tiny_mce_plugins', array( $this, 'tiny_mce_plugins' ) ) ) {
+			has_action( 'wp_tiny_mce_init', [ $this, 'print_shortcode_plugin' ] )
+			|| has_action( 'print_default_editor_scripts', [ $this, 'print_shortcode_plugin' ] )
+		) {
 			return true;
 		}
+
 		return false;
 	}
 
@@ -77,7 +85,7 @@ class Advanced_Ads_Shortcode_Creator {
 	 *
 	 * @param array|null $mce_settings TinyMCE settings array.
 	 */
-	public function print_shortcode_plugin( $mce_settings = array() ) {
+	public function print_shortcode_plugin( $mce_settings = [] ) {
 		static $printed = null;
 
 		if ( $printed !== null ) {
@@ -91,7 +99,7 @@ class Advanced_Ads_Shortcode_Creator {
 			return;
 		}
 
-		if ( ! $this->hooks_exist() ) {
+		if ( empty( $this->editors_with_buttons ) ) {
 			return;
 		}
 
@@ -123,8 +131,6 @@ class Advanced_Ads_Shortcode_Creator {
 	 * Add the plugin to the array of default TinyMCE plugins.
 	 * We do not use the array of external TinyMCE plugins because we print the plugin file inline.
 	 *
-	 * @see self::admin_enqueue_scripts
-	 *
 	 * @param array $plugins An array of default TinyMCE plugins.
 	 * @return array $plugins An array of default TinyMCE plugins.
 	 */
@@ -138,33 +144,55 @@ class Advanced_Ads_Shortcode_Creator {
 	}
 
 	/**
-	 * Include the shortcode plugin inline to prevent it from being blocked by ad blockers.
+	 * Delete the plugin added by the {@see `tiny_mce_plugins`} method when necessary hooks do not exist.
+	 *
+	 * This is needed because a plugin may call `wp_editor` (which will permanently add our `advads_shortcode` plugin,
+	 * because the `tiny_mce_plugins` hooks is called only once) and after that another plugin may call
+	 * `remove_all_filters( 'mce_buttons') function that will remove our hook.
+	 *
+	 * @param array  $mce_init   An array with TinyMCE config.
+	 * @param string $editor_id Unique editor identifier.
+	 * @return array the TinyMCE config.
 	 */
-	public function admin_enqueue_scripts() {
-		// Add the localization.
-		include_once ADVADS_BASE_PATH . 'admin/includes/shortcode-creator-l10n.php';
-		$script = $strings . "\n";
-		// Add the plugin.
-		$script .= file_get_contents( ADVADS_BASE_PATH . 'admin/assets/js/shortcode.js' );
+	public function tiny_mce_before_init( $mce_init, $editor_id = '' ) {
+		if (
+			! isset( $mce_init['plugins'] )
+			|| ! is_string( $mce_init['plugins'] )
+		) {
+			return $mce_init;
+		}
 
-		wp_add_inline_script( 'wp-tinymce', $script );
+		$plugins = explode( ',', $mce_init['plugins'] );
+		$found   = array_search( 'advads_shortcode', $plugins, true );
+
+		if ( ! $found || ( $editor_id !== '' && in_array( $editor_id, $this->editors_with_buttons, true ) ) ) {
+			return $mce_init;
+		}
+
+		unset( $plugins[ $found ] );
+		$mce_init['plugins'] = implode( ',', $plugins );
+
+		return $mce_init;
 	}
 
 	/**
 	 * Add button to tinyMCE window
 	 *
-	 * @param array $buttons array with existing buttons.
+	 * @param array  $buttons   Array with existing buttons.
+	 * @param string $editor_id Unique editor identifier.
 	 *
 	 * @return array
 	 */
-	public function register_buttons( $buttons ) {
+	public function register_buttons( $buttons, $editor_id ) {
 		if ( ! $this->hooks_exist() ) {
 			return $buttons;
 		}
 		if ( ! is_array( $buttons ) ) {
-			$buttons = array();
+			$buttons = [];
 		}
-		$buttons[] = 'advads_shortcode_button';
+
+		$this->editors_with_buttons[] = $editor_id;
+		$buttons                   [] = 'advads_shortcode_button';
 		return $buttons;
 	}
 
@@ -212,15 +240,15 @@ class Advanced_Ads_Shortcode_Creator {
 	 * @return array $select items for select field.
 	 */
 	public static function items_for_select() {
-		$select = array();
+		$select = [];
 		$model  = Advanced_Ads::get_instance()->get_model();
 
 		// load all ads.
 		$ads = $model->get_ads(
-			array(
+			[
 				'orderby' => 'title',
 				'order'   => 'ASC',
-			)
+			]
 		);
 		foreach ( $ads as $_ad ) {
 			$select['ads'][ 'ad_' . $_ad->ID ] = $_ad->post_title;

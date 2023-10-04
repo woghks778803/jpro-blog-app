@@ -7,7 +7,6 @@
  * @var bool $_clearfix value of the position clearfix option.
  */
 ?>
-<br/><br/><p><?php esc_html_e( 'Position', 'advanced-ads' ); ?></p>
 <label title="<?php esc_html_e( 'default', 'advanced-ads' ); ?>">
 	<input type="radio" name="advads[placements][<?php echo esc_attr( $_placement_slug ); ?>][options][placement_position]" value="" <?php checked( $_position, 'default' ); ?>/>
 	<?php esc_html_e( 'default', 'advanced-ads' ); ?>

@@ -9,7 +9,7 @@ class Advanced_Ads_In_Content_Injector {
 	 *
 	 * @var array $ads_for_placeholders
 	 */
-	private static $ads_for_placeholders = array();
+	private static $ads_for_placeholders = [];
 
 	/**
 	 * Inject ads directly into the content
@@ -31,7 +31,7 @@ class Advanced_Ads_In_Content_Injector {
 	 *
 	 * @return string $content Content with injected placement.
 	 */
-	public static function &inject_in_content( $placement_id, $placement_opts, &$content, $options = array() ) {
+	public static function &inject_in_content( $placement_id, $placement_opts, &$content, $options = [] ) {
 		if ( ! extension_loaded( 'dom' ) ) {
 			return $content;
 		}
@@ -54,7 +54,7 @@ class Advanced_Ads_In_Content_Injector {
 		// get plugin options.
 		$plugin_options = Advanced_Ads::get_instance()->options();
 
-		$defaults = array(
+		$defaults = [
 			'allowEmpty'                   => false,
 			'paragraph_select_from_bottom' => isset( $placement_opts['start_from_bottom'] ) && $placement_opts['start_from_bottom'],
 			'position'                     => isset( $placement_opts['position'] ) ? $placement_opts['position'] : 'after',
@@ -63,7 +63,7 @@ class Advanced_Ads_In_Content_Injector {
 			// Whether to alter nodes, for example to prevent injecting ads into `a` tags.
 			'alter_nodes'                  => true,
 			'repeat'                       => false,
-		);
+		];
 
 		$defaults['paragraph_id'] = isset( $placement_opts['index'] ) ? $placement_opts['index'] : 1;
 		$defaults['paragraph_id'] = max( 1, (int) $defaults['paragraph_id'] );
@@ -77,7 +77,7 @@ class Advanced_Ads_In_Content_Injector {
 		}
 
 		// handle tags that are empty by definition or could be empty ("custom" option)
-		if ( in_array( $tag_option, array( 'img', 'iframe', 'custom' ), true ) ) {
+		if ( in_array( $tag_option, [ 'img', 'iframe', 'custom' ], true ) ) {
 			$defaults['allowEmpty'] = true;
 		}
 
@@ -134,7 +134,7 @@ class Advanced_Ads_In_Content_Injector {
 				break;
 			// any headline. By default h2, h3, and h4
 			case 'headlines':
-				$headlines = apply_filters( 'advanced-ads-headlines-for-ad-injection', array( 'h2', 'h3', 'h4' ) );
+				$headlines = apply_filters( 'advanced-ads-headlines-for-ad-injection', [ 'h2', 'h3', 'h4' ] );
 
 				foreach ( $headlines as &$headline ) {
 					$headline = 'self::' . $headline;
@@ -143,7 +143,7 @@ class Advanced_Ads_In_Content_Injector {
 				break;
 			// any HTML element that makes sense in the content
 			case 'anyelement':
-				$exclude = array(
+				$exclude = [
 					'html',
 					'body',
 					'script',
@@ -178,7 +178,7 @@ class Advanced_Ads_In_Content_Injector {
 					'time',
 					'tt',
 					'var',
-				);
+				];
 				$tag     = '*[not(self::' . implode( ' or self::', $exclude ) . ')]';
 				break;
 			case 'custom':
@@ -214,7 +214,7 @@ class Advanced_Ads_In_Content_Injector {
 
 		// filter empty tags from items.
 		$whitespaces = json_decode( '"\t\n\r \u00A0"' );
-		$paragraphs  = array();
+		$paragraphs  = [];
 		foreach ( $items as $item ) {
 			if ( $options['allowEmpty'] || ( isset( $item->textContent ) && trim( $item->textContent, $whitespaces ) !== '' ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.NotSnakeCaseMemberVar
 				$paragraphs[] = $item;
@@ -228,7 +228,7 @@ class Advanced_Ads_In_Content_Injector {
 
 		if ( $options['paragraph_count'] >= $options['paragraph_id'] ) {
 			$offset     = $options['paragraph_select_from_bottom'] ? $options['paragraph_count'] - $options['paragraph_id'] : $options['paragraph_id'] - 1;
-			$offsets    = apply_filters( 'advanced-ads-placement-content-offsets', array( $offset ), $options, $placement_opts, $xpath, $paragraphs, $dom );
+			$offsets    = apply_filters( 'advanced-ads-placement-content-offsets', [ $offset ], $options, $placement_opts, $xpath, $paragraphs, $dom );
 			$did_inject = false;
 
 			foreach ( $offsets as $offset ) {
@@ -274,15 +274,6 @@ class Advanced_Ads_In_Content_Injector {
 				$ad_dom = new DOMDocument( '1.0', $wp_charset );
 				$libxml_use_internal_errors = libxml_use_internal_errors( true );
 				$ad_dom->loadHtml( '<!DOCTYPE html><html><meta http-equiv="Content-Type" content="text/html; charset=' . $wp_charset . '" /><body>' . $ad_content );
-				// log errors.
-				if ( defined( 'WP_DEBUG' ) && WP_DEBUG && current_user_can( 'advanced_ads_manage_options' ) ) {
-					foreach ( libxml_get_errors() as $_error ) {
-						// continue, if there is '&' symbol, but not HTML entity.
-						if ( false === stripos( $_error->message, 'htmlParseEntityRef:' ) ) {
-							Advanced_Ads::log( 'possible content injection error for placement "' . $placement_id . '": ' . print_r( $_error, true ) );
-						}
-					}
-				}
 
 				switch ( $options['position'] ) {
 					case 'append':
@@ -353,7 +344,7 @@ class Advanced_Ads_In_Content_Injector {
 			// Check if there are more elements without limitation.
 			$all_items = $xpath->query( '//' . $tag );
 
-			$paragraphs = array();
+			$paragraphs = [];
 			foreach ( $all_items as $item ) {
 				if ( $options['allowEmpty'] || ( isset( $item->textContent ) && trim( $item->textContent, $whitespaces ) !== '' ) ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.NotSnakeCaseMemberVar
 					$paragraphs[] = $item;
@@ -363,7 +354,7 @@ class Advanced_Ads_In_Content_Injector {
 			$paragraphs = self::filter_by_ancestors_to_limit( $paragraphs, $ancestors_to_limit );
 			if ( $options['paragraph_id'] <= count( $paragraphs ) ) {
 				// Add a warning to ad health.
-				add_filter( 'advanced-ads-ad-health-nodes', array( 'Advanced_Ads_In_Content_Injector', 'add_ad_health_node' ) );
+				add_filter( 'advanced-ads-ad-health-nodes', [ 'Advanced_Ads_In_Content_Injector', 'add_ad_health_node' ] );
 			}
 		}
 
@@ -408,12 +399,12 @@ class Advanced_Ads_In_Content_Injector {
 
 		// Inject placeholder.
 		$id                           = count( self::$ads_for_placeholders );
-		self::$ads_for_placeholders[] = array(
+		self::$ads_for_placeholders[] = [
 			'id'   => $id,
 			'tag'  => $tag_name,
 			'position' => $options['position'],
 			'ad'   => $ad_content,
-		);
+		];
 
 		return '%advads_placeholder_' . $id . '%';
 	}
@@ -428,7 +419,7 @@ class Advanced_Ads_In_Content_Injector {
 	 */
 	private static function prepare_output( $content, $content_orig ) {
 		$content                    = self::inject_ads( $content, $content_orig, self::$ads_for_placeholders );
-		self::$ads_for_placeholders = array();
+		self::$ads_for_placeholders = [];
 
 		return $content;
 	}
@@ -445,7 +436,7 @@ class Advanced_Ads_In_Content_Injector {
 	 * @return string $content
 	 */
 	private static function inject_ads( $content, $content_orig, $ads_for_placeholders ) {
-		$self_closing_tags = array(
+		$self_closing_tags = [
 			'area',
 			'base',
 			'basefont',
@@ -464,7 +455,7 @@ class Advanced_Ads_In_Content_Injector {
 			'source',
 			'track',
 			'wbr',
-		);
+		];
 
 		// It is not possible to append/prepend in self closing tags.
 		foreach ( $ads_for_placeholders as &$ad_content ) {
@@ -474,7 +465,7 @@ class Advanced_Ads_In_Content_Injector {
 			}
 		}
 		unset( $ad_content );
-		usort( $ads_for_placeholders, array( 'Advanced_Ads_In_Content_Injector', 'sort_ads_for_placehoders' ) );
+		usort( $ads_for_placeholders, [ 'Advanced_Ads_In_Content_Injector', 'sort_ads_for_placehoders' ] );
 
 		// Add tags before/after which ad placehoders were injected.
 		foreach ( $ads_for_placeholders as $ad_content ) {
@@ -483,17 +474,17 @@ class Advanced_Ads_In_Content_Injector {
 			switch ( $ad_content['position'] ) {
 				case 'before':
 				case 'prepend':
-					$alts[] = "<${tag}[^>]*>";
+					$alts[] = "<{$tag}[^>]*>";
 					break;
 				case 'after':
 					if ( in_array( $tag, $self_closing_tags, true ) ) {
-						$alts[] = "<${tag}[^>]*>";
+						$alts[] = "<{$tag}[^>]*>";
 					} else {
-						$alts[] = "</${tag}>";
+						$alts[] = "</{$tag}>";
 					}
 					break;
 				case 'append':
-					$alts[] = "</${tag}>";
+					$alts[] = "</{$tag}>";
 					break;
 			}
 		}
@@ -542,7 +533,7 @@ class Advanced_Ads_In_Content_Injector {
 		$pos         = 0;
 
 		foreach ( $orig_tag_matches[0] as $n => $r ) {
-			$to_inject = array();
+			$to_inject = [];
 			// Check if we need to inject an ad at this offset.
 			foreach ( $ads_for_placeholders as $ad ) {
 				if ( isset( $ad['offset'] ) && $ad['offset'] === $n ) {
@@ -586,12 +577,12 @@ class Advanced_Ads_In_Content_Injector {
 			return 0;
 		}
 
-		$num = array(
+		$num = [
 			'before'  => 1,
 			'prepend' => 2,
 			'append'  => 3,
 			'after'   => 4,
-		);
+		];
 
 		return $num[ $first['position'] ] > $num[ $second['position'] ] ? 1 : - 1;
 	}
@@ -604,9 +595,9 @@ class Advanced_Ads_In_Content_Injector {
 	 * @return array $nodes.
 	 */
 	public static function add_ad_health_node( $nodes ) {
-		$nodes[] = array(
+		$nodes[] = [
 			'type' => 1,
-			'data' => array(
+			'data' => [
 				'parent' => 'advanced_ads_ad_health',
 				'id'     => 'advanced_ads_ad_health_the_content_not_enough_elements',
 				'title'  => sprintf(
@@ -615,12 +606,12 @@ class Advanced_Ads_In_Content_Injector {
 					__( 'Disable level limitation', 'advanced-ads' )
 				),
 				'href'   => admin_url( '/admin.php?page=advanced-ads-settings#top#general' ),
-				'meta'   => array(
+				'meta'   => [
 					'class'  => 'advanced_ads_ad_health_warning',
 					'target' => '_blank',
-				),
-			),
-		);
+				],
+			],
+		];
 
 		return $nodes;
 	}
@@ -635,11 +626,11 @@ class Advanced_Ads_In_Content_Injector {
 	private static function get_ancestors_to_limit( $xpath ) {
 		$query = self::get_ancestors_to_limit_query();
 		if ( ! $query ) {
-			return array();
+			return [];
 		}
 
 		$node_list          = $xpath->query( $query );
-		$ancestors_to_limit = array();
+		$ancestors_to_limit = [];
 
 		foreach ( $node_list as $a ) {
 			$ancestors_to_limit[] = $a->getNodePath();
@@ -658,7 +649,7 @@ class Advanced_Ads_In_Content_Injector {
 	 * @return array $new_paragraphs An array of `DOMNode` objects to insert ads before or after.
 	 */
 	private static function filter_by_ancestors_to_limit( $paragraphs, $ancestors_to_limit ) {
-		$new_paragraphs = array();
+		$new_paragraphs = [];
 
 		foreach ( $paragraphs as $k => $paragraph ) {
 			foreach ( $ancestors_to_limit as $a ) {
@@ -697,31 +688,31 @@ class Advanced_Ads_In_Content_Injector {
 		 */
 		$items = apply_filters(
 			'advanced-ads-content-injection-nodes-without-ads',
-			array(
-				array(
+			[
+				[
 					// a class anyone can use to prevent automatic ad injection into a specific element.
 					'node' => '.advads-stop-injection',
 					'type' => 'ancestor',
-				),
-				array(
+				],
+				[
 					// Product Slider for Beaver Builder by WooPack.
 					'node' => '.woopack-product-carousel',
 					'type' => 'ancestor',
-				),
-				array(
+				],
+				[
 					// WP Author Box Lite.
 					'node' => '#wpautbox-%',
 					'type' => 'ancestor',
-				),
-				array(
+				],
+				[
 					// GeoDirectory Post Slider.
 					'node' => '.geodir-post-slider',
 					'type' => 'ancestor',
-				),
-			)
+				],
+			]
 		);
 
-		$query = array();
+		$query = [];
 		foreach ( $items as $p ) {
 			$sel = $p['node'];
 

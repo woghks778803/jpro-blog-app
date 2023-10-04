@@ -9,7 +9,7 @@ class Advanced_Ads_Adblock_Finder {
 	 * Advanced_Ads_Adblock_Finder constructor.
 	 */
 	public function __construct() {
-		add_action( 'wp_footer', array( $this, 'print_adblock_check_js' ), 9 );
+		add_action( 'wp_footer', [ $this, 'print_adblock_check_js' ], 9 );
 	}
 
 	/**

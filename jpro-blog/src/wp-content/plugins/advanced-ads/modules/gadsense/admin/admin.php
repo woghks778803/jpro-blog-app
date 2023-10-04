@@ -50,29 +50,40 @@ class Advanced_Ads_AdSense_Admin {
 	private function __construct() {
 		$this->data = Advanced_Ads_AdSense_Data::get_instance();
 
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		add_action( 'admin_print_scripts', array( $this, 'print_scripts' ) );
-		add_filter( 'advanced-ads-list-ad-size', array( $this, 'ad_details_column' ), 10, 2 );
-		add_filter( 'advanced-ads-ad-notices', array( $this, 'ad_notices' ), 10, 3 );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+		add_action( 'admin_print_scripts', [ $this, 'print_scripts' ] );
+		add_filter( 'advanced-ads-ad-notices', [ $this, 'ad_notices' ], 10, 3 );
+		add_filter( 'advanced-ads-ad-settings-pre-save', [ $this, 'pre_save_post' ] );
 	}
 
 	/**
-	 * Add content to ad details column on ad overview list.
+	 * Edit $_POST['advanced_ad'] before saving
 	 *
-	 * @param string          $size size string.
-	 * @param Advanced_Ads_Ad $the_ad ad object.
+	 * @param array $advanced_ad content of $_POST['advanced_ad'].
 	 *
-	 * @return string|void
+	 * @return array
 	 */
-	public function ad_details_column( $size, $the_ad ) {
-		if ( 'adsense' === $the_ad->type ) {
-			$content = json_decode( $the_ad->content );
-
-			//phpcs:ignore
-			if ( $content && 'responsive' === $content->unitType ) {
-				$size = __( 'Responsive', 'advanced-ads' ); }
+	public function pre_save_post( $advanced_ad ) {
+		if ( $advanced_ad['type'] !== 'adsense' ) {
+			return $advanced_ad;
 		}
-		return $size;
+
+		// Remove ad size options for responsive AdSense ads.
+		$content = json_decode( str_replace( "\n", '', wp_unslash( $advanced_ad['content'] ) ), true );
+		if ( in_array( $content['unitType'], [
+			'responsive',
+			'link',
+			'link-responsive',
+			'matched-content',
+			'in-article',
+			'in-feed',
+		], true )
+		) {
+			$advanced_ad['width']  = '';
+			$advanced_ad['height'] = '';
+		}
+
+		return $advanced_ad;
 	}
 
 	/**
@@ -113,7 +124,7 @@ class Advanced_Ads_AdSense_Admin {
 				( 'post-new.php' === $pagenow && Advanced_Ads::POST_TYPE_SLUG === $post_type ) ||
 				( 'post.php' === $pagenow && Advanced_Ads::POST_TYPE_SLUG === $post_type && isset( $_GET['action'] ) && 'edit' === $_GET['action'] )
 		) {
-			$scripts = array();
+			$scripts = [];
 
 			// Allow modifications of script files to enqueue.
 			$scripts = apply_filters( 'advanced-ads-gadsense-ad-param-script', $scripts );
@@ -132,7 +143,7 @@ class Advanced_Ads_AdSense_Admin {
 				}
 			}
 
-			$styles = array();
+			$styles = [];
 
 			// Allow modifications of default style files to enqueue.
 			$styles = apply_filters( 'advanced-ads-gadsense-ad-param-style', $styles );
@@ -172,7 +183,7 @@ class Advanced_Ads_AdSense_Admin {
 	 */
 	public function ad_notices( $notices, $box, $post ) {
 
-		$ad = new Advanced_Ads_Ad( $post->ID );
+		$ad = \Advanced_Ads\Ad_Repository::get( $post->ID );
 
 		// $content = json_decode( stripslashes( $ad->content ) );
 
@@ -180,17 +191,17 @@ class Advanced_Ads_AdSense_Admin {
 			case 'ad-parameters-box':
 				// Add warning if this is a responsive ad unit without custom sizes and position is set to left or right.
 				// Hidden by default and made visible with JS.
-				$notices[] = array(
+				$notices[] = [
 					'text'  => sprintf(
 							// Translators: %s is a URL.
 						__( 'Responsive AdSense ads don’t work reliably with <em>Position</em> set to left or right. Either switch the <em>Type</em> to "normal" or follow <a href="%s" target="_blank">this tutorial</a> if you want the ad to be wrapped in text.', 'advanced-ads' ),
-						ADVADS_URL . 'adsense-responsive-custom-sizes/#utm_source=advanced-ads&utm_medium=link&utm_campaign=adsense-custom-sizes-tutorial'
+						ADVADS_URL . 'adsense-responsive-custom-sizes/?utm_source=advanced-ads&utm_medium=link&utm_campaign=adsense-custom-sizes-tutorial'
 					),
 					'class' => 'advads-ad-notice-responsive-position advads-notice-inline advads-error hidden',
-				);
+				];
 				// Show hint about AdSense In-feed add-on.
-				if ( ! class_exists( 'Advanced_Ads_In_Feed', false ) ) {
-					$notices[] = array(
+				if ( ! class_exists( 'Advanced_Ads_In_Feed', false ) && ! class_exists( 'Advanced_Ads_Pro_Admin', false ) ) {
+					$notices[] = [
 						'text'  => sprintf(
 								// Translators: %s is a URL.
 							__( '<a href="%s" target="_blank">Install the free AdSense In-feed add-on</a> in order to place ads between posts.', 'advanced-ads' ),
@@ -200,7 +211,7 @@ class Advanced_Ads_AdSense_Admin {
 							)
 						),
 						'class' => 'advads-ad-notice-in-feed-add-on advads-notice-inline advads-idea hidden',
-					);
+					];
 				}
 				break;
 		}
@@ -213,10 +224,10 @@ class Advanced_Ads_AdSense_Admin {
 	 */
 	public static function enqueue_connect_adsense() {
 		if ( ! wp_script_is( 'advads/connect-adsense', 'registered' ) ) {
-			wp_enqueue_script( 'advads/connect-adsense', GADSENSE_BASE_URL . 'admin/assets/js/connect-adsense.js', array( 'jquery' ), ADVADS_VERSION );
+			wp_enqueue_script( 'advads/connect-adsense', GADSENSE_BASE_URL . 'admin/assets/js/connect-adsense.js', [ 'jquery' ], ADVADS_VERSION );
 		}
-		if ( ! has_action( 'admin_footer', array( 'Advanced_Ads_AdSense_Admin', 'print_connect_adsense' ) ) ) {
-			add_action( 'admin_footer', array( 'Advanced_Ads_AdSense_Admin', 'print_connect_adsense' ) );
+		if ( ! has_action( 'admin_footer', [ 'Advanced_Ads_AdSense_Admin', 'print_connect_adsense' ] ) ) {
+			add_action( 'admin_footer', [ 'Advanced_Ads_AdSense_Admin', 'print_connect_adsense' ] );
 		}
 	}
 
@@ -231,7 +242,7 @@ class Advanced_Ads_AdSense_Admin {
 	 * Get Auto Ads messages.
 	 */
 	public static function get_auto_ads_messages() {
-		return array(
+		return [
 			'enabled'  => sprintf(
 						  // Translators: %s is a URL.
 				__( 'The AdSense verification and Auto ads code is already activated in the <a href="%s">AdSense settings</a>.', 'advanced-ads' ),
@@ -247,7 +258,7 @@ class Advanced_Ads_AdSense_Admin {
 				),
 				esc_attr__( 'Activate', 'advanced-ads' )
 			),
-		);
+		];
 	}
 
 	/**

@@ -204,6 +204,44 @@ jQuery( document ).ready(function () {
 	jQuery('#advanced-ads-feedback-overlay-close-button').on('click', function () {
 		jQuery( '#advanced-ads-feedback-overlay' ).hide();
 	});
+
+	jQuery( '.advads-help' ).on( 'mouseenter', function ( event ) {
+		const tooltip = jQuery( event.target ).children( '.advads-tooltip' )[0];
+		if ( typeof tooltip === 'undefined' ) {
+			return;
+		}
+
+		// reset inline styles before getting bounding client rect.
+		tooltip.style.position = '';
+		tooltip.style.left     = '';
+		tooltip.style.top      = '';
+
+		const topParentRect = document.getElementById( 'wpbody' ).getBoundingClientRect(),
+			  helpRect      = event.target.getBoundingClientRect(),
+			  offsets       = {
+				  left: Math.ceil( helpRect.left ) + 20,
+				  top:  Math.ceil( helpRect.top ) + 20
+			  };
+		let tooltipRect     = tooltip.getBoundingClientRect();
+
+		tooltip.style.position = 'fixed';
+		tooltip.style.left     = offsets.left + 'px';
+		tooltip.style.top      = offsets.top + 'px';
+
+		// check element is not overflowing to the right.
+		while ( tooltipRect.right > ( topParentRect.right - 20 ) ) {
+			offsets.left -= 10;
+			tooltip.style.left = offsets.left + 'px';
+			tooltipRect = tooltip.getBoundingClientRect();
+		}
+
+		// check element is not overflowing bottom of parent and is within viewport.
+		while ( tooltipRect.bottom > ( Math.min( topParentRect.bottom, jQuery( window ).height() ) - 20 ) ) {
+			offsets.top -= 10;
+			tooltip.style.top = offsets.top + 'px';
+			tooltipRect = tooltip.getBoundingClientRect();
+		}
+	} );
 });
 
 // remove duplicate close buttons

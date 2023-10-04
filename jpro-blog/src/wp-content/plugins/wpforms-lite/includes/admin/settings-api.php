@@ -97,90 +97,55 @@ function wpforms_settings_content_callback( $args ) {
  *
  * @since 1.3.9
  *
- * @param array $args
+ * @param array $args Settings arguments.
  *
  * @return string
  */
 function wpforms_settings_license_callback( $args ) {
 
-	// Lite users don't need to worry about license keys.
-	if ( ! wpforms()->pro || ! class_exists( 'WPForms_License', false ) ) {
-
-		$output  = '<p>' . esc_html__( 'You\'re using WPForms Lite - no license needed. Enjoy!', 'wpforms-lite' ) . ' 🙂</p>';
-		$output .=
-			'<p>' .
-			sprintf(
-				wp_kses(
-					/* translators: %s - WPForms.com upgrade URL. */
-					__( 'To unlock more features consider <strong><a href="%s" target="_blank" rel="noopener noreferrer" class="wpforms-upgrade-modal">upgrading to PRO</a></strong>.', 'wpforms-lite' ),
-					array(
-						'a'      => array(
-							'href'   => array(),
-							'class'  => array(),
-							'target' => array(),
-							'rel'    => array(),
-						),
-						'strong' => array(),
-					)
-				),
-				esc_url( wpforms_admin_upgrade_link( 'settings-license' ) )
+	$output  = '<p>' . esc_html__( 'You\'re using WPForms Lite - no license needed. Enjoy!', 'wpforms-lite' ) . ' 🙂</p>';
+	$output .=
+		'<p>' .
+		sprintf(
+			wp_kses( /* translators: %s - WPForms.com upgrade URL. */
+				__( 'To unlock more features consider <strong><a href="%s" target="_blank" rel="noopener noreferrer" class="wpforms-upgrade-modal">upgrading to PRO</a></strong>.', 'wpforms-lite' ),
+				[
+					'a'      => [
+						'href'   => [],
+						'class'  => [],
+						'target' => [],
+						'rel'    => [],
+					],
+					'strong' => [],
+				]
+			),
+			esc_url( wpforms_admin_upgrade_link( 'settings-license', 'Upgrade to WPForms Pro text Link' ) )
+		) .
+		'</p>';
+	$output .=
+		'<p class="discount-note">' .
+			wp_kses(
+				__( 'As a valued WPForms Lite user you receive <strong>50% off</strong>, automatically applied at checkout!', 'wpforms-lite' ),
+				[
+					'strong' => [],
+				]
 			) .
-			'</p>';
-		$output .=
-			'<p class="discount-note">' .
-				wp_kses(
-					__( 'As a valued WPForms Lite user you receive <strong>50% off</strong>, automatically applied at checkout!', 'wpforms-lite' ),
-					array(
-						'strong' => array(),
-						'br'     => array(),
-					)
-				) .
-			'</p>';
+		'</p>';
 
-		$output .= '<hr><p>' . esc_html__( 'Already purchased?  Simply enter your license key below to connect with WPForms PRO!', 'wpforms-lite' ) . '</p>';
-		$output .= '<p>';
-		$output .= '<input type="password" id="wpforms-settings-upgrade-license-key" placeholder="' . esc_attr__( 'Paste license key here', 'wpforms-lite' ) . '" value="" />';
-		$output .= '<button type="button" class="wpforms-btn wpforms-btn-md wpforms-btn-orange" id="wpforms-settings-connect-btn">' . esc_attr__( 'Connect', 'wpforms-lite' ) . '</button>';
-		$output .= '</p>';
+	$output .= '<hr><p>' . esc_html__( 'Already purchased? Simply enter your license key below to enable WPForms PRO!', 'wpforms-lite' ) . '</p>';
+	$output .= '<p>';
+	$output .= '<input type="password" spellcheck="false" id="wpforms-settings-upgrade-license-key" placeholder="' . esc_attr__( 'Paste license key here', 'wpforms-lite' ) . '" value="">';
+	$output .= '<button type="button" class="wpforms-btn wpforms-btn-md wpforms-btn-blue" id="wpforms-settings-connect-btn">' . esc_html__( 'Verify Key', 'wpforms-lite' ) . '</button>';
+	$output .= '</p>';
 
-		return $output;
-	}
-
-	$license      = (array) get_option( 'wpforms_license', [] );
-	$key          = ! empty( $license['key'] ) ? $license['key'] : '';
-	$type         = ! empty( $license['type'] ) ? $license['type'] : '';
-	$is_valid_key = ! empty( $key ) &&
-	                ( isset( $license['is_expired'] ) && $license['is_expired'] === false ) &&
-	                ( isset( $license['is_disabled'] ) && $license['is_disabled'] === false ) &&
-	                ( isset( $license['is_invalid'] ) && $license['is_invalid'] === false );
-
-	$output  = '<span class="wpforms-setting-license-wrapper">';
-	$output .= '<input type="password" id="wpforms-setting-license-key" value="' . esc_attr( $key ) . '"' . disabled( true, $is_valid_key, false ) . ' />';
-	$output .= '</span>';
-	$output .= '<button id="wpforms-setting-license-key-verify" class="wpforms-btn wpforms-btn-md wpforms-btn-orange">' . esc_html__( 'Verify Key', 'wpforms-lite' ) . '</button>';
-
-	// Offer option to deactivate the key.
-	$class   = empty( $key ) ? 'wpforms-hide' : '';
-	$output .= '<button id="wpforms-setting-license-key-deactivate" class="wpforms-btn wpforms-btn-md wpforms-btn-light-grey ' . $class . '">' . esc_html__( 'Deactivate Key', 'wpforms-lite' ) . '</button>';
-
-	// If we have previously looked up the license type, display it.
-	$class   = empty( $type ) ? 'wpforms-hide' : '';
-	$output .= '<p class="type ' . $class . '">' .
-				sprintf(
-					/* translators: $s - license type. */
-					esc_html__( 'Your license key level is %s.', 'wpforms-lite' ),
-					'<strong>' . esc_html( ucwords( $type ) ) . '</strong>'
-				) .
-				'</p>';
-	$output .= '<p class="desc ' . $class . '">' .
-				sprintf( /* translators: %s - Refresh link. */
-					esc_html__( 'If your license has been upgraded or is incorrect, then please %1$sforce a refresh%2$s.', 'wpforms-lite' ),
-					'<a href="#" id="wpforms-setting-license-key-refresh">',
-					'</a>'
-				)
-				. '</p>';
-
-	return $output;
+	/**
+	 * Filter license settings HTML output.
+	 *
+	 * @since 1.7.9
+	 *
+	 * @param string $output HTML markup to be rendered in place of license settings.
+	 */
+	return apply_filters( 'wpforms_settings_license_output', $output );
 }
 
 /**
@@ -188,23 +153,41 @@ function wpforms_settings_license_callback( $args ) {
  *
  * @since 1.3.9
  *
- * @param array $args
+ * @param array $args Settings arguments.
  *
  * @return string
  */
 function wpforms_settings_text_callback( $args ) {
 
+	if ( ! in_array( $args['type'], [ 'text', 'password' ], true ) ) {
+		$args['type'] = 'text';
+	}
+
 	$default = isset( $args['default'] ) ? esc_html( $args['default'] ) : '';
 	$value   = wpforms_setting( $args['id'], $default );
 	$id      = wpforms_sanitize_key( $args['id'] );
 
-	$output = '<input type="text" id="wpforms-setting-' . $id . '" name="' . $id . '" value="' . esc_attr( $value ) . '">';
+	$output = '<input type="' . esc_attr( $args['type'] ) . '" id="wpforms-setting-' . $id . '" name="' . $id . '" value="' . esc_attr( $value ) . '">';
 
 	if ( ! empty( $args['desc'] ) ) {
 		$output .= '<p class="desc">' . wp_kses_post( $args['desc'] ) . '</p>';
 	}
 
 	return $output;
+}
+
+/**
+ * Settings password input field callback.
+ *
+ * @since 1.8.4
+ *
+ * @param array $args Setting field arguments.
+ *
+ * @return string
+ */
+function wpforms_settings_password_callback( $args ) {
+
+	return wpforms_settings_text_callback( $args );
 }
 
 /**
@@ -220,11 +203,11 @@ function wpforms_settings_number_callback( $args ) {
 
 	$default = isset( $args['default'] ) ? esc_html( $args['default'] ) : '';
 	$id      = 'wpforms-setting-' . wpforms_sanitize_key( $args['id'] );
-	$attr    =  array(
+	$attr    =  [
 		'value' => wpforms_setting( $args['id'], $default ),
 		'name'  => wpforms_sanitize_key( $args['id'] ),
-	);
-	$data    = ! empty( $args['data'] ) ? $args['data'] : array();
+	];
+	$data    = ! empty( $args['data'] ) ? $args['data'] : [];
 
 	if ( ! empty( $args['attr'] ) ) {
 		$attr = array_merge( $attr, $args['attr'] );
@@ -232,7 +215,7 @@ function wpforms_settings_number_callback( $args ) {
 
 	$output = sprintf(
 		'<input type="number" %s>',
-		wpforms_html_attributes( $id, array(), $data, $attr )
+		wpforms_html_attributes( $id, [], $data, $attr )
 	);
 
 	if ( ! empty( $args['desc'] ) ) {
@@ -259,8 +242,8 @@ function wpforms_settings_select_callback( $args ) {
 	$select_name = $id;
 	$class       = ! empty( $args['choicesjs'] ) ? 'choicesjs-select' : '';
 	$choices     = ! empty( $args['choicesjs'] ) ? true : false;
-	$data        = isset( $args['data'] ) ? (array) $args['data'] : array();
-	$attr        = isset( $args['attr'] ) ? (array) $args['attr'] : array();
+	$data        = isset( $args['data'] ) ? (array) $args['data'] : [];
+	$attr        = isset( $args['attr'] ) ? (array) $args['attr'] : [];
 
 	if ( $choices && ! empty( $args['search'] ) ) {
 		$data['search'] = 'true';
@@ -270,9 +253,12 @@ function wpforms_settings_select_callback( $args ) {
 		$data['placeholder'] = $args['placeholder'];
 	}
 
+	$size_attr = '';
+
 	if ( $choices && ! empty( $args['multiple'] ) ) {
 		$attr[]      = 'multiple';
 		$select_name = $id . '[]';
+		$size_attr   = ' size="1"';
 	}
 
 	foreach ( $data as $name => $val ) {
@@ -283,7 +269,7 @@ function wpforms_settings_select_callback( $args ) {
 	$attr = implode( ' ', array_map( 'sanitize_html_class', $attr ) );
 
 	$output  = $choices ? '<span class="choicesjs-select-wrap">' : '';
-	$output .= '<select id="wpforms-setting-' . $id . '" name="' . $select_name . '" class="' . $class . '"' . $data . $attr . '>';
+	$output .= '<select id="wpforms-setting-' . $id . '" name="' . $select_name . '" class="' . $class . '"' . $data . $attr . $size_attr . '>';
 
 	foreach ( $args['options'] as $option => $name ) {
 		if ( empty( $args['selected'] ) ) {
@@ -315,14 +301,19 @@ function wpforms_settings_select_callback( $args ) {
  */
 function wpforms_settings_checkbox_callback( $args ) {
 
-	$value   = wpforms_setting( $args['id'] );
-	$id      = wpforms_sanitize_key( $args['id'] );
-	$checked = ! empty( $value ) ? checked( 1, $value, false ) : '';
+	$value    = wpforms_setting( $args['id'] );
+	$id       = wpforms_sanitize_key( $args['id'] );
+	$checked  = ! empty( $value ) ? checked( 1, $value, false ) : '';
+	$disabled = ! empty( $args['disabled'] ) ? ' disabled' : '';
 
-	$output = '<input type="checkbox" id="wpforms-setting-' . $id . '" name="' . $id . '" ' . $checked . '>';
+	$output = '<input type="checkbox" id="wpforms-setting-' . $id . '" name="' . $id . '" ' . $checked . $disabled . '>';
 
 	if ( ! empty( $args['desc'] ) ) {
 		$output .= '<p class="desc">' . wp_kses_post( $args['desc'] ) . '</p>';
+	}
+
+	if ( ! empty( $args['disabled_desc'] ) ) {
+		$output .= '<p class="disabled-desc">' . wp_kses_post( $args['disabled_desc'] ) . '</p>';
 	}
 
 	return $output;
@@ -348,15 +339,71 @@ function wpforms_settings_radio_callback( $args ) {
 	foreach ( $args['options'] as $option => $name ) {
 
 		$checked = checked( $value, $option, false );
+		$output .= '<span class="wpforms-settings-field-radio-wrapper">';
 		$output .= '<input type="radio" id="wpforms-setting-' . $id . '[' . $x . ']" name="' . $id . '" value="' . esc_attr( $option ) . '" ' . $checked . '>';
 		$output .= '<label for="wpforms-setting-' . $id . '[' . $x . ']" class="option-' . sanitize_html_class( $option ) . '">';
 		$output .= esc_html( $name );
 		$output .= '</label>';
+		$output .= '</span>';
+
 		$x ++;
 	}
 
 	if ( ! empty( $args['desc'] ) ) {
 		$output .= '<p class="desc">' . wp_kses_post( $args['desc'] ) . '</p>';
+	}
+
+	return $output;
+}
+
+/**
+ * Settings toggle field callback.
+ *
+ * @since 1.7.4
+ *
+ * @param array $args Arguments.
+ *
+ * @return string
+ */
+function wpforms_settings_toggle_callback( $args ) {
+
+	$value      = wpforms_setting( $args['id'] );
+	$id         = wpforms_sanitize_key( $args['id'] );
+	$class      = ! empty( $args['control-class'] ) ? $args['control-class'] : '';
+	$class     .= ! empty( $args['is-important'] ) ? ' wpforms-important' : '';
+	$input_attr = ! empty( $args['input-attr'] ) ? $args['input-attr'] : '';
+
+	$default_args = [
+		'control-class' => $class,
+	];
+
+	$args = wp_parse_args( $args, $default_args );
+
+	$output = wpforms_panel_field_toggle_control(
+		$args,
+		'wpforms-setting-' . $id,
+		$id,
+		! empty( $args['label'] ) ? $args['label'] : '',
+		$value,
+		$input_attr
+	);
+
+	$desc_on  = ! empty( $args['desc'] ) ? $args['desc'] : '';
+	$desc_on  = ! empty( $args['desc-on'] ) ? $args['desc-on'] : $desc_on;
+	$desc_off = ! empty( $args['desc-off'] ) ? $args['desc-off'] : '';
+
+	$output .= sprintf(
+		'<p class="desc desc-on wpforms-toggle-desc%1$s">%2$s</p>',
+		empty( $value ) && ! empty( $desc_off ) ? ' wpforms-hidden' : '',
+		wp_kses_post( $desc_on )
+	);
+
+	if ( ! empty( $desc_off ) ) {
+		$output .= sprintf(
+			'<p class="desc desc-off wpforms-toggle-desc%1$s">%2$s</p>',
+			empty( $value ) ? '' : ' wpforms-hidden',
+			wp_kses_post( $desc_off )
+		);
 	}
 
 	return $output;
@@ -406,8 +453,15 @@ function wpforms_settings_color_callback( $args ) {
 	$default = isset( $args['default'] ) ? esc_html( $args['default'] ) : '';
 	$value   = wpforms_setting( $args['id'], $default );
 	$id      = wpforms_sanitize_key( $args['id'] );
+	$data    = isset( $args['data'] ) ? (array) $args['data'] : [];
 
-	$output = '<input type="text" id="wpforms-setting-' . $id . '" class="wpforms-color-picker" name="' . $id . '" value="' . esc_attr( $value ) . '">';
+	foreach ( $data as $name => $val ) {
+		$data[ $name ] = 'data-' . sanitize_html_class( $name ) . '="' . esc_attr( $val ) . '"';
+	}
+
+	$data = implode( ' ', $data );
+
+	$output = '<input type="text" id="wpforms-setting-' . $id . '" class="wpforms-color-picker" name="' . $id . '" value="' . esc_attr( $value ) . '" ' . $data . '>';
 
 	if ( ! empty( $args['desc'] ) ) {
 		$output .= '<p class="desc">' . wp_kses_post( $args['desc'] ) . '</p>';
@@ -437,6 +491,33 @@ function wpforms_settings_providers_callback( $args ) {
 	$output .= ob_get_clean();
 
 	$output .= '</div>';
+
+	return $output;
+}
+
+/**
+ * Webhooks' endpoint field callback.
+ *
+ * @since 1.8.4
+ *
+ * @param array $args Field arguments.
+ *
+ * @return string
+ */
+function wpforms_settings_webhook_endpoint_callback( $args ) {
+
+	$output = '';
+
+	if ( ! empty( $args['url'] ) ) {
+		$output  = '<div class="wpforms-stripe-webhook-endpoint-url">';
+		$output .= '<input type="text" disabled id="wpforms-stripe-webhook-endpoint-url" value="' . esc_url_raw( $args['url'] ) . '" />';
+		$output .= '<a class="button button-secondary wpforms-copy-to-clipboard" data-clipboard-target="#wpforms-stripe-webhook-endpoint-url" href="" ><span class="dashicons dashicons-admin-page"></span></a>';
+		$output .= '</div>';
+
+		if ( ! empty( $args['desc'] ) ) {
+			$output .= '<p class="desc">' . wp_kses_post( $args['desc'] ) . '</p>';
+		}
+	}
 
 	return $output;
 }

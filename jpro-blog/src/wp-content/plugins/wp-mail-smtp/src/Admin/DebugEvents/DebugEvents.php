@@ -2,8 +2,11 @@
 
 namespace WPMailSMTP\Admin\DebugEvents;
 
+use WP_Error;
 use WPMailSMTP\Admin\Area;
 use WPMailSMTP\Options;
+use WPMailSMTP\Tasks\DebugEventsCleanupTask;
+use WPMailSMTP\WP;
 
 /**
  * Debug Events class.
@@ -11,6 +14,15 @@ use WPMailSMTP\Options;
  * @since 3.0.0
  */
 class DebugEvents {
+
+	/**
+	 * Transient name for the error debug events.
+	 *
+	 * @since 3.9.0
+	 *
+	 * @var string
+	 */
+	const ERROR_DEBUG_EVENTS_TRANSIENT = 'wp_mail_smtp_error_debug_events_transient';
 
 	/**
 	 * Register hooks.
@@ -27,6 +39,51 @@ class DebugEvents {
 		add_action( 'load-wp-mail-smtp_page_wp-mail-smtp-tools', [ $this, 'screen_options' ] );
 		add_filter( 'set-screen-option', [ $this, 'set_screen_options' ], 10, 3 );
 		add_filter( 'set_screen_option_wp_mail_smtp_debug_events_per_page', [ $this, 'set_screen_options' ], 10, 3 );
+
+		// Cancel previous debug events cleanup task if retention period option was changed.
+		add_filter( 'wp_mail_smtp_options_set', [ $this, 'maybe_cancel_debug_events_cleanup_task' ] );
+
+		// Detect debug events log retention period constant change.
+		if ( Options::init()->is_const_defined( 'debug_events', 'retention_period' ) ) {
+			add_action( 'admin_init', [ $this, 'detect_debug_events_retention_period_constant_change' ] );
+		}
+	}
+
+	/**
+	 * Detect debug events retention period constant change.
+	 *
+	 * @since 3.6.0
+	 */
+	public function detect_debug_events_retention_period_constant_change() {
+
+		if ( ! WP::in_wp_admin() ) {
+			return;
+		}
+
+		if ( Options::init()->is_const_changed( 'debug_events', 'retention_period' ) ) {
+			( new DebugEventsCleanupTask() )->cancel();
+		}
+	}
+
+	/**
+	 * Cancel previous debug events cleanup task if retention period option was changed.
+	 *
+	 * @since 3.6.0
+	 *
+	 * @param array $options Currently processed options passed to a filter hook.
+	 *
+	 * @return array
+	 */
+	public function maybe_cancel_debug_events_cleanup_task( $options ) {
+
+		if ( isset( $options['debug_events']['retention_period'] ) ) {
+			// If this option has changed, cancel the recurring cleanup task and init again.
+			if ( Options::init()->is_option_changed( $options['debug_events']['retention_period'], 'debug_events', 'retention_period' ) ) {
+				( new DebugEventsCleanupTask() )->cancel();
+			}
+		}
+
+		return $options;
 	}
 
 	/**
@@ -138,12 +195,15 @@ class DebugEvents {
 	 * Save the debug message.
 	 *
 	 * @since 3.0.0
+	 * @since 3.5.0 Returns Event ID.
 	 *
 	 * @param string $message The debug message.
+	 *
+	 * @return bool|int
 	 */
 	public static function add_debug( $message = '' ) {
 
-		self::add( $message, Event::TYPE_DEBUG );
+		return self::add( $message, Event::TYPE_DEBUG );
 	}
 
 	/**
@@ -196,6 +256,51 @@ class DebugEvents {
 			},
 			$events_data
 		);
+	}
+
+	/**
+	 * Returns the number of error debug events in a given time span.
+	 *
+	 * By default it returns the number of error debug events in the last 30 days.
+	 *
+	 * @since 3.9.0
+	 *
+	 * @param string $span_of_time The time span to count the events for. Default '-30 days'.
+	 *
+	 * @return int|WP_Error The number of error debug events or WP_Error on failure.
+	 */
+	public static function get_error_debug_events_count( $span_of_time = '-30 days' ) {
+
+		$timestamp = strtotime( $span_of_time );
+
+		if ( ! $timestamp || $timestamp > time() ) {
+			return new WP_Error( 'wp_mail_smtp_admin_debug_events_get_error_debug_events_count_invalid_time', 'Invalid time span.' );
+		}
+
+		$transient_key             = self::ERROR_DEBUG_EVENTS_TRANSIENT . '_' . sanitize_title_with_dashes( $span_of_time );
+		$cached_error_events_count = get_transient( $transient_key );
+
+		if ( $cached_error_events_count !== false ) {
+			return (int) $cached_error_events_count;
+		}
+
+		global $wpdb;
+
+		// phpcs:disable WordPress.DB.PreparedSQLPlaceholders.UnquotedComplexPlaceholder
+		$sql = $wpdb->prepare(
+			'SELECT COUNT(*) FROM `%1$s` WHERE event_type = %2$d AND created_at >= "%3$s"',
+			self::get_table_name(),
+			Event::TYPE_ERROR,
+			gmdate( WP::datetime_mysql_format(), $timestamp )
+		);
+		// phpcs:enable WordPress.DB.PreparedSQLPlaceholders.UnquotedComplexPlaceholder
+
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.NotPrepared
+		$error_events_count = (int) $wpdb->get_var( $sql );
+
+		set_transient( $transient_key, $error_events_count, HOUR_IN_SECONDS );
+
+		return $error_events_count;
 	}
 
 	/**
@@ -300,8 +405,18 @@ class DebugEvents {
 
 		global $wpdb;
 
+		static $is_valid = null;
+
+		// Return cached value only if table already exists.
+		if ( $is_valid === true ) {
+			return true;
+		}
+
 		$table = self::get_table_name();
 
-		return (bool) $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s;', $table ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.NoCaching
+		$is_valid = (bool) $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s;', $table ) );
+
+		return $is_valid;
 	}
 }

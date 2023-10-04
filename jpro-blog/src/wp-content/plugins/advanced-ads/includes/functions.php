@@ -11,9 +11,9 @@
  * @param int $id id of the ad (post)
  * @param arr $args additional arguments
  */
-function get_ad($id = 0, $args = array()){
+function get_ad($id = 0, $args = []){
 	if ( defined( 'ADVANCED_ADS_DISABLE_CHANGE' ) && ADVANCED_ADS_DISABLE_CHANGE ) {
-		$args = array();
+		$args = [];
 	}
 
 	return Advanced_Ads_Select::get_instance()->get_ad_by_method( $id, 'id', $args );
@@ -26,7 +26,7 @@ function get_ad($id = 0, $args = array()){
  * @param int $id id of the ad (post)
  * @param arr $args additional arguments
  */
-function the_ad($id = 0, $args = array()){
+function the_ad($id = 0, $args = []){
 	echo get_ad( $id, $args );
 }
 
@@ -37,9 +37,9 @@ function the_ad($id = 0, $args = array()){
  * @param int $id id of the ad group (taxonomy)
  *
  */
-function get_ad_group( $id = 0, $args = array() ) {
+function get_ad_group( $id = 0, $args = [] ) {
 	if ( defined( 'ADVANCED_ADS_DISABLE_CHANGE' ) && ADVANCED_ADS_DISABLE_CHANGE ) {
-		$args = array();
+		$args = [];
 	}
 	return Advanced_Ads_Select::get_instance()->get_ad_by_method( $id, 'group', $args );
 }
@@ -61,9 +61,9 @@ function the_ad_group($id = 0){
  * @param string $id slug of the ad placement
  *
  */
-function get_ad_placement( $id = '', $args = array() ) {
+function get_ad_placement( $id = '', $args = [] ) {
 	if ( defined( 'ADVANCED_ADS_DISABLE_CHANGE' ) && ADVANCED_ADS_DISABLE_CHANGE ) {
-		$args = array();
+		$args = [];
 	}
 	return Advanced_Ads_Select::get_instance()->get_ad_by_method( $id, 'placement', $args );
 }
@@ -99,7 +99,7 @@ function advads_is_amp() {
 	if ( is_admin()
 		|| is_embed()
 		|| is_feed()
-		|| ( isset( $pagenow ) && in_array( $pagenow, array( 'wp-login.php', 'wp-signup.php', 'wp-activate.php' ), true ) )
+		|| ( isset( $pagenow ) && in_array( $pagenow, [ 'wp-login.php', 'wp-signup.php', 'wp-activate.php' ], true ) )
 		|| ( defined( 'REST_REQUEST' ) && REST_REQUEST )
 		|| ( defined( 'XMLRPC_REQUEST' ) && XMLRPC_REQUEST )
 	) {
@@ -123,10 +123,10 @@ function advads_is_amp() {
  * @return bool
  */
 function placement_has_ads( $id = '' ) {
-	$args = array(
+	$args = [
 		'global_output' => false,
 		'cache-busting' => 'ignore',
-	);
+	];
 	return Advanced_Ads_Select::get_instance()->get_ad_by_method( $id, 'placement', $args ) != '';
 
 }
@@ -137,9 +137,9 @@ function placement_has_ads( $id = '' ) {
  * @return bool
  */
 function group_has_ads( $id = '' ) {
-	$args = array(
+	$args = [
 		'global_output' => false,
 		'cache-busting' => 'ignore',
-	);
+	];
 	return Advanced_Ads_Select::get_instance()->get_ad_by_method( $id, 'group', $args ) != '';
 }

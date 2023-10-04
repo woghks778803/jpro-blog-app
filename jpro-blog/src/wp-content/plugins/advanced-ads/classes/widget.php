@@ -29,17 +29,17 @@ class Advanced_Ads_Widget extends WP_Widget {
 		$prefix    = Advanced_Ads_Plugin::get_instance()->get_frontend_prefix();
 		$classname = $prefix . 'widget';
 
-		$widget_ops  = array(
+		$widget_ops  = [
 			'classname'             => $classname,
 			'show_instance_in_rest' => true,
 			'description'           => __( 'Display Ads and Ad Groups.', 'advanced-ads' ),
-		);
-		$control_ops = array();
+		];
+		$control_ops = [];
 		$base_id     = self::get_base_id();
 
 		parent::__construct( $base_id, 'Advanced Ads', $widget_ops, $control_ops );
 
-		add_filter( 'q2w3-fixed-widgets', array( $this, 'q2w3_replace_frontend_id' ) );
+		add_filter( 'q2w3-fixed-widgets', [ $this, 'q2w3_replace_frontend_id' ] );
 	}
 
 	/**
@@ -89,7 +89,7 @@ class Advanced_Ads_Widget extends WP_Widget {
 		$instance['item_id'] = $new_instance['item_id'];
 
 		// Allow to remove/replace id for new widgets and if it was allowed earlier.
-		if ( array() === $old_instance || ! empty( $old_instance['remove-widget-id'] ) ) {
+		if ( [] === $old_instance || ! empty( $old_instance['remove-widget-id'] ) ) {
 			$instance['remove-widget-id'] = true;
 		}
 		return $instance;
@@ -103,10 +103,10 @@ class Advanced_Ads_Widget extends WP_Widget {
 	public function form( $instance ) {
 		$instance  = wp_parse_args(
 			(array) $instance,
-			array(
+			[
 				'title'   => '',
 				'item_id' => '',
-			)
+			]
 		);
 		$title     = strip_tags( $instance['title'] );
 		$elementid = $instance['item_id'];
@@ -140,7 +140,24 @@ class Advanced_Ads_Widget extends WP_Widget {
 			</optgroup>
 			<?php endif; ?>
 		</select>
+
 		<?php
+		$this->display_hints( $elementid );
+	}
+
+	/**
+	 * Display hints related to the currently selected item in the dropdown.
+	 *
+	 * @param string $elementid Currently selected item.
+	 */
+	private function display_hints( $elementid ) {
+		$elementid_parts = explode( '_', $elementid );
+		if ( ! isset( $elementid_parts[1] ) || $elementid_parts[0] !== 'group' ) {
+			return;
+		}
+
+		$hints = Advanced_Ads_Group::get_hints( new Advanced_Ads_Group( $elementid_parts[1] ) );
+		require ADVADS_BASE_PATH . 'admin/views/group-hints.php';
 	}
 
 	 /**
@@ -149,15 +166,15 @@ class Advanced_Ads_Widget extends WP_Widget {
 	  * @return array $select items for select field.
 	  */
 	public static function items_for_select() {
-		$select = array();
+		$select = [];
 		$model  = Advanced_Ads::get_instance()->get_model();
 
 		// load all ads.
 		$ads = $model->get_ads(
-			array(
+			[
 				'orderby' => 'title',
 				'order'   => 'ASC',
-			)
+			]
 		);
 		foreach ( $ads as $_ad ) {
 			$select['ads'][ 'ad_' . $_ad->ID ] = $_ad->post_title;
@@ -178,7 +195,7 @@ class Advanced_Ads_Widget extends WP_Widget {
 	 * @return array $items for select field.
 	 */
 	public static function widget_placements_for_select() {
-		$select     = array();
+		$select     = [];
 		$placements = Advanced_Ads::get_instance()->get_model()->get_ad_placements_array();
 
 		if ( is_array( $placements ) ) {
@@ -186,7 +203,7 @@ class Advanced_Ads_Widget extends WP_Widget {
 		}
 
 		foreach ( $placements as $placement_slug => $placement ) {
-			if ( isset( $placement['type'] ) && in_array( $placement['type'], array( 'sidebar_widget', 'default' ), true ) ) {
+			if ( isset( $placement['type'] ) && in_array( $placement['type'], [ 'sidebar_widget', 'default' ], true ) ) {
 				$select['placements'][ 'placement_' . $placement_slug ] = $placement['name'];
 			}
 		}

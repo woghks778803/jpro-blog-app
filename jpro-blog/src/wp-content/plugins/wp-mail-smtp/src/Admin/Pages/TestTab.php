@@ -4,6 +4,7 @@ namespace WPMailSMTP\Admin\Pages;
 
 use WPMailSMTP\Admin\DomainChecker;
 use WPMailSMTP\Conflicts;
+use WPMailSMTP\ConnectionInterface;
 use WPMailSMTP\Debug;
 use WPMailSMTP\MailCatcherInterface;
 use WPMailSMTP\Options;
@@ -95,6 +96,15 @@ class TestTab extends PageAbstract {
 	private $post_data = [];
 
 	/**
+	 * Test email connection.
+	 *
+	 * @since 3.7.0
+	 *
+	 * @var ConnectionInterface
+	 */
+	private $connection;
+
+	/**
 	 * @inheritdoc
 	 */
 	public function get_label() {
@@ -154,6 +164,15 @@ class TestTab extends PageAbstract {
 					</p>
 				</div>
 			</div>
+
+			<?php
+			/**
+			 * Fires after "Send To" section on the test email page.
+			 *
+			 * @since 3.7.0
+			 */
+			do_action( 'wp_mail_smtp_admin_pages_test_tab_display_form_send_to_after' );
+			?>
 
 			<!-- HTML/Plain -->
 			<div id="wp-mail-smtp-setting-row-test_email_html" class="wp-mail-smtp-setting-row wp-mail-smtp-setting-row-checkbox-toggle wp-mail-smtp-clear">
@@ -270,7 +289,20 @@ class TestTab extends PageAbstract {
 
 		$this->post_data = $data;
 
+		$connection = wp_mail_smtp()->get_connections_manager()->get_primary_connection();
+
+		/**
+		 * Filters test email connection object.
+		 *
+		 * @since 3.7.0
+		 *
+		 * @param ConnectionInterface $connection The Connection object.
+		 * @param array               $data       Post data.
+		 */
+		$this->connection = apply_filters( 'wp_mail_smtp_admin_pages_test_tab_process_post_connection', $connection, $data );
+
 		if ( ! empty( $data['test']['email'] ) ) {
+			$data['test']['email'] = wp_unslash( $data['test']['email'] );
 			$data['test']['email'] = filter_var( $data['test']['email'], FILTER_VALIDATE_EMAIL );
 		}
 
@@ -294,13 +326,18 @@ class TestTab extends PageAbstract {
 
 		/* translators: %s - email address a test email will be sent to. */
 		$subject = 'WP Mail SMTP: ' . sprintf( esc_html__( 'Test email to %s', 'wp-mail-smtp' ), $data['test']['email'] );
+		$headers = [ 'X-Mailer-Type:WPMailSMTP/Admin/Test' ];
 
 		if ( $is_html ) {
 			add_filter( 'wp_mail_content_type', array( __CLASS__, 'set_test_html_content_type' ) );
 
 			/* translators: %s - email address a test email will be sent to. */
-			$subject = 'WP Mail SMTP: HTML ' . sprintf( esc_html__( 'Test email to %s', 'wp-mail-smtp' ), $data['test']['email'] );
+			$subject   = 'WP Mail SMTP: HTML ' . sprintf( esc_html__( 'Test email to %s', 'wp-mail-smtp' ), $data['test']['email'] );
+			$headers[] = 'Content-Type: text/html';
 		}
+
+		// Clear debug before send test email.
+		Debug::clear();
 
 		// Start output buffering to grab smtp debugging output.
 		ob_start();
@@ -310,9 +347,7 @@ class TestTab extends PageAbstract {
 			$data['test']['email'],
 			$subject,
 			$this->get_email_message( $is_html ),
-			array(
-				'X-Mailer-Type:WPMailSMTP/Admin/Test',
-			)
+			$headers
 		);
 
 		$smtp_debug = ob_get_clean();
@@ -325,14 +360,14 @@ class TestTab extends PageAbstract {
 		 * Notify a user about the results.
 		 */
 		if ( $result ) {
-			$options = Options::init();
-			$mailer  = $options->get( 'mail', 'mailer' );
-			$email   = $options->get( 'mail', 'from_email' );
-			$domain  = '';
+			$connection_options = $this->connection->get_options();
+			$mailer             = $connection_options->get( 'mail', 'mailer' );
+			$email              = $connection_options->get( 'mail', 'from_email' );
+			$domain             = '';
 
 			// Add the optional sending domain parameter.
 			if ( in_array( $mailer, [ 'mailgun', 'sendinblue', 'sendgrid' ], true ) ) {
-				$domain = $options->get( $mailer, 'domain' );
+				$domain = $connection_options->get( $mailer, 'domain' );
 			}
 
 			$this->domain_checker = new DomainChecker( $mailer, $email, $domain );
@@ -551,10 +586,10 @@ Co-Founder, WP Mail SMTP';
 	 */
 	protected function get_debug_messages( $phpmailer, $smtp_debug ) {
 
-		$options   = Options::init();
-		$conflicts = new Conflicts();
+		$connection_options = $this->connection->get_options();
+		$conflicts          = new Conflicts();
 
-		$this->debug['mailer'] = $options->get( 'mail', 'mailer' );
+		$this->debug['mailer'] = $connection_options->get( 'mail', 'mailer' );
 
 		/*
 		 * Versions Debug.
@@ -574,13 +609,16 @@ Co-Founder, WP Mail SMTP';
 		$mailer_text = '<strong>Params:</strong><br>';
 
 		$mailer_text .= '<strong>Mailer:</strong> ' . $this->debug['mailer'] . '<br>';
-		$mailer_text .= '<strong>Constants:</strong> ' . ( $options->is_const_enabled() ? 'Yes' : 'No' ) . '<br>';
+		$mailer_text .= '<strong>Constants:</strong> ' . ( $connection_options->is_const_enabled() ? 'Yes' : 'No' ) . '<br>';
+
 		if ( $conflicts->is_detected() ) {
-			$mailer_text .= '<strong>Conflicts:</strong> ' . esc_html( $conflicts->get_conflict_name() ) . '<br>';
+			$conflict_plugin_names = implode( ', ', $conflicts->get_all_conflict_names() );
+
+			$mailer_text .= '<strong>Conflicts:</strong> ' . esc_html( $conflict_plugin_names ) . '<br>';
 		}
 
 		// Display different debug info based on the mailer.
-		$mailer = wp_mail_smtp()->get_providers()->get_mailer( $this->debug['mailer'], $phpmailer );
+		$mailer = wp_mail_smtp()->get_providers()->get_mailer( $this->debug['mailer'], $phpmailer, $this->connection );
 
 		if ( $mailer ) {
 			$mailer_text .= $mailer->get_debug_info();
@@ -591,7 +629,7 @@ Co-Founder, WP Mail SMTP';
 		// Append any PHPMailer errors to the mailer debug (except SMTP mailer, which has the full error output below).
 		if (
 			! empty( $phpmailer_error ) &&
-			! $options->is_mailer_smtp()
+			! $connection_options->is_mailer_smtp()
 		) {
 			$mailer_text .= '<br><br><strong>PHPMailer Debug:</strong><br>' .
 			                wp_strip_all_tags( $phpmailer_error ) .
@@ -613,7 +651,7 @@ Co-Founder, WP Mail SMTP';
 		 */
 
 		$smtp_text = '';
-		if ( $options->is_mailer_smtp() ) {
+		if ( $connection_options->is_mailer_smtp() ) {
 			$smtp_text = '<strong>SMTP Debug:</strong><br>';
 			if ( ! empty( $smtp_debug ) ) {
 				$smtp_text .= '<pre>' . $smtp_debug . '</pre>';
@@ -644,10 +682,10 @@ Co-Founder, WP Mail SMTP';
 	 */
 	protected function get_debug_details() {
 
-		$options         = Options::init();
-		$smtp_host       = $options->get( 'smtp', 'host' );
-		$smtp_port       = $options->get( 'smtp', 'port' );
-		$smtp_encryption = $options->get( 'smtp', 'encryption' );
+		$connection_options = $this->connection->get_options();
+		$smtp_host          = $connection_options->get( 'smtp', 'host' );
+		$smtp_port          = $connection_options->get( 'smtp', 'port' );
+		$smtp_encryption    = $connection_options->get( 'smtp', 'encryption' );
 
 		$details = [
 			// [any] - cURL error 60/77.
@@ -759,7 +797,8 @@ Co-Founder, WP Mail SMTP';
 								],
 							]
 						),
-						'https://wpmailsmtp.com/docs/how-to-set-up-the-other-smtp-mailer-in-wp-mail-smtp/#auth-type'
+						// phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
+						esc_url( wp_mail_smtp()->get_utm_url( 'https://wpmailsmtp.com/docs/how-to-set-up-the-other-smtp-mailer-in-wp-mail-smtp/#auth-type', [ 'medium' => 'email-test', 'content' => 'Other SMTP auth debug - our documentation' ] ) )
 					),
 				],
 			],
@@ -775,7 +814,7 @@ Co-Founder, WP Mail SMTP';
 					esc_html__( 'Typically this error is returned when you are sending too many e-mails or e-mails that have been identified as spam.', 'wp-mail-smtp' ),
 				],
 				'steps'       => [
-					esc_html__( 'Check the emails that are sending are sending individually. Example: email is not sending to 30 recipients. You can install any WordPress e-mail logging plugin to do that.', 'wp-mail-smtp' ),
+					esc_html__( 'Make sure you are not sending emails with too many recipients. Example: single email should not have 10+ recipients. You can install any WordPress e-mail logging plugin to check your recipients (TO, CC and BCC).', 'wp-mail-smtp' ),
 					esc_html__( 'Contact your SMTP host to ask about sending/rate limits.', 'wp-mail-smtp' ),
 					esc_html__( 'Verify with them your SMTP account is in good standing and your account has not been flagged.', 'wp-mail-smtp' ),
 				],
@@ -899,12 +938,36 @@ Co-Founder, WP Mail SMTP';
 				],
 				'title'       => esc_html__( 'Mailgun failed.', 'wp-mail-smtp' ),
 				'description' => [
-					esc_html__( 'Typically this error occurs because there is an issue with your Mailgun settings, in many cases the API key.', 'wp-mail-smtp' ),
+					esc_html__( 'Typically this error occurs because there is an issue with your Mailgun settings, in many cases Mailgun API Key, Domain Name, or Region is incorrect.', 'wp-mail-smtp' ),
 				],
 				'steps'       => [
-					esc_html__( 'Verify your API key is correct.', 'wp-mail-smtp' ),
-					esc_html__( 'Go to your Mailgun account and view your API key.', 'wp-mail-smtp' ),
-					esc_html__( 'Note that the API key includes the "key" prefix, so make sure that it is in the WP Mail SMTP Mailgun API setting.', 'wp-mail-smtp' ),
+					sprintf(
+						wp_kses( /* translators: %1$s - Mailgun API Key area URL. */
+							__( 'Go to your Mailgun account and verify that your <a href="%1$s" target="_blank" rel="noopener noreferrer">Mailgun API Key</a> is correct.', 'wp-mail-smtp' ),
+							[
+								'a' => [
+									'href'   => [],
+									'rel'    => [],
+									'target' => [],
+								],
+							]
+						),
+						'https://app.mailgun.com/settings/api_security'
+					),
+					sprintf(
+						wp_kses( /* translators: %1$s - Mailgun domains area URL. */
+							__( 'Verify your <a href="%1$s" target="_blank" rel="noopener noreferrer">Domain Name</a> is correct.', 'wp-mail-smtp' ),
+							[
+								'a' => [
+									'href'   => [],
+									'rel'    => [],
+									'target' => [],
+								],
+							]
+						),
+						'https://app.mailgun.com/app/sending/domains'
+					),
+					esc_html__( 'Verify your domain Region is correct.', 'wp-mail-smtp' ),
 				],
 			],
 			// [mailgun] - Free accounts are for test purposes only.
@@ -930,7 +993,8 @@ Co-Founder, WP Mail SMTP';
 								],
 							]
 						),
-						'https://wpmailsmtp.com/docs/how-to-set-up-the-mailgun-mailer-in-wp-mail-smtp/'
+						// phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
+						esc_url( wp_mail_smtp()->get_utm_url( 'https://wpmailsmtp.com/docs/how-to-set-up-the-mailgun-mailer-in-wp-mail-smtp/', [ 'medium' => 'email-test', 'content' => 'Mailgun with WP Mail SMTP' ] ) )
 					),
 					esc_html__( 'Complete the steps in section "2. Verify Your Domain".', 'wp-mail-smtp' ),
 				],
@@ -969,7 +1033,7 @@ Co-Founder, WP Mail SMTP';
 						. '<li>' .
 							sprintf(
 								wp_kses( /* translators: %s - Google support article URL. */
-									__( 'if you are using G Suite, please <a href="%s" target="_blank" rel="noopener noreferrer">read this article</a> to proceed.', 'wp-mail-smtp' ),
+									__( 'if you are using Google Workspace, please <a href="%s" target="_blank" rel="noopener noreferrer">read this article</a> to proceed.', 'wp-mail-smtp' ),
 									[
 										'a' => [
 											'href'   => [],
@@ -1028,7 +1092,7 @@ Co-Founder, WP Mail SMTP';
 					),
 				],
 				'steps'       => [
-					esc_html__( 'Go to WP Mail SMTP plugin settings page. Click the “Remove Connection” button.', 'wp-mail-smtp' ),
+					esc_html__( 'Go to WP Mail SMTP plugin settings page. Click the “Remove OAuth Connection” button.', 'wp-mail-smtp' ),
 					esc_html__( 'Then click the “Allow plugin to send emails using your Google account” button and re-enable access.', 'wp-mail-smtp' ),
 				],
 			],
@@ -1060,8 +1124,8 @@ Co-Founder, WP Mail SMTP';
 				],
 				'steps'       => [
 					sprintf(
-						wp_kses( /* translators: %s - Google G Suite Admin area URL. */
-							__( 'Make sure that your G Suite trial period has not expired. You can check the status <a href="%s" target="_blank" rel="noopener noreferrer">here</a>.', 'wp-mail-smtp' ),
+						wp_kses( /* translators: %s - Google Workspace Admin area URL. */
+							__( 'Make sure that your Google Workspace trial period has not expired. You can check the status <a href="%s" target="_blank" rel="noopener noreferrer">here</a>.', 'wp-mail-smtp' ),
 							[
 								'a' => [
 									'href'   => [],
@@ -1073,8 +1137,8 @@ Co-Founder, WP Mail SMTP';
 						'https://admin.google.com'
 					),
 					sprintf(
-						wp_kses( /* translators: %s - Google G Suite Admin area URL. */
-							__( 'Make sure that Gmail app in your G Suite is actually enabled. You can check that in Apps list in <a href="%s" target="_blank" rel="noopener noreferrer">G Suite Admin</a> area.', 'wp-mail-smtp' ),
+						wp_kses( /* translators: %s - Google Workspace Admin area URL. */
+							__( 'Make sure that Gmail app in your Google Workspace is actually enabled. You can check that in Apps list in <a href="%s" target="_blank" rel="noopener noreferrer">Google Workspace Admin</a> area.', 'wp-mail-smtp' ),
 							[
 								'a' => [
 									'href'   => [],
@@ -1121,7 +1185,8 @@ Co-Founder, WP Mail SMTP';
 								],
 							]
 						),
-						'https://wpmailsmtp.com/docs/how-to-set-up-the-gmail-mailer-in-wp-mail-smtp/'
+						// phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
+						esc_url( wp_mail_smtp()->get_utm_url( 'https://wpmailsmtp.com/docs/how-to-set-up-the-gmail-mailer-in-wp-mail-smtp/', [ 'medium' => 'email-test', 'content' => 'Gmail tutorial' ] ) )
 					),
 				],
 			],
@@ -1292,7 +1357,7 @@ Co-Founder, WP Mail SMTP';
 				. '</ul>',
 			],
 			'steps'       => [
-				esc_html__( 'Triple check the plugin settings, consider reconfiguring to make sure everything is correct (eg bad copy and paste).', 'wp-mail-smtp' ),
+				esc_html__( 'Triple-check the plugin settings and consider reconfiguring to make sure everything is correct. Maybe there was an issue with copy&pasting.', 'wp-mail-smtp' ),
 				wp_kses(
 					__( 'Contact your web hosting provider and ask them to verify your server can make outside connections. Additionally, ask them if a firewall or security policy may be preventing the connection - many shared hosts block certain ports.<br><strong>Note: this is the most common cause of this issue.</strong>', 'wp-mail-smtp' ),
 					[
@@ -1380,7 +1445,8 @@ Co-Founder, WP Mail SMTP';
 								),
 							)
 						),
-						'https://wpmailsmtp.com/account/support/'
+						// phpcs:ignore WordPress.Arrays.ArrayDeclarationSpacing.AssociativeArrayFound
+						esc_url( wp_mail_smtp()->get_utm_url( 'https://wpmailsmtp.com/account/support/', [ 'medium' => 'email-test', 'content' => 'submit a support ticket' ] ) )
 					);
 					?>
 				</p>

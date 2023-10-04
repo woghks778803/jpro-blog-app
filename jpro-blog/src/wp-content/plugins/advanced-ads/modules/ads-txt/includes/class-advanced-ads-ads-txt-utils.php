@@ -20,13 +20,13 @@ class Advanced_Ads_Ads_Txt_Utils {
 		$sslverify    = apply_filters( 'https_local_ssl_verify', false );
 		$response     = wp_remote_get(
 			trailingslashit( $url ) . 'ads.txt',
-			array(
+			[
 				'timeout'   => 3,
 				'sslverify' => $sslverify,
-				'headers'   => array(
+				'headers'   => [
 					'Cache-Control' => 'no-cache',
-				),
-			)
+				],
+			]
 		);
 		$code         = wp_remote_retrieve_response_code( $response );
 		$content      = wp_remote_retrieve_body( $response );
@@ -41,10 +41,10 @@ class Advanced_Ads_Ads_Txt_Utils {
 			&& ( false !== stripos( $content_type, 'text/plain' ) );
 		$header_exists = false !== strpos( $content, Advanced_Ads_Ads_Txt_Public::TOP );
 
-		$r = array(
+		$r = [
 			'exists'      => $file_exists && $header_exists,
 			'is_third_party' => $file_exists && ! $header_exists
-		);
+		];
 
 		return $r;
 	}
@@ -79,14 +79,14 @@ class Advanced_Ads_Ads_Txt_Utils {
 
 		if ( 3 === $count ) {
 			// Example: `http://one.{net/org/gov/edu/co}.two`.
-			$suffixes = array( 'net', 'org', 'gov', 'edu', 'co'  );
+			$suffixes = [ 'net', 'org', 'gov', 'edu', 'co'  ];
 			if ( in_array( $host_parts[ $count - 2 ], $suffixes, true ) ) {
 				return false;
 			}
 
 			// Example: `one.com.au'.
 			$suffix_and_tld = implode( '.', array_slice( $host_parts, 1 ) );
-			if ( in_array( $suffix_and_tld, array( 'com.au', 'com.br', 'com.pl' ) ) ) {
+			if ( in_array( $suffix_and_tld, [ 'com.au', 'com.br', 'com.pl' ] ) ) {
 				return false;
 			}
 
@@ -98,9 +98,9 @@ class Advanced_Ads_Ads_Txt_Utils {
 				 */
 				$no_www_url = $parsed_url['scheme'] . '://' . trailingslashit( $host_parts[1] . '.' . $host_parts[2] );
 
-				add_action( 'requests-requests.before_redirect', array( __CLASS__, 'collect_locations' ) );
-				wp_remote_get( $no_www_url, array( 'timeout' => 5, 'redirection' => 3 ) );
-				remove_action( 'requests-requests.before_redirect', array( __CLASS__, 'collect_locations' ) );
+				add_action( 'requests-requests.before_redirect', [ __CLASS__, 'collect_locations' ] );
+				wp_remote_get( $no_www_url, [ 'timeout' => 5, 'redirection' => 3 ] );
+				remove_action( 'requests-requests.before_redirect', [ __CLASS__, 'collect_locations' ] );
 
 				$no_www_url_parsed = wp_parse_url( self::$location );
 				if ( isset( $no_www_url_parsed['host'] ) && $no_www_url_parsed['host'] === $host ) {
@@ -147,10 +147,10 @@ class Advanced_Ads_Ads_Txt_Utils {
 	 * }
 	 * @return array $blog_data Array of arrays of blog options, keyed by by blog IDs.
 	 */
-	public static function remove_duplicate_lines( $blog_data, $options = array() ) {
+	public static function remove_duplicate_lines( $blog_data, $options = [] ) {
 		$to_comments = ! empty( $options['to_comments'] );
 
-		$added_records = array();
+		$added_records = [];
 		foreach ( $blog_data as $blog_id => &$blog_options ) {
 			foreach ( $blog_options['networks'] as $id => $data ) {
 				// Convert to comments or remove duplicate records that are not comments.

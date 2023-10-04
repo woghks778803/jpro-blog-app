@@ -2,48 +2,27 @@
 /**
  * Render item option for placements.
  *
- * @var string $_placement_slug slug of the current placement.
- * @var array $_placement information of the current placement.
- * @var string|null $placement_item_type type of the item currently selected for the placement
- * @var string|null $placement_item_id ID of the item currently selected for the placement
+ * @var array  $items               Array of available items.
+ * @var string $slug                slug of the current placement.
+ * @var array  $placement           information of the current placement.
+ * @var string $placement_item_type type of the item currently selected for the placement
+ * @var int    $placement_item_id   ID of the item currently selected for the placement
  */
 ?>
-<select id="advads-placements-item-<?php echo esc_attr( $_placement_slug ); ?>" name="advads[placements][<?php echo esc_attr( $_placement_slug ); ?>][item]">
-	<option value=""><?php esc_html_e( '--not selected--', 'advanced-ads' ); ?></option>
-	<?php if ( isset( $items['groups'] ) ) : ?>
-	<optgroup label="<?php esc_html_e( 'Ad Groups', 'advanced-ads' ); ?>">
-		<?php foreach ( $items['groups'] as $_item_id => $_item_title ) : ?>
-		<option value="<?php echo esc_attr( $_item_id ); ?>"
-								  <?php
-									if ( isset( $_placement['item'] ) ) {
-										selected( $_item_id, $_placement['item'] ); }
-									?>
-		><?php echo esc_html( $_item_title ); ?></option>
-	<?php endforeach; ?>
-	</optgroup>
-	<?php endif; ?>
-	<?php if ( isset( $items['ads'] ) ) : ?>
-	<optgroup label="<?php esc_html_e( 'Ads', 'advanced-ads' ); ?>">
-		<?php
-		foreach ( $items['ads'] as $_item_id => $_item_title ) :
-			?>
-		<option value="<?php echo esc_attr( $_item_id ); ?>"
-								  <?php
-									if ( $placement_item_id ) {
-										/**
-										 * Select the translated version of an ad if set up with WPML.
-										 *
-										 * @source https://wpml.org/wpml-hook/wpml_object_id/
-										 */
-										$translated_item_id = 'ad_' . apply_filters( 'wpml_object_id', $placement_item_id, 'advanced_ads', true );
+	<select id="advads-placements-item-<?php echo esc_attr( $slug ); ?>" name="advads[placements][<?php echo esc_attr( $slug ); ?>][item]">
+		<option value=""><?php esc_html_e( '--not selected--', 'advanced-ads' ); ?></option>
 
-										selected( $_item_id, $translated_item_id ); }
-									?>
-		><?php echo esc_html( $_item_title ); ?></option>
-	<?php endforeach; ?>
-	</optgroup>
-	<?php endif; ?>
-</select>
+		<?php foreach ( $items as $item_group ) : ?>
+			<optgroup label="<?php echo esc_attr( $item_group['label'] ); ?>">
+				<?php foreach ( $item_group['items'] as $item_id => $item ) : ?>
+					<option value="<?php echo esc_attr( $item_id ); ?>" <?php selected( $item['selected'] ); ?> <?php disabled( $item['disabled'] ); ?>>
+						<?php echo esc_html( $item['name'] ); ?>
+					</option>
+				<?php endforeach; ?>
+			</optgroup>
+		<?php endforeach; ?>
+	</select>
+
 <?php
 // link to item.
 if ( $placement_item_type ) :

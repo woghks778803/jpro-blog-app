@@ -11,7 +11,7 @@ if ( 'gam' === $type->ID ) {
 	<label><?php esc_html_e( 'width', 'advanced-ads' ); ?><input type="number" value="<?php echo isset( $ad->width ) ? esc_attr( $ad->width ) : 0; ?>" name="advanced_ad[width]">px</label>
 	<label><?php esc_html_e( 'height', 'advanced-ads' ); ?><input type="number" value="<?php echo isset( $ad->height ) ? esc_attr( $ad->height ) : 0; ?>" name="advanced_ad[height]">px</label>
 	<?php
-	$show_reserve_space   = in_array( $type->ID, array( 'plain', 'content', 'group', 'adsense' ), true );
+	$show_reserve_space   = in_array( $type->ID, [ 'plain', 'content', 'group', 'adsense' ], true );
 	$enable_reserve_space = $show_reserve_space && ! empty( $ad->output['add_wrapper_sizes'] );
 	?>
 	<label

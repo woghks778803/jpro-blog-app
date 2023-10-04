@@ -22,11 +22,11 @@ if ( defined( 'WP_DEBUG' ) && WP_DEBUG &&
 			wp_kses(
 			// translators: %s is a URL.
 				__( 'Reach out to <a href="%s">support</a> to get help.', 'advanced-ads' ),
-				array(
-					'a' => array(
-						'href' => array(),
-					),
-				)
+				[
+					'a' => [
+						'href' => [],
+					],
+				]
 			),
 			esc_url( admin_url( 'admin.php?page=advanced-ads-settings#top#support' ) )
 		);

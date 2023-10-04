@@ -52,17 +52,17 @@ class Meta {
 	 * @return void
 	 */
 	public function migratePostMeta() {
-		if ( aioseo()->cache->get( 'v3_migration_in_progress_settings' ) ) {
-			aioseo()->helpers->scheduleSingleAction( 'aioseo_migrate_post_meta', 30, [], true );
+		if ( aioseo()->core->cache->get( 'v3_migration_in_progress_settings' ) ) {
+			aioseo()->actionScheduler->scheduleSingle( 'aioseo_migrate_post_meta', 30, [], true );
 
 			return;
 		}
 
 		$postsPerAction  = 50;
 		$publicPostTypes = implode( "', '", aioseo()->helpers->getPublicPostTypes( true ) );
-		$timeStarted     = gmdate( 'Y-m-d H:i:s', aioseo()->cache->get( 'v3_migration_in_progress_posts' ) );
+		$timeStarted     = gmdate( 'Y-m-d H:i:s', aioseo()->core->cache->get( 'v3_migration_in_progress_posts' ) );
 
-		$postsToMigrate = aioseo()->db
+		$postsToMigrate = aioseo()->core->db
 			->start( 'posts' . ' as p' )
 			->select( 'p.ID' )
 			->leftJoin( 'aioseo_posts as ap', '`p`.`ID` = `ap`.`post_id`' )
@@ -75,7 +75,7 @@ class Meta {
 			->result();
 
 		if ( ! $postsToMigrate || ! count( $postsToMigrate ) ) {
-			aioseo()->cache->delete( 'v3_migration_in_progress_posts' );
+			aioseo()->core->cache->delete( 'v3_migration_in_progress_posts' );
 
 			return;
 		}
@@ -98,7 +98,7 @@ class Meta {
 				// Do nothing.
 			}
 		} else {
-			aioseo()->cache->delete( 'v3_migration_in_progress_posts' );
+			aioseo()->core->cache->delete( 'v3_migration_in_progress_posts' );
 		}
 	}
 
@@ -108,7 +108,7 @@ class Meta {
 	 * @since 4.0.3
 	 *
 	 * @param  int   $postId The post ID.
-	 * @return array $meta   The post meta.
+	 * @return array         The post meta.
 	 */
 	public function getMigratedPostMeta( $postId ) {
 		if ( is_category() || is_tag() || is_tax() || ! is_numeric( $postId ) ) {
@@ -123,7 +123,7 @@ class Meta {
 			return [];
 		}
 
-		$postMeta = aioseo()->db
+		$postMeta = aioseo()->core->db
 			->start( 'postmeta' . ' as pm' )
 			->select( 'pm.meta_key, pm.meta_value' )
 			->where( 'pm.post_id', $postId )
@@ -452,7 +452,7 @@ class Meta {
 
 		$postType    = $post->post_type;
 		$oldOptions  = get_option( 'aioseo_options_v3' );
-		$titleFormat = isset( $oldOptions[ "aiosp_${postType}_title_format" ] ) ? $oldOptions[ "aiosp_${postType}_title_format" ] : '';
+		$titleFormat = isset( $oldOptions[ "aiosp_{$postType}_title_format" ] ) ? $oldOptions[ "aiosp_{$postType}_title_format" ] : '';
 
 		$seoTitle = aioseo()->helpers->pregReplace( '/(%post_title%|%page_title%)/', $seoTitle, $titleFormat );
 

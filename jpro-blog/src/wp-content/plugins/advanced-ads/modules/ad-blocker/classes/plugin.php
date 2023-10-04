@@ -35,7 +35,7 @@ class Advanced_Ads_Ad_Blocker {
 			 $options['upload_dir']
 		) {
 			$this->plugins_url = plugins_url();
-			add_action( 'wp_enqueue_scripts', array( $this, 'edit_script_output' ), 101 );
+			add_action( 'wp_enqueue_scripts', [ $this, 'edit_script_output' ], 101 );
 		}
 	}
 
@@ -72,8 +72,7 @@ class Advanced_Ads_Ad_Blocker {
 			// Loop through all script files and change the URL from which they are loaded
 			if( is_object( $wp_scripts ) && is_array( $wp_scripts->registered ) ) foreach( $wp_scripts->registered as $script )
 			{
-				if( strpos( $script->src, 'advanced-ads' ) !== false )
-				{
+				if ( $script->src && is_string( $script->src ) && strpos( $script->src, 'advanced-ads' ) !== false ) {
 					$script->src = $this->clean_up_filename( $script->src );
 				}
 			}
@@ -116,20 +115,20 @@ class Advanced_Ads_Ad_Blocker {
 				// Switch to main blog.
 				switch_to_blog( $current_site->blog_id );
 
-				$this->options = get_option( ADVADS_AB_SLUG, array() );
+				$this->options = get_option( ADVADS_AB_SLUG, [] );
 				// Do not init options in the 'Advanced_Ads_Plugin' class.
-				$advads_options = (array) get_option( ADVADS_SLUG, array() );
+				$advads_options = (array) get_option( ADVADS_SLUG, [] );
 				$upload_dir = wp_upload_dir();
 
 				restore_current_blog();
 			} else {
-				$this->options = get_option( ADVADS_AB_SLUG, array() );
+				$this->options = get_option( ADVADS_AB_SLUG, [] );
 				$advads_options = Advanced_Ads::get_instance()->options();
 				$upload_dir = wp_upload_dir();
 			}
 
 			if ( ! $this->options ) {
-				$this->options = array();
+				$this->options = [];
 			}
 
 			$this->options['use-adblocker'] = ! empty( $advads_options['use-adblocker'] );

@@ -44,14 +44,14 @@ class Advanced_Ads {
 	 *
 	 * @var array Ads already loaded in the frontend
 	 */
-	public $current_ads = array();
+	public $current_ads = [];
 
 	/**
 	 * Ad types
 	 *
 	 * @var array Ad types
 	 */
-	public $ad_types = array();
+	public $ad_types = [];
 
 	/**
 	 * Plugin options
@@ -89,7 +89,7 @@ class Advanced_Ads {
 	 *
 	 * @var array list of bots
 	 */
-	protected $bots = array( 'bot', 'spider', 'crawler', 'scraper', 'parser', '008', 'Accoona-AI-Agent', 'ADmantX', 'alexa', 'appie', 'Apple-PubSub', 'Arachmo', 'Ask Jeeves', 'avira\.com', 'B-l-i-t-z-B-O-T', 'boitho\.com-dc', 'BUbiNG', 'Cerberian Drtrs', 'Charlotte', 'cosmos', 'Covario IDS', 'curl', 'Datanyze', 'DataparkSearch', 'Dataprovider\.com', 'DDG-Android', 'Ecosia', 'expo9', 'facebookexternalhit', 'Feedfetcher-Google', 'FindLinks', 'Firefly', 'froogle', 'Genieo', 'heritrix', 'Holmes', 'htdig', 'https://developers\.google\.com', 'ia_archiver', 'ichiro', 'igdeSpyder', 'InfoSeek', 'inktomi', 'Kraken', 'L\.webis', 'Larbin', 'Linguee', 'LinkWalker', 'looksmart', 'lwp-trivial', 'mabontland', 'Mnogosearch', 'mogimogi', 'Morning Paper', 'MVAClient', 'NationalDirectory', 'NetResearchServer', 'NewsGator', 'NG-Search', 'Nusearch', 'NutchCVS', 'Nymesis', 'oegp', 'Orbiter', 'Peew', 'Pompos', 'PostPost', 'proximic', 'PycURL', 'Qseero', 'rabaz', 'Radian6', 'Reeder', 'savetheworldheritage', 'SBIder', 'Scooter', 'ScoutJet', 'Scrubby', 'SearchSight', 'semanticdiscovery', 'Sensis', 'ShopWiki', 'silk', 'Snappy', 'Spade', 'Sqworm', 'StackRambler', 'TechnoratiSnoop', 'TECNOSEEK', 'Teoma', 'Thumbnail\.CZ', 'TinEye', 'truwoGPS', 'updated', 'Vagabondo', 'voltron', 'Vortex', 'voyager', 'VYU2', 'WebBug', 'webcollage', 'WebIndex', 'Websquash\.com', 'WeSEE:Ads', 'wf84', 'Wget', 'WomlpeFactory', 'WordPress', 'yacy', 'Yahoo! Slurp', 'Yahoo! Slurp China', 'YahooSeeker', 'YahooSeeker-Testing', 'YandexBot', 'YandexMedia', 'YandexBlogs', 'YandexNews', 'YandexCalendar', 'YandexImages', 'Yeti', 'yoogliFetchAgent', 'Zao', 'ZyBorg', 'okhttp', 'ips-agent', 'ltx71', 'Optimizer', 'Daum', 'Qwantify' );
+	protected $bots = [ 'bot', 'spider', 'crawler', 'scraper', 'parser', '008', 'Accoona-AI-Agent', 'ADmantX', 'alexa', 'appie', 'Apple-PubSub', 'Arachmo', 'Ask Jeeves', 'avira\.com', 'B-l-i-t-z-B-O-T', 'boitho\.com-dc', 'BUbiNG', 'Cerberian Drtrs', 'Charlotte', 'cosmos', 'Covario IDS', 'curl', 'Datanyze', 'DataparkSearch', 'Dataprovider\.com', 'DDG-Android', 'Ecosia', 'expo9', 'facebookexternalhit', 'Feedfetcher-Google', 'FindLinks', 'Firefly', 'froogle', 'Genieo', 'heritrix', 'Holmes', 'htdig', 'https://developers\.google\.com', 'ia_archiver', 'ichiro', 'igdeSpyder', 'InfoSeek', 'inktomi', 'Kraken', 'L\.webis', 'Larbin', 'Linguee', 'LinkWalker', 'looksmart', 'lwp-trivial', 'mabontland', 'Mnogosearch', 'mogimogi', 'Morning Paper', 'MVAClient', 'NationalDirectory', 'NetResearchServer', 'NewsGator', 'NG-Search', 'Nusearch', 'NutchCVS', 'Nymesis', 'oegp', 'Orbiter', 'Peew', 'Pompos', 'PostPost', 'proximic', 'PycURL', 'Qseero', 'rabaz', 'Radian6', 'Reeder', 'savetheworldheritage', 'SBIder', 'Scooter', 'ScoutJet', 'Scrubby', 'SearchSight', 'semanticdiscovery', 'Sensis', 'ShopWiki', 'silk', 'Snappy', 'Spade', 'Sqworm', 'StackRambler', 'TechnoratiSnoop', 'TECNOSEEK', 'Teoma', 'Thumbnail\.CZ', 'TinEye', 'truwoGPS', 'updated', 'Vagabondo', 'voltron', 'Vortex', 'voyager', 'VYU2', 'WebBug', 'webcollage', 'WebIndex', 'Websquash\.com', 'WeSEE:Ads', 'wf84', 'Wget', 'WomlpeFactory', 'WordPress', 'yacy', 'Yahoo! Slurp', 'Yahoo! Slurp China', 'YahooSeeker', 'YahooSeeker-Testing', 'YandexBot', 'YandexMedia', 'YandexBlogs', 'YandexNews', 'YandexCalendar', 'YandexImages', 'Yeti', 'yoogliFetchAgent', 'Zao', 'ZyBorg', 'okhttp', 'ips-agent', 'ltx71', 'Optimizer', 'Daum', 'Qwantify' ];
 
 	/**
 	 * Loaded instance of Advanced_Ads_Model
@@ -124,7 +124,7 @@ class Advanced_Ads {
 	 *
 	 * @var array
 	 */
-	private $number_of_ads = array();
+	private $number_of_ads = [];
 
 	/**
 	 * Reason why are disabled.
@@ -149,18 +149,18 @@ class Advanced_Ads {
 		$this->ad_selector = Advanced_Ads_Select::get_instance();
 
 		// initialize plugin specific functions.
-		add_action( 'init', array( $this, 'wp_init' ) );
+		add_action( 'init', [ $this, 'wp_init' ] );
 
 		// only when not doing ajax.
 		if ( wp_doing_ajax() ) {
 			Advanced_Ads_Ajax::get_instance();
 		}
-		add_action( 'plugins_loaded', array( $this, 'wp_plugins_loaded' ) );
+		add_action( 'plugins_loaded', [ $this, 'wp_plugins_loaded' ] );
 
 		// allow add-ons to interact.
-		add_action( 'init', array( $this, 'advanced_ads_loaded' ), 9 );
+		add_action( 'init', [ $this, 'advanced_ads_loaded' ], 9 );
 
-		add_filter( 'the_content', array( $this, 'set_was_in_the_loop' ), ~PHP_INT_MAX );
+		add_filter( 'the_content', [ $this, 'set_was_in_the_loop' ], ~PHP_INT_MAX );
 	}
 
 	/**
@@ -201,26 +201,28 @@ class Advanced_Ads {
 	public function wp_plugins_loaded() {
 		// register hook for global constants.
 		// Wait until BuddyPress assigns `WP_Query->is_404` back to `false`.
-		add_action( 'template_redirect', array( $this, 'set_disabled_constant' ), 11 );
-		add_action( 'rest_api_init', array( $this, 'set_disabled_constant' ) );
+		add_action( 'template_redirect', [ $this, 'set_disabled_constant' ], 11 );
+		add_action( 'rest_api_init', [ $this, 'set_disabled_constant' ] );
 
 		// setup default ad types.
-		add_filter( 'advanced-ads-ad-types', array( $this, 'setup_default_ad_types' ), 5 );
+		add_filter( 'advanced-ads-ad-types', [ $this, 'setup_default_ad_types' ], 5 );
 
 		// register hooks and filters for auto ad injection.
 		$this->init_injection();
 
 		// add meta robots noindex, nofollow to images, which are part of 'Image ad' ad type.
-		add_action( 'wp_head', array( $this, 'noindex_attachment_images' ) );
+		add_action( 'wp_head', [ $this, 'noindex_attachment_images' ] );
 
 		// use custom CSS or other custom header code.
-		add_action( 'wp_head', array( $this, 'custom_header_code' ) );
+		add_action( 'wp_head', [ $this, 'custom_header_code' ] );
 
 		// check if ads are disabled in secondary queries.
-		add_action( 'the_post', array( $this, 'set_query_type' ), 10, 2 );
-		add_action( 'loop_start', array( $this, 'set_loop_start' ), 10, 0 );
-		add_action( 'loop_end', array( $this, 'set_loop_end' ), 10, 0 );
+		add_action( 'the_post', [ $this, 'set_query_type' ], 10, 2 );
+		add_action( 'loop_start', [ $this, 'set_loop_start' ], 10, 0 );
+		add_action( 'loop_end', [ $this, 'set_loop_end' ], 10, 0 );
 
+		// register debug parameter
+		$this->debug_parameter();
 	}
 
 	/**
@@ -253,7 +255,7 @@ class Advanced_Ads {
 		 * Load default ad type files
 		 * custom ad types can also be loaded in your own plugin or functions.php
 		 */
-		$types = array();
+		$types = [];
 
 		/**
 		 * Developers can add new ad types using this filter
@@ -267,9 +269,9 @@ class Advanced_Ads {
 	 */
 	public function init_injection() {
 		// -TODO abstract
-		add_action( 'wp_head', array( $this, 'inject_header' ), 20 );
-		add_action( 'wp_footer', array( $this, 'inject_footer' ), 20 );
-		add_filter( 'the_content', array( $this, 'inject_content' ), $this->plugin->get_content_injection_priority() );
+		add_action( 'wp_head', [ $this, 'inject_header' ], 20 );
+		add_action( 'wp_footer', [ $this, 'inject_footer' ], 20 );
+		add_filter( 'the_content', [ $this, 'inject_content' ], $this->plugin->get_content_injection_priority() );
 	}
 
 	/**
@@ -353,7 +355,7 @@ class Advanced_Ads {
 		if ( isset( $options['hide-for-user-role'] ) ) {
 			$hide_for_roles = Advanced_Ads_Utils::maybe_translate_cap_to_role( $options['hide-for-user-role'] );
 		} else {
-			$hide_for_roles = array();
+			$hide_for_roles = [];
 		}
 		$user = wp_get_current_user();
 
@@ -447,11 +449,11 @@ class Advanced_Ads {
 	 * Injected ad into header
 	 */
 	public function inject_header() {
-		$placements = get_option( 'advads-ads-placements', array() );
+		$placements = get_option( 'advads-ads-placements', [] );
 		if ( is_array( $placements ) ) {
 			foreach ( $placements as $_placement_id => $_placement ) {
 				if ( isset( $_placement['type'] ) && 'header' === $_placement['type'] ) {
-					$_options = isset( $_placement['options'] ) ? $_placement['options'] : array();
+					$_options = isset( $_placement['options'] ) ? $_placement['options'] : [];
 					// injecting ad code so we don’t run escaping here.
 					// phpcs:ignore
 					echo Advanced_Ads_Select::get_instance()->get_ad_by_method( $_placement_id, Advanced_Ads_Select::PLACEMENT, $_options );
@@ -466,11 +468,11 @@ class Advanced_Ads {
 	 * @since 1.1.0
 	 */
 	public function inject_footer() {
-		$placements = get_option( 'advads-ads-placements', array() );
+		$placements = get_option( 'advads-ads-placements', [] );
 		if ( is_array( $placements ) ) {
 			foreach ( $placements as $_placement_id => $_placement ) {
 				if ( isset( $_placement['type'] ) && 'footer' === $_placement['type'] ) {
-					$_options = isset( $_placement['options'] ) ? $_placement['options'] : array();
+					$_options = isset( $_placement['options'] ) ? $_placement['options'] : [];
 					// injecting ad code so we don’t run escaping here.
 					// phpcs:ignore
 					echo Advanced_Ads_Select::get_instance()->get_ad_by_method( $_placement_id, Advanced_Ads_Select::PLACEMENT, $_options );
@@ -519,10 +521,10 @@ class Advanced_Ads {
 
 		// run only within the loop on single pages of public post types.
 		$public_post_types = get_post_types(
-			array(
+			[
 				'public'             => true,
 				'publicly_queryable' => true,
-			),
+			],
 			'names',
 			'or'
 		);
@@ -550,7 +552,7 @@ class Advanced_Ads {
 			}
 		}
 
-		$placements = get_option( 'advads-ads-placements', array() );
+		$placements = get_option( 'advads-ads-placements', [] );
 
 		if ( ! apply_filters( 'advanced-ads-can-inject-into-content', true, $content, $placements ) ) {
 			return $content;
@@ -560,7 +562,7 @@ class Advanced_Ads {
 			foreach ( $placements as $_placement_id => $_placement ) {
 				if ( empty( $_placement['item'] ) || ! isset( $_placement['type'] ) ) {
 					continue; }
-				$_options = isset( $_placement['options'] ) ? $_placement['options'] : array();
+				$_options = isset( $_placement['options'] ) ? $_placement['options'] : [];
 
 				// check if injection is ok for a specific placement ID.
 				if ( ! apply_filters( 'advanced-ads-can-inject-into-content-' . $_placement_id, true, $content, $_placement_id ) ) {
@@ -597,7 +599,7 @@ class Advanced_Ads {
 	 * @param array $args WP_Query arguments that are more specific that default.
 	 * @return array $ads array with post objects
 	 */
-	public static function get_ads( $args = array() ) {
+	public static function get_ads( $args = [] ) {
 		return self::get_instance()->get_model()->get_ads( $args );
 	}
 
@@ -609,7 +611,7 @@ class Advanced_Ads {
 	 * @return array $groups array with ad groups
 	 * @link http://codex.wordpress.org/Function_Reference/get_terms
 	 */
-	public static function get_ad_groups( $args = array() ) {
+	public static function get_ad_groups( $args = [] ) {
 		return self::get_instance()->get_model()->get_ad_groups( $args );
 	}
 
@@ -732,7 +734,7 @@ class Advanced_Ads {
 		// register ad group taxonomy.
 		if ( ! taxonomy_exists( self::AD_GROUP_TAXONOMY ) ) {
 			$post_type_params = $this->get_group_taxonomy_params();
-			register_taxonomy( self::AD_GROUP_TAXONOMY, array( self::POST_TYPE_SLUG ), $post_type_params );
+			register_taxonomy( self::AD_GROUP_TAXONOMY, [ self::POST_TYPE_SLUG ], $post_type_params );
 		}
 
 		// register ad post type.
@@ -748,7 +750,7 @@ class Advanced_Ads {
 	 * @return array
 	 */
 	protected function get_group_taxonomy_params() {
-		$labels = array(
+		$labels = [
 			'name'              => _x( 'Ad Groups & Rotations', 'ad group general name', 'advanced-ads' ),
 			'singular_name'     => _x( 'Ad Group', 'ad group singular name', 'advanced-ads' ),
 			'search_items'      => __( 'Search Ad Groups', 'advanced-ads' ),
@@ -757,29 +759,30 @@ class Advanced_Ads {
 			'parent_item_colon' => __( 'Parent Ad Groups:', 'advanced-ads' ),
 			'edit_item'         => __( 'Edit Ad Group', 'advanced-ads' ),
 			'update_item'       => __( 'Update Ad Group', 'advanced-ads' ),
-			'add_new_item'      => __( 'Add New Ad Group', 'advanced-ads' ),
+			'add_new_item'      => __( 'New Ad Group', 'advanced-ads' ),
 			'new_item_name'     => __( 'New Ad Groups Name', 'advanced-ads' ),
 			'menu_name'         => __( 'Groups', 'advanced-ads' ),
 			'not_found'         => __( 'No Ad Group found', 'advanced-ads' ),
-		);
+		];
 
-		$args = array(
+		$args = [
 			'public'            => false,
 			'hierarchical'      => true,
 			'labels'            => $labels,
 			'show_ui'           => true,
 			'show_in_nav_menus' => false,
+			'show_in_menu'		=> false,
 			'show_tagcloud'     => false,
 			'show_admin_column' => true,
 			'query_var'         => false,
 			'rewrite'           => false,
-			'capabilities' => array(
+			'capabilities' => [
 				'manage_terms' => 'advanced_ads_edit_ads',
 				'edit_terms'   => 'advanced_ads_edit_ads',
 				'delete_terms' => 'advanced_ads_edit_ads',
 				'assign_terms' => 'advanced_ads_edit_ads',
-			),
-		);
+			],
+		];
 
 		return apply_filters( 'advanced-ads-group-taxonomy-params', $args );
 	}
@@ -790,7 +793,7 @@ class Advanced_Ads {
 	 * @return array
 	 */
 	protected function get_post_type_params() {
-		$labels = array(
+		$labels = [
 			'name'               => __( 'Ads', 'advanced-ads' ),
 			'singular_name'      => __( 'Ad', 'advanced-ads' ),
 			'add_new'            => __( 'New Ad', 'advanced-ads' ),
@@ -804,20 +807,20 @@ class Advanced_Ads {
 			'not_found'          => __( 'No Ads found', 'advanced-ads' ),
 			'not_found_in_trash' => __( 'No Ads found in Trash', 'advanced-ads' ),
 			'parent'             => __( 'Parent Ad', 'advanced-ads' ),
-		);
+		];
 
-		$supports = array( 'title' );
+		$supports = [ 'title', 'author' ];
 		if ( defined( 'ADVANCED_ADS_ENABLE_REVISIONS' ) ) {
 			$supports[] = 'revisions';
 		};
 
-		$post_type_params = array(
+		$post_type_params = [
 			'labels'       => $labels,
 			'public'       => false,
 			'show_ui'      => true,
 			'show_in_menu' => false,
 			'hierarchical' => false,
-			'capabilities' => array(
+			'capabilities' => [
 				// Meta capabilities.
 				'edit_post'              => 'advanced_ads_edit_ads',
 				'read_post'              => 'advanced_ads_edit_ads',
@@ -827,7 +830,6 @@ class Advanced_Ads {
 				'delete_page'            => 'advanced_ads_edit_ads',
 				// Primitive capabilities used outside of map_meta_cap().
 				'edit_posts'             => 'advanced_ads_edit_ads',
-				'edit_others_posts'      => 'advanced_ads_edit_ads',
 				'publish_posts'          => 'advanced_ads_edit_ads',
 				'read_private_posts'     => 'advanced_ads_edit_ads',
 				// Primitive capabilities used within map_meta_cap().
@@ -835,17 +837,16 @@ class Advanced_Ads {
 				'delete_posts'           => 'advanced_ads_edit_ads',
 				'delete_private_posts'   => 'advanced_ads_edit_ads',
 				'delete_published_posts' => 'advanced_ads_edit_ads',
-				'delete_others_posts'    => 'advanced_ads_edit_ads',
 				'edit_private_posts'     => 'advanced_ads_edit_ads',
 				'edit_published_posts'   => 'advanced_ads_edit_ads',
 				'create_posts'           => 'advanced_ads_edit_ads',
-			),
+			],
 			'has_archive'  => false,
 			'query_var'    => false, // set to true and refresh your permalink settings to query ads under a public URL
 			'rewrite'      => false, // defaults to true and so needs to be set to false to prevent any public URL
 			'supports'     => $supports,
-			'taxonomies'   => array( self::AD_GROUP_TAXONOMY ),
-		);
+			'taxonomies'   => [ self::AD_GROUP_TAXONOMY ],
+		];
 
 		return apply_filters( 'advanced-ads-post-type-params', $post_type_params );
 	}
@@ -999,7 +1000,7 @@ class Advanced_Ads {
 		$key = md5( serialize( $post_status ) );
 		// query number of ads only, if not retrieved, yet.
 		if ( ! isset( self::get_instance()->number_of_ads[ $key ] ) ) {
-			$args                               = array( 'post_status' => $post_status );
+			$args                               = [ 'post_status' => $post_status ];
 			$recent_ads                         = self::get_instance()->get_model()->get_ads( $args );
 			self::get_instance()->number_of_ads[ $key ] = count( $recent_ads );
 		}
@@ -1049,5 +1050,51 @@ class Advanced_Ads {
 		}
 
 		return $content;
+	}
+
+	/**
+	 * Listen to URL parameters for debugging
+	 */
+	private function debug_parameter() {
+		if ( wp_doing_ajax() && isset( $_SERVER['HTTP_REFERER'] ) ) {
+			$query_string = wp_parse_url( $_SERVER['HTTP_REFERER'], PHP_URL_QUERY );
+			if ( $query_string ) {
+				parse_str( $query_string, $query );
+			}
+
+			if ( empty( $query['aa-debug'] ) ) {
+				return;
+			}
+
+			$debug_query = $query['aa-debug'];
+		} else {
+			if ( empty( $_GET['aa-debug'] ) ) {
+				return;
+			}
+			$debug_query = $_GET['aa-debug'];
+		}
+
+		$parameters = explode( ',', sanitize_text_field( $debug_query ) );
+		foreach ( $parameters as $parameter ) {
+			switch ( trim( $parameter ) ) {
+				case 'dummy':
+					// switch all ads to "dummy"
+					add_filter( 'advanced-ads-ad-option-type', function() {
+						return 'dummy';
+					} );
+					break;
+				case 'vcoff':
+					// disable ad visitor conditions
+					add_filter( 'advanced-ads-ad-option-visitors', '__return_empty_array' );
+					break;
+				case 'cboff':
+					// disable cache-busting for all ads
+					add_filter( 'advanced-ads-ad-select-args', function( $args ) {
+						$args['cache-busting'] = 'ignore';
+						return $args;
+					} );
+					break;
+			}
+		}
 	}
 }

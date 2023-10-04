@@ -65,7 +65,7 @@ class Cache {
 		// Are we searching for a group of keys?
 		$isLikeGet = preg_match( '/%/', $key );
 
-		$result = aioseo()->db
+		$result = aioseo()->core->db
 			->start( $this->table )
 			->select( '`key`, `value`' )
 			->whereRaw( '( `expiration` IS NULL OR `expiration` > \'' . aioseo()->helpers->timeToMysql( time() ) . '\' )' );
@@ -121,7 +121,7 @@ class Cache {
 		$value      = serialize( $value );
 		$expiration = 0 < $expiration ? aioseo()->helpers->timeToMysql( time() + $expiration ) : null;
 
-		aioseo()->db->insert( $this->table )
+		aioseo()->core->db->insert( $this->table )
 			->set( [
 				'key'        => $this->prepareKey( $key ),
 				'value'      => $value,
@@ -150,7 +150,7 @@ class Cache {
 	public function delete( $key ) {
 		$key = $this->prepareKey( $key );
 
-		aioseo()->db->delete( $this->table )
+		aioseo()->core->db->delete( $this->table )
 			->where( 'key', $key )
 			->run();
 
@@ -170,8 +170,7 @@ class Cache {
 		$key = $this->prefix && 0 !== strpos( $key, $this->prefix ) ? $this->prefix . $key : $key;
 
 		if ( aioseo()->helpers->isDev() && 80 < mb_strlen( $key, 'UTF-8' ) ) {
-			throw new \Exception( 'You are using a cache key that is too large, shorten your key and try again: [' . $key . ']' );
-			die;
+			throw new \Exception( 'You are using a cache key that is too large, shorten your key and try again: [' . esc_html( $key ) . ']' );
 		}
 
 		return $key;
@@ -194,13 +193,16 @@ class Cache {
 		// If we find the activation redirect, we'll need to reset it after clearing.
 		$activationRedirect = $this->get( 'activation_redirect' );
 
-		aioseo()->db->truncate( $this->table )->run();
+		aioseo()->core->db->truncate( $this->table )->run();
 
 		$this->clearStatic();
 
 		if ( $activationRedirect ) {
 			$this->update( 'activation_redirect', $activationRedirect, 30 );
 		}
+
+		// Bust the tableExists and columnExists cache.
+		aioseo()->internalOptions->database->installedTables = '';
 	}
 
 	/**
@@ -214,7 +216,7 @@ class Cache {
 	public function clearPrefix( $prefix ) {
 		$prefix = $this->prepareKey( $prefix );
 
-		aioseo()->db->delete( $this->table )
+		aioseo()->core->db->delete( $this->table )
 			->whereRaw( "`key` LIKE '$prefix%'" )
 			->run();
 
