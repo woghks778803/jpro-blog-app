@@ -51,7 +51,7 @@ class Advanced_Ads_Ad_Blocker_Admin {
 	 */
 	private function __construct() {
 		// add module settings to Advanced Ads settings page
-		add_action( 'advanced-ads-settings-init', [ $this, 'settings_init' ], 9, 1 );
+		add_action( 'advanced-ads-settings-init', array( $this, 'settings_init' ), 9, 1 );
 
 		$is_main_site = is_main_site( get_current_blog_id() );
 		if ( ! $is_main_site ) {
@@ -62,7 +62,7 @@ class Advanced_Ads_Ad_Blocker_Admin {
 		$this->options = Advanced_Ads_Ad_Blocker::get_instance()->options();
 		$this->upload_dir = $this->options['upload_dir'];
 
-		add_action( 'admin_init', [ $this, 'process_auto_update' ] );
+		add_action( 'admin_init', array( $this, 'process_auto_update' ) );
 
 		$this->error_messages = new WP_Error();
 	}
@@ -91,7 +91,7 @@ class Advanced_Ads_Ad_Blocker_Admin {
 		add_settings_field(
 			'use-adblocker',
 			__( 'Ad blocker fix', 'advanced-ads' ),
-			[ $this, 'render_settings_use_adblocker' ],
+			array( $this, 'render_settings_use_adblocker' ),
 			$hook,
 			'advanced_ads_adblocker_setting_section'
 		);
@@ -105,11 +105,6 @@ class Advanced_Ads_Ad_Blocker_Admin {
 		$checked      = ! empty( Advanced_Ads::get_instance()->options()['use-adblocker'] );
 
 		include ADVADS_AB_BASE_PATH . 'admin/views/setting-use-adblocker.php';
-
-		// if this is a sub site in a network, don't run the rebuild form code.
-		if ( ! $is_main_site ) {
-			return;
-		}
 
 		// add the rebuild form directly after the settings
 		?>
@@ -169,7 +164,7 @@ class Advanced_Ads_Ad_Blocker_Admin {
 	 **/
 	private function process_form() {
 		// at this point we do not need ftp/ssh credentials anymore
-		$form_post_fields = array_intersect_key( $_POST, [ 'advads_ab_assign_new_folder' => false ] );
+		$form_post_fields = array_intersect_key( $_POST, array( 'advads_ab_assign_new_folder' => false ) );
 
 		$this->create_dummy_plugin( $form_post_fields );
 
@@ -190,7 +185,7 @@ class Advanced_Ads_Ad_Blocker_Admin {
 	 * @param   array $form_post_fields options, POST data sent by user.
 	 * @return  array $new_options - options, that need to be stored in database.
 	 */
-	public function create_dummy_plugin( $form_post_fields = [] ) {
+	public function create_dummy_plugin( $form_post_fields = array() ) {
 		global $wp_filesystem;
 
 		$need_assign_new_name = isset( $form_post_fields['advads_ab_assign_new_folder'] );
@@ -201,18 +196,18 @@ class Advanced_Ads_Ad_Blocker_Admin {
 			return false;
 		}
 
-		$new_options       = [
-			'lookup_table' => isset( $this->options['lookup_table'] ) ? $this->options['lookup_table'] : [],
-		];
+		$new_options       = array(
+			'lookup_table' => isset( $this->options['lookup_table'] ) ? $this->options['lookup_table'] : array(),
+		);
 		$new_options_error = $new_options;
 		// $new_options_error does not have the 'module_can_work' key - ad-blocker script will be inactive and the asset folder will be rebuilt next time
 		$new_options['module_can_work'] = true;
 
 		$existing_files = @scandir( $this->upload_dir['basedir'] );
 		if ( $existing_files ) {
-			$existing_files = array_diff(  $existing_files, [ '..', '.' ] );
+			$existing_files = array_diff(  $existing_files, array( '..', '.' ) );
 		} else {
-			$existing_files = [];
+			$existing_files = array();
 		}
 
 		if ( ! empty( $this->options['folder_name'] ) ) {
@@ -300,7 +295,7 @@ class Advanced_Ads_Ad_Blocker_Admin {
 		$asset_path_normalized = Advanced_Ads_Filesystem::get_instance()->normalize_path( trailingslashit( $this->upload_dir['basedir'] ) ) . $folder_name;
 
 		// already saved associations (original name => replaced name)
-		$rand_asset_names = [];
+		$rand_asset_names = array();
 
 		if ( $need_assign_new_name ) {
 			// Check if there is a previous asset folder
@@ -331,14 +326,14 @@ class Advanced_Ads_Ad_Blocker_Admin {
 		// I.e: [advanced-ads-layer/admin/assets/css/admin.css] => array( path => /12/34/56/78/1347107783.css, mtime => 99 ).
 		$assets = $this->get_assets();
 		if ( $need_assign_new_name ) {
-			$lookup_table = [];
+			$lookup_table = array();
 		} else {
-			$lookup_table = isset( $this->options['lookup_table'] ) ? $this->options['lookup_table'] : [];
+			$lookup_table = isset( $this->options['lookup_table'] ) ? $this->options['lookup_table'] : array();
 		}
 
 		/* Do not rename assets and folders. If, for example, some library uses in file.css something like this:
 		'background: url(/img/image.png)', you should add 'img') to this array */
-		$not_rename_assets = [ 'public', 'assets', 'js', 'css', 'fancybox', 'advanced.js', 'jquery.fancybox-1.3.4.css'  ];
+		$not_rename_assets = array( 'public', 'assets', 'js', 'css', 'fancybox', 'advanced.js', 'jquery.fancybox-1.3.4.css'  );
 
 		// Loop through all the found assets
 		foreach ( $assets as $file => $filemtime ) {
@@ -351,7 +346,7 @@ class Advanced_Ads_Ad_Blocker_Admin {
 			$first_cleanup_filename = basename( $first_cleanup );
 			$first_cleanup_file_extension = pathinfo( $first_cleanup, PATHINFO_EXTENSION );
 			$path_components = preg_split('/\//', $first_cleanup_dir, -1, PREG_SPLIT_NO_EMPTY);
-			$path_components_new = [];
+			$path_components_new = array();
 
 			// Interate over directories.
 			foreach ( $path_components as $k => $dir ) {
@@ -408,10 +403,10 @@ class Advanced_Ads_Ad_Blocker_Admin {
 				return false;
 			}
 
-			$lookup_table[ $first_cleanup ] = [
+			$lookup_table[ $first_cleanup ] = array(
 				'path'  => $new_rel_file,
 				'mtime' => $filemtime,
-			];
+			);
 		}
 
 		return $lookup_table;
@@ -424,7 +419,7 @@ class Advanced_Ads_Ad_Blocker_Admin {
 	 * @return Array with pairs: abs_filename => mtime.
 	 */
 	public function recursive_search_assets( $dir ) {
-		$assets = [];
+		$assets = array();
 
 		$tree = glob( rtrim( $dir, '/' ) . '/*' );
 		if ( is_array( $tree ) ) {
@@ -454,7 +449,7 @@ class Advanced_Ads_Ad_Blocker_Admin {
 		}
 
 		$asset_path = trailingslashit( trailingslashit( $this->upload_dir['basedir'] ) . $this->options['folder_name'] ) ;
-		$new_files = [];
+		$new_files = array();
 
 		foreach ( $new_files_info as $abs_file => $mtime ) {
 			$rel_file = str_replace( WP_PLUGIN_DIR , '', $abs_file );
@@ -539,7 +534,8 @@ class Advanced_Ads_Ad_Blocker_Admin {
 	function clear_assets() {
 		$advads_options = Advanced_Ads::get_instance()->options();
 
-		if ( ! empty( $this->options['folder_name'] )
+		if ( ! empty( $advads_options['use-adblocker'] )
+			&& ! empty( $this->options['folder_name'] )
 			&& ! empty( $this->options['module_can_work'] )
 			&& $this->upload_dir
 			&& class_exists( 'WP_Filesystem_Direct', false )

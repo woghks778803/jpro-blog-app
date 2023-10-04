@@ -22,7 +22,7 @@ class Advanced_Ads_Ad_Expiration {
 	public function __construct( Advanced_Ads_Ad $ad ) {
 		$this->ad = $ad;
 
-		add_filter( 'advanced-ads-save-options', [ $this, 'save_expiration_date' ], 10, 2 );
+		add_filter( 'advanced-ads-save-options', array( $this, 'save_expiration_date' ), 10, 2 );
 	}
 
 	/**
@@ -36,7 +36,7 @@ class Advanced_Ads_Ad_Expiration {
 		}
 
 		// if the ad is not trashed, but has a different status than expired, transition the status.
-		if ( ! in_array( $this->ad->status, [ self::POST_STATUS, 'trash' ], true ) ) {
+		if ( ! in_array( $this->ad->status, array( self::POST_STATUS, 'trash' ), true ) ) {
 			$this->transition_post_status();
 		}
 
@@ -53,7 +53,6 @@ class Advanced_Ads_Ad_Expiration {
 	 */
 	public function save_expiration_date( $options, Advanced_Ads_Ad $ad ) {
 		if ( empty( $options['expiry_date'] ) ) {
-			delete_post_meta( $ad->id, self::POST_META );
 			return $options;
 		}
 		$datetime = ( new DateTimeImmutable() )->setTimestamp( (int) $options['expiry_date'] );
@@ -69,10 +68,10 @@ class Advanced_Ads_Ad_Expiration {
 	private function transition_post_status() {
 		kses_remove_filters();
 		wp_update_post(
-			[
+			array(
 				'ID'          => $this->ad->id,
 				'post_status' => self::POST_STATUS,
-			]
+			)
 		);
 		kses_init_filters();
 	}
@@ -81,10 +80,10 @@ class Advanced_Ads_Ad_Expiration {
 	 * Register custom post status for expired ads.
 	 */
 	public static function register_post_status() {
-		register_post_status( self::POST_STATUS, [
+		register_post_status( self::POST_STATUS, array(
 			'label'   => __( 'Expired', 'advanced-ads' ),
 			'private' => true,
-		] );
+		) );
 	}
 
 	/**

@@ -3,7 +3,7 @@
  * Represents a real ads.txt file.
  */
 class Advanced_Ads_Ads_Txt_Real_File {
-	private $records = [];
+	private $records = array();
 
 	/**
 	 * Parse a real file.
@@ -12,7 +12,7 @@ class Advanced_Ads_Ads_Txt_Real_File {
 	 */
 	public function parse_file( $file ) {
 		$lines = preg_split( '/\r\n|\r|\n/', $file );
-		$comments = [];
+		$comments = array();
 
 		foreach ( $lines as $line ) {
 			$line = explode( '#', $line );
@@ -26,7 +26,7 @@ class Advanced_Ads_Ads_Txt_Real_File {
 			}
 
 			$rec = explode( ',', $line[0] );
-			$data = [];
+			$data = array();
 
 			foreach ( $rec as $k => $r ) {
 				$r = trim( $r, " \n\r\t," );
@@ -40,7 +40,7 @@ class Advanced_Ads_Ads_Txt_Real_File {
 				$this->add_record( implode( ', ', $data ), $comments );
 			}
 
-			$comments = [];
+			$comments = array();
 		}
 	}
 
@@ -50,8 +50,8 @@ class Advanced_Ads_Ads_Txt_Real_File {
 	 * @string $data     Record without comments.
 	 * @array  $comments Comments related to the record.
 	 */
-	private function add_record( $data, $comments = [] ) {
-		$this->records[] = [ $data, $comments ];
+	private function add_record( $data, $comments = array() ) {
+		$this->records[] = array( $data, $comments );
 	}
 
 	/**

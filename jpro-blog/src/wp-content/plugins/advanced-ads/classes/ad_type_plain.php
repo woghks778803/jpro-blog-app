@@ -28,9 +28,9 @@ class Advanced_Ads_Ad_Type_Plain extends Advanced_Ads_Ad_Type_Abstract {
 	public function __construct() {
 		$this->title       = __( 'Plain Text and Code', 'advanced-ads' );
 		$this->description = __( 'Any ad network, Amazon, customized AdSense codes, shortcodes, and code like JavaScript, HTML or PHP.', 'advanced-ads' );
-		$this->parameters  = [
+		$this->parameters  = array(
 			'content' => '',
-		];
+		);
 	}
 
 	/**
@@ -40,21 +40,15 @@ class Advanced_Ads_Ad_Type_Plain extends Advanced_Ads_Ad_Type_Abstract {
 	 * echo the output right away here
 	 * name parameters must be in the "advanced_ads" array
 	 *
-	 * @param Advanced_Ads_Ad $ad Advanced_Ads_Ad.
+	 * @param object $ad Advanced_Ads_Ad.
 	 */
 	public function render_parameters( $ad ) {
 		// Load content.
 		$content = ( isset( $ad->content ) ) ? $ad->content : '';
 
 		?><p class="description"><?php esc_html_e( 'Insert plain text or code into this field.', 'advanced-ads' ); ?></p>
-		<?php $this->error_unfiltered_html( $ad ); ?>
-		<textarea
-			id="advads-ad-content-plain"
-			cols="40"
-			rows="10"
-			name="advanced_ad[content]"
-			onkeyup="Advanced_Ads_Admin.check_ad_source()"
-		><?php echo esc_textarea( $content ); ?></textarea>
+		<textarea id="advads-ad-content-plain" cols="40" rows="10" name="advanced_ad[content]"
+				onkeyup="Advanced_Ads_Admin.check_ad_source();"><?php echo esc_textarea( $content ); ?></textarea>
 		<?php include ADVADS_BASE_PATH . 'admin/views/ad-info-after-textarea.php'; ?>
 		<input type="hidden" name="advanced_ad[output][allow_php]" value="0"/>
 
@@ -73,6 +67,10 @@ class Advanced_Ads_Ad_Type_Plain extends Advanced_Ads_Ad_Type_Abstract {
 	 * @param object $ad Advanced_Ads_Ad object.
 	 */
 	public function render_php_allow( $ad ) {
+		if ( defined( 'ADVANCED_ADS_DISALLOW_PHP' ) ) {
+			return;
+		}
+
 		$content = ( isset( $ad->content ) ) ? $ad->content : '';
 
 		// Check if php is allowed.
@@ -83,45 +81,36 @@ class Advanced_Ads_Ad_Type_Plain extends Advanced_Ads_Ad_Type_Abstract {
 			 * For compatibility for ads with PHP added prior to 1.3.18
 			 *  check if there is php code in the content
 			 */
-			$allow_php = preg_match( '/<\?php/', $content );
+			if ( preg_match( '/\<\?php/', $content ) ) {
+				$allow_php = 1;
+			} else {
+				$allow_php = 0;
+			}
 		}
 		?>
 		<label class="label" for="advads-parameters-php"><?php esc_html_e( 'Allow PHP', 'advanced-ads' ); ?></label>
 		<div>
-			<input id="advads-parameters-php" type="checkbox" name="advanced_ad[output][allow_php]" value="1" <?php checked( 1, $allow_php ); ?> onChange="Advanced_Ads_Admin.check_ad_source();" <?php disabled( ! $this->is_php_globally_allowed() ); ?>/>
-				<span class="advads-help">
-					<span class="advads-tooltip">
-						<?php
-						echo wp_kses(
-							__( 'Execute PHP code (wrapped in <code>&lt;?php ?&gt;</code>)', 'advanced-ads' ),
-							[
-								'code' => [],
-							]
-						);
-						?>
-					</span>
-				</span>
-			<?php if ( ! $this->is_php_globally_allowed() ) : ?>
-				<p class="advads-notice-inline advads-error">
+			<input id="advads-parameters-php" type="checkbox" name="advanced_ad[output][allow_php]"
+					value="1" <?php checked( 1, $allow_php ); ?>
+					onChange="Advanced_Ads_Admin.check_ad_source();"/>
+			<span class="advads-help">
+				<span class="advads-tooltip">
 					<?php
-					printf(
-					/* translators: The name of the constant preventing PHP execution */
-						esc_html__( 'Executing PHP code has been disallowed by %s', 'advanced-ads' ),
-						sprintf( '<code>%s</code>', defined( 'DISALLOW_FILE_EDIT' ) && DISALLOW_FILE_EDIT ? 'DISALLOW_FILE_EDIT' : 'ADVANCED_ADS_DISALLOW_PHP' )
+					echo wp_kses(
+						__( 'Execute PHP code (wrapped in <code>&lt;?php ?&gt;</code>)', 'advanced-ads' ),
+						array(
+							'code' => array(),
+						)
 					);
 					?>
-				</p>
-			<?php else : ?>
-				<p class="advads-notice-inline advads-error" id="advads-allow-php-warning" style="display:none;">
-					<?php esc_html_e( 'Using PHP code can be dangerous. Please make sure you know what you are doing.', 'advanced-ads' ); ?>
-				</p>
-			<?php endif; ?>
-			<p class="advads-notice-inline advads-error" id="advads-parameters-php-warning" style="display:none;">
-				<?php esc_html_e( 'No PHP tag detected in your code.', 'advanced-ads' ); ?> <?php esc_html_e( 'Uncheck this checkbox for improved performance.', 'advanced-ads' ); ?>
-			</p>
+				</span>
+			</span>
+			<p class="advads-notice-inline advads-error" id="advads-parameters-php-warning"
+					style="display:none;"><?php esc_html_e( 'No PHP tag detected in your code.', 'advanced-ads' ); ?> <?php esc_html_e( 'Uncheck this checkbox for improved performance.', 'advanced-ads' ); ?></p>
 		</div>
 		<hr/>
 		<?php
+
 	}
 
 	/**
@@ -158,9 +147,8 @@ class Advanced_Ads_Ad_Type_Plain extends Advanced_Ads_Ad_Type_Abstract {
 	 */
 	public function prepare_output( $ad ) {
 		$content = $ad->content;
-
 		// Evaluate the code as PHP if setting was never saved or is allowed.
-		if ( ( ! isset( $ad->output['allow_php'] ) || $ad->output['allow_php'] ) && $this->is_php_globally_allowed() ) {
+		if ( ! defined( 'ADVANCED_ADS_DISALLOW_PHP' ) && ( ! isset( $ad->output['allow_php'] ) || $ad->output['allow_php'] ) ) {
 			ob_start();
 			// This code only runs if the "Allow PHP" option for plain text ads was enabled.
 			// phpcs:ignore Squiz.PHP.Eval.Discouraged -- this is specifically eval'd so allow eval here.
@@ -196,117 +184,13 @@ class Advanced_Ads_Ad_Type_Plain extends Advanced_Ads_Ad_Type_Abstract {
 				if ( strpos( $image, 'loading=' ) !== false ) {
 					continue;
 				}
-				
-				// Optimize image HTML tag with loading attributes based on WordPress filter context.
-				$content = str_replace( $image, $this->img_tag_add_loading_attr( $image, 'the_content' ), $content );
+
+				// replace the image string.
+				$content = str_replace( $image, wp_img_tag_add_loading_attr( $image, 'the_content' ), $content );
 			}
 		}
 
-		return (
-			(
-				( defined( 'DISALLOW_UNFILTERED_HTML' ) && DISALLOW_UNFILTERED_HTML ) ||
-				! $this->author_can_unfiltered_html( (int) get_post_field( 'post_author', $ad->id ) )
-			)
-			&& version_compare( $ad->options( 'last_save_version', '0' ), '1.35.0', 'ge' )
-		)
-			? wp_kses( $content, wp_kses_allowed_html( 'post' ) )
-			: $content;
-	}
-
-	/**
-	 * Check if php execution is globally forbidden.
-	 *
-	 * @return bool
-	 */
-	private function is_php_globally_allowed() {
-		return ! ( defined( 'ADVANCED_ADS_DISALLOW_PHP' ) && ADVANCED_ADS_DISALLOW_PHP )
-			&& ! ( defined( 'DISALLOW_FILE_EDIT' ) && DISALLOW_FILE_EDIT );
-	}
-
-	/**
-	 * Check if we're on an ad edit screen, if yes and the user does not have `unfiltered_html` permissions,
-	 * show an admin notice.
-	 *
-	 * @param Advanced_Ads_Ad $ad the current ad object.
-	 *
-	 * @return void
-	 */
-	protected function error_unfiltered_html( Advanced_Ads_Ad $ad ) {
-		$author_id       = (int) get_post_field( 'post_author', $ad->id );
-		$current_user_id = get_current_user_id();
-
-		if ($this->author_can_unfiltered_html($author_id)) {
-			return;
-		}
-
-		?>
-		<p class="advads-notice-inline advads-error">
-			<?php
-			if ( $author_id === $current_user_id ) {
-				esc_html_e( 'You do not have sufficient permissions to include all HTML tags.', 'advanced-ads' );
-			} else {
-				esc_html_e( 'The creator of the ad does not have sufficient permissions to include all HTML tags.', 'advanced-ads' );
-				if ( current_user_can( 'unfiltered_html' ) && $this->user_has_role_on_site() ) {
-					printf( '<button type="button" onclick="(()=>Advanced_Ads_Admin.reassign_ad(%d))();" class="button button-primary">%s</button>', $current_user_id, esc_html__( 'Assign ad to me', 'advanced-ads' ) );
-				}
-			}
-			?>
-			<a href="<?php echo esc_url( ADVADS_URL ) . '/manual/ad-types/#Plain_Text_and_Code'; ?>" target="_blank" rel="noopener">
-				<?php esc_html_e( 'Manual', 'advanced-ads' ); ?>
-			</a>
-		</p>
-		<?php
-	}
-
-	/**
-	 * Check if the ad content needs filtering.
-	 *
-	 * @param string $content The parsed ad content.
-	 * @deprecated
-	 *
-	 * @return string
-	 */
-	protected function kses_ad( $content ) {
 		return $content;
 	}
 
-	/**
-	 * Check if the author of the ad can use unfiltered_html.
-	 *
-	 * @param int $author_id User ID of the ad author.
-	 *
-	 * @return bool
-	 */
-	private function author_can_unfiltered_html( $author_id ) {
-		if ( defined( 'DISALLOW_UNFILTERED_HTML' ) && DISALLOW_UNFILTERED_HTML ) {
-			return false;
-		}
-
-		$unfiltered_allowed = user_can( $author_id, 'unfiltered_html' );
-		if ( $unfiltered_allowed || ! is_multisite() ) {
-			return $unfiltered_allowed;
-		}
-
-		$options = Advanced_Ads::get_instance()->options();
-		if ( ! isset( $options['allow-unfiltered-html'] ) ) {
-			$options['allow-unfiltered-html'] = [];
-		}
-		$allowed_roles = $options['allow-unfiltered-html'];
-		$user          = get_user_by( 'id', $author_id );
-
-		return ! empty( array_intersect( $user->roles, $allowed_roles ) );
-	}
-
-	/**
-	 * Check if the current user has a role on this site.
-	 *
-	 * @return bool
-	 */
-	private function user_has_role_on_site() {
-		return in_array(
-			get_current_blog_id(),
-			wp_list_pluck( get_blogs_of_user( get_current_user_id() ), 'userblog_id' ),
-			true
-		);
-	}
 }

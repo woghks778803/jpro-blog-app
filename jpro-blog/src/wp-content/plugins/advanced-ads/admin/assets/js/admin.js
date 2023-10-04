@@ -101,79 +101,91 @@ jQuery( document ).ready( function ( $ ) {
 		} )
 	}
 
-	// AD OVERVIEW PAGE
+	/**
+	 * Logic for ad groups
+	 */
 
-	$( '.advads-ad-list-tooltip' ).advads_tooltip( {
-		content: function () {
-			return jQuery( this ).find( '.advads-ad-list-tooltip-content' ).html()
-		}
+	// display new ad group form
+	$( '#advads-new-ad-group-link' ).on( 'click', function ( e ) {
+		e.preventDefault()
+		$( '#advads-new-group-form' ).show().find( 'input[type="text"]' ).focus()
 	} )
-	// show edit icon in the last head column
-	$( '.post-type-advanced_ads .wp-list-table thead th:last-of-type' ).append( '<span class="dashicons dashicons-edit"></span>' ).on( 'click', function() {
-		$( '#show-settings-link' ).trigger( 'click' );
-	} );
+
+    // display ad groups form
+	$( '#advads-ad-group-list a.edit, #advads-ad-group-list a.row-title' ).on( 'click', function ( e ) {
+        e.preventDefault();
+        var advadsgroupformrow = $(this).parents('.advads-group-row').next('.advads-ad-group-form');
+        if (advadsgroupformrow.is(':visible')) {
+            advadsgroupformrow.addClass('hidden');
+            // clear last edited id
+            $('#advads-last-edited-group').val('');
+        } else {
+            advadsgroupformrow.removeClass('hidden');
+            var group_id = advadsgroupformrow.find('.advads-group-id').val()
+            $('#advads-last-edited-group').val(group_id);
+            // remember that we opened that one
+            advadsgroupformrow.data('touched', true);
+        }
+    });
+    // display ad groups usage
+	$( '#advads-ad-group-list a.usage' ).on( 'click', function ( e ) {
+        e.preventDefault();
+        var usagediv = $(this).parents('.advads-group-row').find('.advads-usage');
+        if (usagediv.is(':visible')) {
+            usagediv.addClass('hidden');
+        } else {
+            usagediv.removeClass('hidden');
+        }
+    });
+	// handle the submission of the groups form
+	$( 'form#advads-form-groups' ).on( 'submit', function () {
+		jQuery( 'tr.advads-ad-group-form' ).each( function ( k, v ) {
+			v = jQuery( v )
+			if ( ! v.data( 'touched' ) ) {
+				v.remove()
+			}
+		} )
+	} )
 
 	/**
 	 * Logic for placement list
 	 */
-	( () => {
-		let selectedValue          = '0';
-		let searchTerm             = '';
-		const placementRows        = jQuery( '.advads-placements-table tbody tr' );
-		const showHidePlacementRow = callback => {
-			placementRows.each( ( index, element ) => {
-				const $row    = jQuery( element );
-				const rowData = $row.data( 'order' );
-
-				if (
-					typeof rowData === 'undefined'
-					|| typeof rowData['type'] === 'undefined'
-					|| typeof rowData['name'] === 'undefined'
-				) {
-					$row.show();
-					return;
+	// filter placement by type
+	jQuery( '.advads_filter_placement_type' ).on( 'change', function () {
+		var selectedValue = jQuery( this ).val();
+		if ( selectedValue === '0' ) {
+			jQuery( '.advads-placements-table tbody > tr' ).show();
+		} else {
+			jQuery( '.advads-placements-table tbody > tr' ).each( function () {
+				if ( jQuery( this ).data( 'type' ) !== selectedValue ) {
+					jQuery( this ).hide();
+				} else {
+					jQuery( this ).show();
 				}
-
-				$row.toggle(
-					( selectedValue === '0' || rowData['type'] === selectedValue )
-					&& ( searchTerm === '' || rowData['name'].toLowerCase().indexOf( searchTerm.toLowerCase() ) !== - 1 )
-				);
 			} );
-		};
-		// filter placement by type
-		jQuery( '.advads_filter_placement_type' ).on( 'change', function () {
-			selectedValue = jQuery( this ).val();
-			showHidePlacementRow();
+		}
+	} );
+
+	// search placement by name
+	jQuery( '.advads_search_placement_name' ).on( 'keyup', function () {
+		jQuery( '.advads_filter_placement_type option[value=\'0\']' ).attr( 'selected', true );
+		var value = this.value;
+		jQuery( '.advads-placements-table' ).find( 'tr' ).each( function ( index ) {
+			if ( ! index ) {
+				return;
+			}
+			var name = jQuery( this ).data( 'name' );
+			if ( typeof name !== 'undefined' ) {
+				jQuery( this ).toggle( name.toLowerCase().indexOf( value.toLowerCase() ) !== - 1 );
+			}
 		} );
+	} );
 
-		// search placement by name
-		jQuery( '.advads_search_placement_name' ).on( 'keyup', function () {
-			searchTerm = this.value;
-			showHidePlacementRow();
-		} );
-	} )();
-
-	/**
-	 * Filter ad/ad group selection in new placement form.
-	 */
-	( () => {
-		const placementTypeRadios = document.querySelectorAll( '[name="advads[placement][type]"]' );
-
-		placementTypeRadios.forEach( radio => {
-			radio.addEventListener( 'input', event => {
-				jQuery( '[name="advads[placement][item]"]' ).attr( 'disabled', true );
-
-				wp.ajax.post( window.advadstxt.placements_allowed_ads.action, {
-					'_ajax_nonce':    window.advadstxt.placements_allowed_ads.nonce,
-					'placement_type': event.target.value
-				} )
-				  .done( response => {
-					  jQuery( '[name="advads[placement][item]"]' )
-						  .replaceWith( wp.template( 'advads-placement-ad-select' )( {items: Object.values( response.items )} ) );
-				  } );
-			} );
-		} );
-	} )();
+	jQuery( '.advads-modal-close-action' ).on( 'click', function () {
+		// Change url hash, so that the modal doesn't load after refresh again.
+		window.location.hash = '#close';
+		jQuery( '#advanced-ads-placements-form' ).submit();
+	} );
 
 	jQuery( '.advads-delete-tag' ).each( function () {
 		jQuery( this ).on( 'click', function () {
@@ -189,48 +201,36 @@ jQuery( document ).ready( function ( $ ) {
 
 	// sort placement by type order or name
 	jQuery( '.advads-sort' ).on( 'click', function ( e ) {
-		var sort    = jQuery( this );
-		var orderBy = sort.data( 'orderby' );
-		var table   = jQuery( '.advads-placements-table' );
-		var rows    = jQuery( '> tbody > tr', table );
-		var links   = jQuery( '> thead th > a', table );
+		var sort  = jQuery( this );
+		var order = sort.data( 'order' );
+		var table = jQuery( '.advads-placements-table' );
+		var rows  = jQuery( '> tbody > tr', table );
+		var links = jQuery( '> thead th > a', table );
 		links.each( function () {
 			jQuery( this ).removeClass( 'advads-placement-sorted' );
 		} );
 		sort.addClass( 'advads-placement-sorted' );
 		rows.sort( function ( a, b ) {
-			let orderA = jQuery( a ).data( 'order' );
-			let orderB = jQuery( b ).data( 'order' );
-
-			if ( orderBy === 'type' ) {
-				if ( orderA['words-between-repeats'] !== orderB['words-between-repeats'] ) {
-					return orderA['words-between-repeats'] ? 1 : -1;
-				}
-
-				if ( orderA['order'] === orderB['order'] ) {
-					// Sort by index.
-					if ( orderA['post-content-index'] && orderB['post-content-index'] && orderA['post-content-index'] !== orderB['post-content-index'] ) {
-						return (orderA['post-content-index'] < orderB['post-content-index'] ) ? -1 : 1;
-					}
-					// Sort by name.
-					return orderA['name'].localeCompare( orderB['name'], undefined, { numeric: true } );
-				}
-				return orderA['order'] - orderB['order'];
+			var keyA = jQuery( a ).data( order );
+			var keyB = jQuery( b ).data( order );
+			if ( order === 'ordertype' ) {
+				return keyA - keyB;
 			}
-
-			return orderA['name'].localeCompare( orderB['name'], undefined, { numeric: true } );
+			return ( keyA.localeCompare( keyB ) );
 		} );
 		jQuery.each( rows, function ( index, row ) {
 			table.append( row );
 		} );
+		sort.data( 'order', order );
+		var state = {order: order};
 		var url   = window.location.pathname + window.location.search;
 
 		if ( url.indexOf( 'orderby=' ) !== - 1 ) {
-			url = url.replace( /\borderby=[0-9a-zA-Z_@.#+-]{1,50}\b/, 'orderby=' + orderBy );
+			url = url.replace( /\borderby=[0-9a-zA-Z_@.#+-]{1,50}\b/, 'orderby=' + order );
 		} else {
-			url += '&orderby=' + orderBy;
+			url += '&orderby=' + order;
 		}
-		window.history.replaceState( {orderby: orderBy}, document.title, url );
+		window.history.replaceState( state, document.title, url );
 		e.preventDefault();
 	} );
 
@@ -295,10 +295,16 @@ jQuery( document ).ready( function ( $ ) {
 	// set default group options for earch group
 
 	advads_show_group_options( $( '.advads-ad-group-type input:checked' ) )
+	// group page: hide ads if more than 4 – than only show 3
+	$( '.advads-ad-group-list-ads' ).each( function () {
+		if ( 5 <= $( this ).find( 'li' ).length ) {
+			$( this ).find( 'li:gt(2)' ).hide()
+		}
 
+	} )
 	// show more than 3 ads when clicked on a link
 	$( '.advads-group-ads-list-show-more' ).on( 'click', function () {
-		$( this ).hide().parent().siblings( '.advads-ad-group-list-ads' ).children( 'div' ).show()
+		jQuery( this ).hide().parents( '.advads-ad-group-list-ads' ).find( 'li' ).show()
 	} )
 
 	/**
@@ -332,16 +338,14 @@ jQuery( document ).ready( function ( $ ) {
 			} )
 		}
 
-	} );
+	} )
 
 	// activate licenses
 	$( '.advads-license-activate' ).on( 'click', function () {
 
 		var button = $( this )
 
-		if ( ! this.dataset.addon ) {
-			return;
-		}
+		if ( ! this.dataset.addon ) { return }
 
 		advads_disable_license_buttons( true )
 
@@ -364,8 +368,6 @@ jQuery( document ).ready( function ( $ ) {
 			var parent = button.parents( 'td' )
 
 			if ( r === '1' ) {
-				const key = 'advanced-ads-licenses[' + query.addon + ']';
-				advadsTermination.setInitialValue( key, document.querySelector( '[name="' + key + '"]' ) );
 				parent.find( '.advads-license-activate-error' ).remove()
 				parent.find( '.advads-license-deactivate' ).show()
 				button.fadeOut()
@@ -388,7 +390,7 @@ jQuery( document ).ready( function ( $ ) {
 				advads_disable_license_buttons( false )
 			}
 		} )
-	} );
+	} )
 
 	// deactivate licenses
 	$( '.advads-license-deactivate' ).on( 'click', function () {
@@ -436,7 +438,7 @@ jQuery( document ).ready( function ( $ ) {
 				advads_disable_license_buttons( false )
 			}
 		} )
-	} );
+	} )
 
 	// toggle license buttons – disable or not
 	function advads_disable_license_buttons ( disable = true ) {
@@ -449,130 +451,16 @@ jQuery( document ).ready( function ( $ ) {
 		}
 	}
 
-
-
-	/**
-	 * There are two formats of URL supported:
-	 * admin.php?page=advanced-ads-settings#top#tab_id     go to the `tab_id`
-	 * admin.php?page=advanced-ads-settings#tab_id__anchor go to the `tab_id`, scroll to the `anchor`
-	 */
-
-	/**
-	 * Extract the active tab and anchor from the URL hash.
-	 *
-	 * @var {string} hash The URL hash.
-	 *
-	 * @return {{tab: string, anchor: string}}
-	 */
-	function advads_extract_tab( hash ) {
-		var hash_parts = hash.replace( /^#top(#|%23)/, '' ).replace( /(#|%23)/, '' ).split( '__' );
-
-		return {
-			'tab':    hash_parts[0] || jQuery( '.advads-tab' ).attr( 'id' ),
-			'anchor': hash_parts[1]
-		};
-	}
-
-	/**
-	 * Set the active tab and optionally scroll to the anchor.
-	 */
-	function advads_set_tab( tab ) {
-		jQuery( '#advads-tabs' ).find( 'a' ).removeClass( 'nav-tab-active' );
-		jQuery( '.advads-tab' ).removeClass( 'active' );
-
-		jQuery( '#' + tab.tab ).addClass( 'active' );
-		jQuery( '#' + tab.tab + '-tab' ).addClass( 'nav-tab-active' );
-
-		if ( tab.anchor ) {
-			var anchor_offset = document.getElementById( tab.anchor ).getBoundingClientRect().top;
-			var admin_bar     = 48;
-			window.scrollTo( 0, anchor_offset + window.scrollY - admin_bar );
-		}
-	}
-
-	// While user is already on the Settings page, find links (in admin menu,
-	// in the Checks at the top, in the notices at the top) to particular setting tabs and open them on click.
-	jQuery( document ).on( 'click', 'a[href*="page=advanced-ads-settings"]:not(.nav-tab)', function () {
-		// Already on the Settings page, so set the new tab.
-		// Extract the tab id from the url.
-		var url = jQuery( this ).attr( 'href' ).split( 'advanced-ads-settings' )[1];
-		var tab = advads_extract_tab( url );
-		advads_set_tab( tab );
-	} );
-
-	/**
-	 * Handle the hashchange event, this enables back/forward navigation in the settings page.
-	 */
-	window.addEventListener( 'hashchange', event => {
-		const hash = advads_extract_tab( new URL( event.newURL ).hash );
-		try {
-			document.getElementById( hash.tab + '-tab' ).dispatchEvent( new Event( 'click' ) );
-		} catch ( e ) {
-			// fail silently if element does not exist.
-		}
-	} );
-
-	// activate specific or first tab
-
-	var active_tab = advads_extract_tab( window.location.hash );
-	advads_set_tab( active_tab );
-
-	// set all tab urls
-	advads_set_tab_hashes();
-
-	// dynamically generate the sub-menu
-	jQuery( '.advads-tab-sub-menu' ).each( function ( key, e ) {
-		// abort if scrollIntoView is not supported; we can’t use anchors because they are used for tabs already
-		if ( typeof e.scrollIntoView !== 'function' ) {
-			return;
-		}
-		// get all h2 headlines
-		advads_settings_parent_tab = jQuery( e ).parent( '.advads-tab' );
-		var headlines              = advads_settings_parent_tab.find( 'h2' );
-		// create list
-		if ( headlines.length > 1 ) {
-			advads_submenu_list = jQuery( '<ul>' );
-			headlines.each( function ( key, h ) {
-				// create anchor for this headline
-				var headline_id = 'advads-tab-headline-' + advads_settings_parent_tab.attr( 'id' ) + key;
-				jQuery( h ).attr( 'id', headline_id );
-				// place the link in the top menu
-				var text = text = h.textContent || h.innerText;
-				jQuery( '<li><a onclick="document.getElementById(\'' + headline_id + '\').scrollIntoView()">' + text + '</a></li>' ).appendTo( advads_submenu_list );
-			} );
-			// place the menu
-			advads_submenu_list.appendTo( e );
-		}
-	} );
-
-	// OVERVIEW LIST (Ads, Groups, Placements)
-
-	// toggle page filters, excluded from the Ads list since the search markup is not editable by us.
-	$( 'body:not(.post-type-advanced_ads ) #advads-show-filters' ).on( 'click', function() {
-		const disabled = $( this ).find( '.dashicons' ).hasClass( 'dashicons-arrow-up' );
-		$( '.advads-toggle-with-filters-button' ).toggleClass( 'hidden', disabled );
-		$( '#advads-show-filters .dashicons' ).toggleClass( 'dashicons-filter', disabled );
-		$( '#advads-show-filters .dashicons' ).toggleClass( 'dashicons-arrow-up', ! disabled );
-	} );
-
-	// AD OVERVIEW LIST
-
-	// show the bulk actions sticky, when some lines are selected
-	$( '.post-type-advanced_ads .check-column input[type="checkbox"]' ).on( 'change', function() {
-		$( '.post-type-advanced_ads .tablenav.bottom .bulkactions' ).toggleClass( 'fixed', 0 < $( '.post-type-advanced_ads .check-column input[type="checkbox"]:checked' ).length );
-	} );
-	// show screen options when clicking on our custom link or the Close button
-	$( '#advads-show-screen-options' ).on( 'click', function(){
-		$( '#show-settings-link' ).trigger( 'click' );
-	} );
-	// Add a close button to the screen options
-	$( '<button type="button" class="button advads-button-secondary">' + advadstxt.close + '</button>' )
-		.appendTo( $( '.post-type-advanced_ads #adv-settings .submit' ) )
-		.on( 'click', function() { $( '#show-settings-link' ).trigger( 'click' ); } );
-
 	/**
 	 * PLACEMENTS
 	 */
+	// show image tooltips
+	$( '.advanced-ads_page_advanced-ads-placements .advads-placement-type' ).advads_tooltip( {
+		content: function () {
+			return jQuery( this ).find( '.advads-placement-description' ).html()
+		}
+	} )
+
 	var set_touched_placement = function() {
 		var tr = $( this ).closest( 'tr.advanced-ads-placement-row' )
 		if ( tr ) {
@@ -588,15 +476,6 @@ jQuery( document ).ready( function ( $ ) {
 	//  to counter that and make it more robust in general, we now listen for mouseover events, that will
 	//  only occur, when the settings of a placement are expanded (let's just assume this means editing)
 	$( 'form#advanced-ads-placements-form .advads-modal' ).on( 'mouseover', set_touched_placement )
-
-	// if the modal is canceled, remove the "touched" data again, since the user discarded any changes.
-	$( document ).on( 'advads-modal-canceled', event => {
-		const $placementRow = $( '#' + event.detail.modal_id ).parents( '.advanced-ads-placement-row' );
-		if ( ! $placementRow.length ) {
-			return;
-		}
-		$placementRow.data( 'touched', false );
-	} );
 
 	//  on submit remove placements that were untouched
 	$( 'form#advanced-ads-placements-form' ).on( 'submit', function () {
@@ -636,88 +515,6 @@ jQuery( document ).ready( function ( $ ) {
 			$( tag_field ).next( '.advads-placements-content-custom-xpath' ).hide();
 		}
 	}
-
-	// show tooltips for group type or placement type in forms
-	$( '.advads-form-type' ).advads_tooltip( {
-		content: function () {
-			return jQuery( this ).find( '.advads-form-description' ).html()
-		},
-		parent: ( $target ) => {
-			const modal = $target.parents( '.advads-modal' );
-
-			return modal.length ? '#'+modal[0].id : 'body';
-		}
-	} );
-
-	/**
-	 * On the placements and ad edit page, check if the form values have changed on beforeunload.
-	 * On the settings page, additionally check for a tab change.
-	 */
-	const advadsTermination = ( () => {
-		let termination,
-			form,
-			submitted = false;
-		if ( window.advadstxt.admin_page === 'advanced-ads_page_advanced-ads-placements' ) {
-			form = document.getElementById( 'advanced-ads-placements-form' );
-			if ( form !== null ) {
-				termination = new Advads_Termination( form );
-			}
-		}
-
-		if ( window.advadstxt.admin_page === 'advanced_ads' ) {
-			// prevent errors on back/forward navigation
-			form = document.getElementById( 'post' );
-			if ( form !== null ) {
-				termination = new Advads_Termination( form );
-			}
-		}
-
-		if ( window.advadstxt.admin_page === 'advanced-ads_page_advanced-ads-settings' ) {
-			form = document.querySelector( '.advads-tab.active > form' );
-			if ( form !== null ) {
-				termination = new Advads_Termination( form );
-			}
-			[...document.getElementsByClassName( 'nav-tab' )].forEach( tab => {
-				tab.addEventListener( 'click', event => {
-					if ( ! termination.terminationNotice() ) {
-						event.preventDefault();
-						return termination;
-					}
-
-					advads_set_tab( advads_extract_tab( new URL( event.target.href ).hash ) );
-
-					form = document.querySelector( '.advads-tab.active > form' );
-					if ( form !== null ) {
-						termination = new Advads_Termination( form );
-						termination.collectValues();
-						// if the form is submitted, don't fire the beforeunload handler.
-						form.addEventListener( 'submit', () => {
-							submitted = true;
-						} );
-					}
-				} );
-			} );
-		}
-
-		if ( typeof termination !== 'undefined' ) {
-			termination.collectValues();
-			const beforeUnloadHandler = event => {
-				if ( ! submitted && ! termination.terminationNotice() ) {
-					event.preventDefault();
-					event.returnValue = 'string';
-					return termination;
-				}
-			};
-
-			window.addEventListener( 'beforeunload', beforeUnloadHandler );
-
-			// if the form is submitted, don't fire the beforeunload handler.
-			form.addEventListener( 'submit', () => {
-				submitted = true;
-			} );
-		}
-		return termination;
-	} )();
 
 	/**
 	 * Image ad uploader
@@ -763,8 +560,7 @@ jQuery( document ).ready( function ( $ ) {
 					var new_image = '<img width="' + attachment.width + '" height="' + attachment.height +
 						'" title="' + attachment.title + '" alt="' + attachment.alt + '" src="' + attachment.url + '"/>'
 					$( '#advads-image-preview' ).html( new_image )
-					$( '#advads-image-edit-link' ).attr( 'href', attachment.editLink );
-					$( '#advads-image-edit-link' ).removeClass( 'hidden' );
+					$( '#advads-image-edit-link' ).attr( 'href', attachment.editLink )
 					// process "reserve this space" checkbox
 					$( '#advanced-ads-ad-parameters-size input[type=number]:first' ).trigger( 'change' );
 				}
@@ -773,7 +569,7 @@ jQuery( document ).ready( function ( $ ) {
 
 		// Finally, open the modal
 		file_frame.open()
-	} );
+	} )
 
 	// WP 3.5+ uploader
 	var file_frame
@@ -844,13 +640,17 @@ jQuery( document ).ready( function ( $ ) {
 		$( this ).appendTo( $( this ).parents('.postbox').find( 'h2.hndle' ) )
 		$( this ).removeClass( 'hidden' )
 	} );
-	// Open tutorial link when clicked on it in targeting metabox.
+	// open tutorial link when clicked on it
 	$( '.advads-video-link' ).on( 'click', function (event) {
-		event.preventDefault();
-		var parent = $( event.target ).closest( '.postbox' );
-		parent.removeClass( 'closed' );
-		var videoContainer = parent.find( '.advads-video-link-container' );
-		videoContainer.html( videoContainer.data( 'videolink' ) );
+		event.preventDefault()
+		var video_container = $( event.target ).parents( '.postbox' ).find( '.advads-video-link-container' )
+		video_container.html( video_container.data( 'videolink' ) )
+	} );
+	// open inline tutorial link when clicked on it
+	$( '.advads-video-link-inline' ).on( 'click', function ( el ) {
+		el.preventDefault()
+		var video_container = $( this ).parents( 'div' ).siblings( '.advads-video-link-container' )
+		video_container.html( video_container.data( 'videolink' ) )
 	} );
 	// switch import type
 	jQuery( '.advads_import_type' ).on( 'change', function () {
@@ -881,23 +681,15 @@ jQuery( document ).ready( function ( $ ) {
 	} );
 } )
 
-function modal_submit_form( event, ID, modalID, validation = '' ) {
-	if ( validation !== '' && ! window[validation]( modalID ) ) {
-		event.preventDefault();
-		return;
-	}
-	document.getElementById( ID ).submit();
-}
-
 /**
  * Store the action hash in settings form action
  * thanks for Yoast SEO for this idea
  */
-function advads_set_tab_hashes() {
+function advads_set_tab_hashes () {
 	// iterate through forms
 	jQuery( '#advads-tabs' ).find( 'a' ).each( function () {
-		var id        = jQuery( this ).attr( 'id' ).replace( '-tab', '' );
-		var optiontab = jQuery( '#' + id );
+		var id        = jQuery( this ).attr( 'id' ).replace( '-tab', '' )
+		var optiontab = jQuery( '#' + id )
 
 		var form = optiontab.children( '.advads-settings-tab-main-form' )
 		if ( form.length ) {
@@ -956,38 +748,24 @@ function advads_toggle_box_enable ( e, selector ) {
 }
 
 /**
- * Validate the form that creates a new group or placement.
+ * validate placement form on submit
  */
-function advads_validate_new_form (modalID) {
-	// Check if type was selected
-	if ( ! jQuery( '.advads-form-type input:checked' ).length ) {
-		jQuery( '.advads-form-type-error' ).show()
+function advads_validate_placement_form () {
+	// check if placement type was selected
+	if ( ! jQuery( '.advads-placement-type input:checked' ).length ) {
+		jQuery( '.advads-placement-type-error' ).show()
 		return false
 	} else {
-		jQuery( '.advads-form-type-error' ).hide()
+		jQuery( '.advads-placement-type-error' ).hide()
 	}
-	// Check if name was entered
-	if ( jQuery( '.advads-form-name' ).val() == '' ) {
-		jQuery( '.advads-form-name-error' ).show()
+	// check if placement name was entered
+	if ( jQuery( '.advads-new-placement-name' ).val() == '' ) {
+		jQuery( '.advads-placement-name-error' ).show()
 		return false
 	} else {
-		jQuery( '.advads-form-name-error' ).hide()
+		jQuery( '.advads-placement-name-error' ).hide()
 	}
 	return true
-}
-
-/**
- * Submit only the current group. Submitting the form with all groups could otherwise cause a server timeout or PHP limit error.
- *
- * @param {string} modalID
- * @return {boolean}
- */
-function advads_group_edit_submit( modalID ) {
-	jQuery( '.advads-ad-group-form' )
-		.filter( ( i, element ) => ! jQuery( element ).parents( modalID ).length )
-		.remove();
-
-	return true;
 }
 
 /**
@@ -1157,6 +935,7 @@ function advads_ads_txt_find_issues () {
 
 }
 
+
 window.advanced_ads_admin     = window.advanced_ads_admin || {}
 advanced_ads_admin.filesystem = {
 	/**
@@ -1257,17 +1036,17 @@ window.Advanced_Ads_Admin = window.Advanced_Ads_Admin || {
 
 	},
 	get_ad_source_editor_text: function () {
-		let text = '';
-		if ( Advanced_Ads_Admin.editor && Advanced_Ads_Admin.editor.codemirror ) {
-			text = Advanced_Ads_Admin.editor.codemirror.getValue();
-		} else {
-			const ta = jQuery( '#advads-ad-content-plain' );
-			if ( ta ) {
-				text = ta.val();
+		var text = undefined
+		if ( Advanced_Ads_Admin.editor ) {
+			if ( Advanced_Ads_Admin.editor.codemirror ) {
+				text = Advanced_Ads_Admin.editor.codemirror.getValue()
 			}
 		}
-
-		return text;
+		if ( ! text ) {
+			var ta = jQuery( '#advads-ad-content-plain' )
+			if ( ta ) text = ta.val()
+		}
+		return text
 	},
 	set_ad_source_editor_text: function ( text ) {
 		if ( Advanced_Ads_Admin.editor && Advanced_Ads_Admin.editor.codemirror ) {
@@ -1277,47 +1056,19 @@ window.Advanced_Ads_Admin = window.Advanced_Ads_Admin || {
 		}
 	},
 	check_ad_source: function () {
-		const text            = Advanced_Ads_Admin.get_ad_source_editor_text();
-		const phpWarning      = jQuery( '#advads-parameters-php-warning' );
-		const allowPhpWarning = jQuery( '#advads-allow-php-warning' );
-
-		phpWarning.hide();
-		allowPhpWarning.hide();
-
-		const plainTextarea = document.getElementById( 'advads-ad-content-plain' );
-		plainTextarea.value = text;
-		plainTextarea.dispatchEvent( new Event( 'input' ) );
-
-		if ( jQuery( '#advads-parameters-php' ).prop( 'checked' ) ) {
-			// ad content has opening php tag.
-			if ( /<\?(?:php|=)/.test( text ) ) {
-				allowPhpWarning.show();
-			} else {
-				phpWarning.show();
-			}
-		}
-		// execute shortcodes is enabled.
-		if ( jQuery( '#advads-parameters-shortcodes' ).prop( 'checked' ) && ! /\[[^\]]+\]/.test( text ) ) {
-			jQuery( '#advads-parameters-shortcodes-warning' ).show();
+		var text        = Advanced_Ads_Admin.get_ad_source_editor_text()
+		var enabled_php = jQuery( '#advads-parameters-php' ).prop( 'checked' )
+		var enabled_sc  = jQuery( '#advads-parameters-shortcodes' ).prop( 'checked' )
+		if ( enabled_php && ! /\<\?php/.test( text ) ) {
+			jQuery( '#advads-parameters-php-warning' ).show()
 		} else {
-			jQuery( '#advads-parameters-shortcodes-warning' ).hide();
+			jQuery( '#advads-parameters-php-warning' ).hide()
 		}
-	},
-
-	/**
-	 * Change the user id to the current user and save the post.
-	 *
-	 * @param {int} user_id
-	 */
-	reassign_ad: function ( user_id ) {
-		let $authorBox = jQuery( '#post_author_override' );
-		if ( ! $authorBox.length ) {
-			$authorBox = jQuery( '#post_author' );
+		if ( enabled_sc && ! /\[[^\]]+\]/.test( text ) ) {
+			jQuery( '#advads-parameters-shortcodes-warning' ).show()
+		} else {
+			jQuery( '#advads-parameters-shortcodes-warning' ).hide()
 		}
-
-		$authorBox.val( user_id ).queue( () => {
-			jQuery( '#post' ).submit();
-		} );
 	},
 
 	/**
@@ -1510,6 +1261,7 @@ if ( ! window.AdvancedAdsAdmin.AdImporter ) window.AdvancedAdsAdmin.AdImporter =
 			}
 		}
 		jQuery( '#wpwrap' ).trigger( 'advads-mapi-adlist-opened' );
+		AdvancedAdsAdmin.AdImporter.resizeAdListHeader()
 	},
 	/**
 	 * will be called every time the ad type is changed.
@@ -1620,6 +1372,23 @@ if ( ! window.AdvancedAdsAdmin.AdImporter ) window.AdvancedAdsAdmin.AdImporter =
 		else jQuery( '#remote-ad-code-msg' ).html( msg )
 	},
 
+	// another legacy method
+	resizeAdListHeader: function () {
+		var th = jQuery( '#mapi-list-header span' )
+		var tb = jQuery( '#mapi-table-wrap tbody tr:visible' )
+		var w  = []
+
+		tb.first().find( 'td' ).each( function () {
+			w.push( jQuery( this ).width() )
+		} )
+
+		th.each( function ( i ) {
+			if ( i != w.length - 1 ) {
+				jQuery( this ).width( w[ i ] )
+			}
+		} )
+	},
+
 	/**
 	 * legacy method
 	 */
@@ -1687,7 +1456,7 @@ if ( ! window.AdvancedAdsAdmin.AdImporter ) window.AdvancedAdsAdmin.AdImporter =
 	 * updates the UI, (call if the selected unit is NOT supported)
 	 */
 	emptyMapiSelector: function ( msg ) {
-		const nag = '<div class="advads-notice-inline advads-error"><p>' + msg + '</p></div>'
+		const nag = '<div class="notice notice-error" style="font-size:1.1em;padding:.6em 1em;font-weight:bold;">' + msg + '</div>'
 		jQuery( '#mapi-loading-overlay' ).css( 'display', 'none' )
 		jQuery( '#mapi-wrap' ).html( jQuery( nag ) )
 	},

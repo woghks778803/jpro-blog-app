@@ -5,7 +5,7 @@
  * listed on support and settings page
  */
 
-$messages = [];
+$messages = array();
 
 if ( Advanced_Ads_Ad_Health_Notices::has_visible_problems() ) {
 	$messages[] = sprintf(

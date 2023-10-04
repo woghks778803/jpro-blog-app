@@ -6,8 +6,8 @@
 final class Advanced_Ads_ModuleLoader {
 
 	protected static $loader;
-	protected static $textdomains = [];
-	protected static $modules = [];
+	protected static $textdomains = array();
+	protected static $modules = array();
 
 	/**
 	 * Get the Composer autoloader.
@@ -30,10 +30,10 @@ final class Advanced_Ads_ModuleLoader {
 	 * @param string $path    path to modules
 	 * @param array  $options module loader options
 	 */
-	public static function loadModules($path, $options = []) {
+	public static function loadModules($path, $options = array()) {
 		$loader = self::getLoader();
 
-		$disabledModules = isset($options['disabled']) ? (array) $options['disabled'] : [];
+		$disabledModules = isset($options['disabled']) ? (array) $options['disabled'] : array();
 		$isAdmin = is_admin();
 
 		// iterate modules
