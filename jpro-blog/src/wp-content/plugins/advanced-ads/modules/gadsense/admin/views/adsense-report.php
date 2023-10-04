@@ -20,7 +20,7 @@ $data_timestamp->setTimezone( $time_zone );
 			<div class="advads-stats-dd-container">
 				<div class="advads-stats-dd-button"><span class="dashicons dashicons-admin-multisite"></span>
 					<div class="advads-stats-dd-items">
-						<div class="advads-stats-dd-item<?php echo in_array( $report_filter, array( '*', '' ), true ) ? ' current-filter' : ''; ?>" data-domain="*">
+						<div class="advads-stats-dd-item<?php echo in_array( $report_filter, [ '*', '' ], true ) ? ' current-filter' : ''; ?>" data-domain="*">
 							<?php esc_html_e( 'All', 'advanced-ads' ); ?>
 						</div><!-- .advads-stats-dd-item -->
 						<?php foreach ( $report_domains as $domain_name ) : ?>

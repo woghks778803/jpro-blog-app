@@ -24,26 +24,28 @@ class Advanced_Ads_Ad_Ajax_Callbacks {
 	public function __construct() {
 
 		// admin only!
-		add_action( 'wp_ajax_load_ad_parameters_metabox', array( $this, 'load_ad_parameters_metabox' ) );
-		add_action( 'wp_ajax_load_visitor_conditions_metabox', array( $this, 'load_visitor_condition' ) );
-		add_action( 'wp_ajax_load_display_conditions_metabox', array( $this, 'load_display_condition' ) );
-		add_action( 'wp_ajax_advads-terms-search', array( $this, 'search_terms' ) );
-		add_action( 'wp_ajax_advads-close-notice', array( $this, 'close_notice' ) );
-		add_action( 'wp_ajax_advads-hide-notice', array( $this, 'hide_notice' ) );
-		add_action( 'wp_ajax_advads-subscribe-notice', array( $this, 'subscribe' ) );
-		add_action( 'wp_ajax_advads-activate-license', array( $this, 'activate_license' ) );
-		add_action( 'wp_ajax_advads-deactivate-license', array( $this, 'deactivate_license' ) );
-		add_action( 'wp_ajax_advads-adblock-rebuild-assets', array( $this, 'adblock_rebuild_assets' ) );
-		add_action( 'wp_ajax_advads-post-search', array( $this, 'post_search' ) );
-		add_action( 'wp_ajax_advads-ad-injection-content', array( $this, 'inject_placement' ) );
-		add_action( 'wp_ajax_advads-save-hide-wizard-state', array( $this, 'save_wizard_state' ) );
-		add_action( 'wp_ajax_advads-adsense-enable-pla', array( $this, 'adsense_enable_pla' ) );
-		add_action( 'wp_ajax_advads-ad-health-notice-display', array( $this, 'ad_health_notice_display' ) );
-		add_action( 'wp_ajax_advads-ad-health-notice-push-adminui', array( $this, 'ad_health_notice_push' ) );
-		add_action( 'wp_ajax_advads-ad-health-notice-hide', array( $this, 'ad_health_notice_hide' ) );
-		add_action( 'wp_ajax_advads-ad-health-notice-unignore', array( $this, 'ad_health_notice_unignore' ) );
-		add_action( 'wp_ajax_advads-ad-health-notice-solved', array( $this, 'ad_health_notice_solved' ) );
-		add_action( 'wp_ajax_advads-update-frontend-element', array( $this, 'update_frontend_element' ) );
+		add_action( 'wp_ajax_load_ad_parameters_metabox', [ $this, 'load_ad_parameters_metabox' ] );
+		add_action( 'wp_ajax_load_visitor_conditions_metabox', [ $this, 'load_visitor_condition' ] );
+		add_action( 'wp_ajax_load_display_conditions_metabox', [ $this, 'load_display_condition' ] );
+		add_action( 'wp_ajax_advads-terms-search', [ $this, 'search_terms' ] );
+		add_action( 'wp_ajax_advads-close-notice', [ $this, 'close_notice' ] );
+		add_action( 'wp_ajax_advads-hide-notice', [ $this, 'hide_notice' ] );
+		add_action( 'wp_ajax_advads-subscribe-notice', [ $this, 'subscribe' ] );
+		add_action( 'wp_ajax_advads-activate-license', [ $this, 'activate_license' ] );
+		add_action( 'wp_ajax_advads-deactivate-license', [ $this, 'deactivate_license' ] );
+		add_action( 'wp_ajax_advads-adblock-rebuild-assets', [ $this, 'adblock_rebuild_assets' ] );
+		add_action( 'wp_ajax_advads-post-search', [ $this, 'post_search' ] );
+		add_action( 'wp_ajax_advads-ad-injection-content', [ $this, 'inject_placement' ] );
+		add_action( 'wp_ajax_advads-save-hide-wizard-state', [ $this, 'save_wizard_state' ] );
+		add_action( 'wp_ajax_advads-adsense-enable-pla', [ $this, 'adsense_enable_pla' ] );
+		add_action( 'wp_ajax_advads-ad-health-notice-display', [ $this, 'ad_health_notice_display' ] );
+		add_action( 'wp_ajax_advads-ad-health-notice-push-adminui', [ $this, 'ad_health_notice_push' ] );
+		add_action( 'wp_ajax_advads-ad-health-notice-hide', [ $this, 'ad_health_notice_hide' ] );
+		add_action( 'wp_ajax_advads-ad-health-notice-unignore', [ $this, 'ad_health_notice_unignore' ] );
+		add_action( 'wp_ajax_advads-ad-health-notice-solved', [ $this, 'ad_health_notice_solved' ] );
+		add_action( 'wp_ajax_advads-update-frontend-element', [ $this, 'update_frontend_element' ] );
+		add_action( 'wp_ajax_advads-get-block-hints', [ $this, 'get_block_hints' ] );
+		add_action( 'wp_ajax_advads-placements-allowed-ads', [ $this, 'get_allowed_ads_for_placement_type' ] );
 
 	}
 
@@ -66,13 +68,13 @@ class Advanced_Ads_Ad_Ajax_Callbacks {
 			die();
 		}
 
-		$ad = new Advanced_Ads_Ad( $ad_id );
+		$ad = \Advanced_Ads\Ad_Repository::get( $ad_id );
 
 		if ( ! empty( $types[ $type_string ] ) && method_exists( $types[ $type_string ], 'render_parameters' ) ) {
 			$type = $types[ $type_string ];
 			$type->render_parameters( $ad );
 
-			$types_without_size = array( 'dummy' );
+			$types_without_size = [ 'dummy' ];
 			$types_without_size = apply_filters( 'advanced-ads-types-without-size', $types_without_size );
 			if ( ! in_array( $type_string, $types_without_size ) ) {
 				include ADVADS_BASE_PATH . 'admin/views/ad-parameters-size.php';
@@ -108,7 +110,7 @@ class Advanced_Ads_Ad_Ajax_Callbacks {
 
 		// get visitor condition types.
 		$visitor_conditions = Advanced_Ads_Visitor_Conditions::get_instance()->conditions;
-		$condition          = array();
+		$condition          = [];
 		$condition['type']  = isset( $_POST['type'] ) ? $_POST['type'] : '';
 		$index              = isset( $_POST['index'] ) ? $_POST['index'] : 0;
 
@@ -121,7 +123,7 @@ class Advanced_Ads_Ad_Ajax_Callbacks {
 		}
 
 		if ( method_exists( $metabox[0], $metabox[1] ) ) {
-			call_user_func( array( $metabox[0], $metabox[1] ), $condition, $index, $form_name );
+			call_user_func( [ $metabox[0], $metabox[1] ], $condition, $index, $form_name );
 		}
 
 		die();
@@ -142,7 +144,7 @@ class Advanced_Ads_Ad_Ajax_Callbacks {
 
 		// get display condition types.
 		$conditions        = Advanced_Ads_Display_Conditions::get_instance()->conditions;
-		$condition         = array();
+		$condition         = [];
 		$condition['type'] = isset( $_POST['type'] ) ? $_POST['type'] : '';
 		$index             = isset( $_POST['index'] ) ? $_POST['index'] : 0;
 
@@ -155,7 +157,7 @@ class Advanced_Ads_Ad_Ajax_Callbacks {
 		}
 
 		if ( method_exists( $metabox[0], $metabox[1] ) ) {
-			call_user_func( array( $metabox[0], $metabox[1] ), $condition, $index, $form_name );
+			call_user_func( [ $metabox[0], $metabox[1] ], $condition, $index, $form_name );
 		}
 
 		die();
@@ -174,12 +176,12 @@ class Advanced_Ads_Ad_Ajax_Callbacks {
 			return;
 		}
 
-		$args     = array();
+		$args     = [];
 		$taxonomy = $_POST['tax'];
-		$args     = array(
+		$args     = [
 			'hide_empty' => false,
 			'number'     => 20,
-		);
+		];
 
 		if ( ! isset( $_POST['search'] ) || '' === $_POST['search'] ) {
 			die();
@@ -187,7 +189,7 @@ class Advanced_Ads_Ad_Ajax_Callbacks {
 
 		// if search is an id, search for the term id, else do a full text search.
 		if ( 0 !== absint( $_POST['search'] ) && strlen( $_POST['search'] ) === strlen( absint( $_POST['search'] ) ) ) {
-			$args['include'] = array( absint( $_POST['search'] ) );
+			$args['include'] = [ absint( $_POST['search'] ) ];
 		} else {
 			$args['search'] = $_POST['search'];
 		}
@@ -253,15 +255,15 @@ class Advanced_Ads_Ad_Ajax_Callbacks {
 		if ( ! current_user_can( Advanced_Ads_Plugin::user_cap( 'advanced_ads_see_interface' ) ) || empty( $_POST['notice'] )
 		) {
 			wp_send_json_error(
-				array(
+				[
 					// translators: %s is a URL.
 					'message' => sprintf( __( 'An error occurred. Please use <a href="%s" target="_blank">this form</a> to sign up.', 'advanced-ads' ), 'http://eepurl.com/bk4z4P' ),
-				),
+				],
 				400
 			);
 		}
 
-		wp_send_json_success( array( 'message' => Advanced_Ads_Admin_Notices::get_instance()->subscribe( $_POST['notice'] ) ) );
+		wp_send_json_success( [ 'message' => Advanced_Ads_Admin_Notices::get_instance()->subscribe( $_POST['notice'] ) ] );
 	}
 
 	/**
@@ -336,8 +338,8 @@ class Advanced_Ads_Ad_Ajax_Callbacks {
 			return;
 		}
 
-		add_filter( 'wp_link_query_args', array( 'Advanced_Ads_Display_Conditions', 'modify_post_search' ) );
-		add_filter( 'posts_search', array( 'Advanced_Ads_Display_Conditions', 'modify_post_search_sql' ) );
+		add_filter( 'wp_link_query_args', [ 'Advanced_Ads_Display_Conditions', 'modify_post_search' ] );
+		add_filter( 'posts_search', [ 'Advanced_Ads_Display_Conditions', 'modify_post_search_sql' ] );
 
 		wp_ajax_wp_link_ajax();
 	}
@@ -386,7 +388,7 @@ class Advanced_Ads_Ad_Ajax_Callbacks {
 
 		$item = 'ad_' . $ad_id;
 
-		$options = array();
+		$options = [];
 
 		// check type.
 		$placement_types = Advanced_Ads_Placements::get_placement_types();
@@ -396,20 +398,20 @@ class Advanced_Ads_Ad_Ajax_Callbacks {
 
 		$title = $placement_types[ $type ]['title'];
 
-		$new_placement = array(
+		$new_placement = [
 			'type' => $type,
 			'item' => $item,
 			'name' => $title,
-		);
+		];
 
 		// set content specific options.
 		if ( 'post_content' === $type ) {
 			$index                    = isset( $_REQUEST['options']['index'] ) ? absint( $_REQUEST['options']['index'] ) : 1;
-			$new_placement['options'] = array(
+			$new_placement['options'] = [
 				'position' => 'after',
 				'index'    => $index,
 				'tag'      => 'p',
-			);
+			];
 		}
 
 		$slug = Advanced_Ads_Placements::save_new_placement( $new_placement );
@@ -456,7 +458,7 @@ class Advanced_Ads_Ad_Ajax_Callbacks {
 			return;
 		}
 
-		$options                       = get_option( GADSENSE_OPT_NAME, array() );
+		$options                       = get_option( GADSENSE_OPT_NAME, [] );
 		$options['page-level-enabled'] = true;
 		update_option( GADSENSE_OPT_NAME, $options );
 		die();
@@ -489,7 +491,7 @@ class Advanced_Ads_Ad_Ajax_Callbacks {
 		}
 
 		$key  = ( ! empty( $_REQUEST['key'] ) ) ? esc_attr( $_REQUEST['key'] ) : false;
-		$attr = ( ! empty( $_REQUEST['attr'] ) && is_array( $_REQUEST['attr'] ) ) ? $_REQUEST['attr'] : array();
+		$attr = ( ! empty( $_REQUEST['attr'] ) && is_array( $_REQUEST['attr'] ) ) ? $_REQUEST['attr'] : [];
 
 		// update or new entry?
 		if ( isset( $attr['mode'] ) && 'update' === $attr['mode'] ) {
@@ -546,5 +548,46 @@ class Advanced_Ads_Ad_Ajax_Callbacks {
 		}
 
 		exit();
+	}
+
+	/**
+	 * Get hints related to the Gutenberg block.
+	 */
+	public function get_block_hints() {
+		check_ajax_referer( 'advanced-ads-admin-ajax-nonce', 'nonce' );
+
+		if (
+			! isset( $_POST['itemID'] )
+			|| ! current_user_can( Advanced_Ads_Plugin::user_cap( 'advanced_ads_edit_ads' ) )
+		) {
+			die;
+		}
+
+		$item = explode( '_', $_POST['itemID'] );
+
+		if ( ! isset( $item[0] ) || $item[0] !== 'group' ) {
+			die;
+		}
+
+		$hints = Advanced_Ads_Group::get_hints( new Advanced_Ads_Group( (int) $item[1] ) );
+		wp_send_json_success( $hints );
+	}
+
+	/**
+	 * Get allowed ads per placement.
+	 *
+	 * @return void
+	 */
+	public function get_allowed_ads_for_placement_type() {
+		check_ajax_referer( sanitize_text_field( $_POST['action'] ) );
+
+		wp_send_json_success( [
+			'items' => array_filter(
+				Advanced_Ads_Placements::get_items_for_placement( sanitize_text_field( $_POST['placement_type'] ) ),
+				static function( $items_group ) {
+					return ! empty( $items_group['items'] );
+				}
+			),
+		] );
 	}
 }

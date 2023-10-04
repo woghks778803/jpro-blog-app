@@ -1,11 +1,12 @@
 <?php
 $ad_list_filters = Advanced_Ads_Ad_List_Filters::get_instance();
 $all_filters     = $ad_list_filters->get_all_filters();
-
+global $wp_query;
 $ad_type  = isset( $_REQUEST['adtype'] ) ? $_REQUEST['adtype'] : '';
 $ad_size  = isset( $_REQUEST['adsize'] ) ? $_REQUEST['adsize'] : '';
 $ad_date  = isset( $_REQUEST['addate'] ) ? $_REQUEST['addate'] : '';
 $ad_group = isset( $_REQUEST['adgroup'] ) ? $_REQUEST['adgroup'] : '';
+
 
 // hide the filter button. Can not filter correctly with "trashed" posts.
 if ( isset( $_REQUEST['post_status'] ) && 'trash' === $_REQUEST['post_status'] ) {
@@ -45,4 +46,6 @@ if ( isset( $_REQUEST['post_status'] ) && 'trash' === $_REQUEST['post_status'] )
 	<?php endforeach; ?>
 </select>
 <?php endif; ?>
-<?php do_action( 'advanced-ads-ad-list-filter-markup', $all_filters ); ?>
+<?php if ( isset( $wp_query->found_posts ) && $wp_query->found_posts > 0 ) : ?>
+				<?php do_action( 'advanced-ads-ad-list-filter-markup', $all_filters ); ?>
+<?php endif; ?>

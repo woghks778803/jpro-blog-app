@@ -1,20 +1,13 @@
 <?php
 
 /**
- * Advanced Ads
+ * An ad group object
  *
  * @package   Advanced_Ads_Group
  * @author    Thomas Maier <support@wpadvancedads.com>
  * @license   GPL-2.0+
  * @link      https://wpadvancedads.com
  * @copyright 2014 Thomas Maier, Advanced Ads GmbH
- */
-
-/**
- * An ad group object
- *
- * @package Advanced_Ads_Group
- * @author  Thomas Maier <support@wpadvancedads.com>
  */
 class Advanced_Ads_Group {
 
@@ -76,14 +69,14 @@ class Advanced_Ads_Group {
 	 *
 	 * @since 1.5.5
 	 */
-	public $options = array();
+	public $options = [];
 
 	/**
 	 * Optional arguments passed to ads.
 	 *
 	 * @var array
 	 */
-	public $ad_args = array();
+	public $ad_args = [];
 
 	/**
 	 * Containing ad weights
@@ -93,7 +86,7 @@ class Advanced_Ads_Group {
 	/**
 	 * Array with post type objects (ads)
 	 */
-	private $ads = array();
+	private $ads = [];
 
 	/**
 	 * Multidimensional array contains information about the wrapper
@@ -101,7 +94,7 @@ class Advanced_Ads_Group {
 	 *
 	 * @since untagged
 	 */
-	public $wrapper = array();
+	public $wrapper = [];
 
 	/**
 	 * Displayed above the ad.
@@ -109,39 +102,42 @@ class Advanced_Ads_Group {
 	public $label = '';
 
 	/**
+	 * Whether this group is in a head placement.
+	 *
+	 * @var bool
+	 */
+	private $is_head_placement;
+
+	/**
+	 * The decorated WP_Term object.
+	 *
+	 * @var \WP_Term
+	 */
+	private $group;
+
+	/**
 	 * Init ad group object
 	 *
+	 * @param int|WP_Term $group   Either id of the ad group or term object.
+	 * @param iterable    $ad_args Optional arguments passed to ads.
+	 *
 	 * @since 1.0.0
-	 * @param int|obj $group   either id of the ad group (= taxonomy id) or term object
-	 * @param array   $ad_args optional arguments passed to ads
 	 */
-	public function __construct( $group, $ad_args = array() ) {
+	public function __construct( $group, iterable $ad_args = [] ) {
 		$this->taxonomy = Advanced_Ads::AD_GROUP_TAXONOMY;
 
-		$group = get_term( $group, $this->taxonomy );
-		if ( $group == null || is_wp_error( $group ) ) {
+		$this->group = get_term( $group, $this->taxonomy );
+		if ( $this->group === null || is_wp_error( $this->group ) ) {
 			return;
 		}
 
-		$this->load( $group, $ad_args );
-	}
-
-	/**
-	 * Load additional ad group properties
-	 *
-	 * @since 1.4.8
-	 * @param int   $id      group id
-	 * @param obj   $group   wp term object
-	 * @param array $ad_args optional arguments passed to ads
-	 */
-	private function load( $group, $ad_args ) {
-		$this->id = $group->term_id;
-		$this->name = $group->name;
-		$this->slug = $group->slug;
-		$this->description = $group->description;
-		$this->post_type = Advanced_Ads::POST_TYPE_SLUG;
-		$this->ad_args = $ad_args;
-		$this->is_head_placement = isset( $this->ad_args['placement_type'] ) && $this->ad_args['placement_type'] === 'header';
+		$this->id                      = $this->group->term_id;
+		$this->name                    = $this->group->name;
+		$this->slug                    = $this->group->slug;
+		$this->description             = $this->group->description;
+		$this->post_type               = Advanced_Ads::POST_TYPE_SLUG;
+		$this->ad_args                 = $ad_args;
+		$this->is_head_placement       = isset( $this->ad_args['placement_type'] ) && $this->ad_args['placement_type'] === 'header';
 		$this->ad_args['is_top_level'] = ! isset( $this->ad_args['is_top_level'] );
 
 		$this->load_additional_attributes();
@@ -152,19 +148,43 @@ class Advanced_Ads_Group {
 	}
 
 	/**
+	 * If a property on the original WP_Term is requested, return it, otherwise null.
+	 *
+	 * @param string $name The requested property name.
+	 *
+	 * @return mixed|null
+	 * @noinspection MagicMethodsValidityInspection -- We don't want to allow setting of properties.
+	 */
+	public function __get( string $name ) {
+		return $this->group->$name ?? null;
+	}
+
+	/**
+	 * Whether a property is set.
+	 *
+	 * @param string $name The requested property name.
+	 *
+	 * @return bool
+	 * @noinspection MagicMethodsValidityInspection -- We don't want to allow setting of properties.
+	 */
+	public function __isset( string $name ): bool {
+		return isset( $this->group->$name );
+	}
+
+	/**
 	 * Load additional attributes for groups that are not part of the WP terms
 	 *
 	 * @since 1.4.8
 	 */
 	protected function load_additional_attributes() {
 		// -TODO should abstract (i.e. only call once per request)
-		$all_groups = get_option( 'advads-ad-groups', array() );
+		$all_groups = get_option( 'advads-ad-groups', [] );
 
 		if ( ! isset( $all_groups[ $this->id ] ) || ! is_array( $all_groups[ $this->id ] ) ) { return; }
 
 		if ( isset( $this->ad_args['change-group'] ) ) {
 			// some options was provided by the user
-			$group_data = Advanced_Ads_Utils::merge_deep_array( array( $all_groups[ $this->id ], $this->ad_args['change-group'] ) ) ;
+			$group_data = Advanced_Ads_Utils::merge_deep_array( [ $all_groups[ $this->id ], $this->ad_args['change-group'] ] ) ;
 		} else {
 			$group_data = $all_groups[ $this->id ];
 		}
@@ -179,7 +199,7 @@ class Advanced_Ads_Group {
 		}
 
 		if ( isset( $group_data['options'] ) ) {
-			$this->options = isset( $group_data['options'] ) ? $group_data['options'] : array();
+			$this->options = isset( $group_data['options'] ) ? $group_data['options'] : [];
 		}
 	}
 
@@ -197,29 +217,29 @@ class Advanced_Ads_Group {
 		}
 
 		// load the ad output
-		$output = array();
+		$output = [];
 		$ads_displayed = 0;
 		$ad_count = apply_filters( 'advanced-ads-group-ad-count', $this->ad_count, $this );
 
 		$ad_select = Advanced_Ads_Select::get_instance();
 
 		// the Advanced_Ads_Ad obj can access this info
-		$this->ad_args['group_info'] = array(
+		$this->ad_args['group_info'] = [
 			'id' => $this->id,
 			'name' => $this->name,
 			'type' => $this->type,
 			'refresh_enabled' => ! empty( $this->options['refresh']['enabled'] ),
-		);
+		];
 		$this->ad_args['ad_label'] = 'disabled';
 
 		if( is_array( $ordered_ad_ids ) ){
 			foreach ( $ordered_ad_ids as $_ad_id ) {
 				$this->ad_args['group_info']['ads_displayed'] = $ads_displayed;
 
-				// load the ad object
+				// load the ad output
 				$ad = $ad_select->get_ad_by_method( $_ad_id, Advanced_Ads_Select::AD, $this->ad_args );
 
-				if ( $ad !== null ) {
+				if ( ! empty( $ad ) ) {
 					$output[] = $ad;
 					$ads_displayed++;
 					// break the loop when maximum ads are reached
@@ -234,10 +254,10 @@ class Advanced_Ads_Group {
 		if ( $global_output ) {
 			// add the group to the global output array
 			$advads = Advanced_Ads::get_instance();
-			$advads->current_ads[] = array('type' => 'group', 'id' => $this->id, 'title' => $this->name);
+			$advads->current_ads[] = ['type' => 'group', 'id' => $this->id, 'title' => $this->name];
 		}
 
-		if ( $output === array() || ! is_array( $output ) ) {
+		if ( $output === [] || ! is_array( $output ) ) {
 			return '';
 		}
 
@@ -245,7 +265,7 @@ class Advanced_Ads_Group {
 		$output_array = apply_filters( 'advanced-ads-group-output-array', $output, $this );
 
 		// make sure the right format comes through the filter
-		if ( $output_array === array() || ! is_array( $output_array ) ) {
+		if ( $output_array === [] || ! is_array( $output_array ) ) {
 			return '';
 		}
 
@@ -257,7 +277,7 @@ class Advanced_Ads_Group {
 			$this->wrapper = $inline_css->add_css( $this->wrapper, $this->ad_args['inline-css'], $global_output );
 		}
 
-		if ( ! $this->is_head_placement && $this->wrapper !== array() ) {
+		if ( ! $this->is_head_placement && $this->wrapper !== [] ) {
 			$output_string = '<div' . Advanced_Ads_Utils::build_html_attributes( $this->wrapper ) . '>'
 			. $this->label
 			. apply_filters( 'advanced-ads-output-wrapper-before-content-group', '', $this )
@@ -283,7 +303,7 @@ class Advanced_Ads_Group {
 		// load ads
 		$ads = $this->load_all_ads();
 		if ( ! is_array( $ads ) ) {
-			return array();
+			return [];
 		}
 
 		// get ad weights serving as an order here
@@ -331,26 +351,26 @@ class Advanced_Ads_Group {
 	private function load_all_ads() {
 
 		if ( ! $this->id ) {
-			return array();
+			return [];
 		}
 
 		// reset
-		$this->ads = array();
+		$this->ads = [];
 
 		// much more complex than needed: one of the three queries is not needed and the last query gets slow quiet fast
-		$args = array(
+		$args = [
 			'post_type' => $this->post_type,
 			'post_status' => 'publish',
 			'posts_per_page' => -1,
 			'taxonomy' => $this->taxonomy,
 			'term' => $this->slug,
 			'orderby' => 'id' // might want to avoid sorting as not needed for most calls and fast in PHP; slight I/O blocking concern
-		);
+		];
 
 		$found = false;
 		$key = 'ad_group_all_ads_' . $this->post_type . '_' . $this->taxonomy . '_' . $this->slug;
 		$ads = wp_cache_get( $key, Advanced_Ads_Model::OBJECT_CACHE_GROUP, false, $found );
-		if ( $found ) {
+		if ( $found && is_array( $ads ) ) {
 			$this->ads = $ads;
 		} else {
 			$ads = new WP_Query( $args );
@@ -374,7 +394,7 @@ class Advanced_Ads_Group {
 	 */
 	private function add_post_ids(array $ads){
 
-		$ads_with_id = array();
+		$ads_with_id = [];
 		foreach ( $ads as $_ad ){
 			$ads_with_id[$_ad->ID] = $_ad;
 		}
@@ -393,7 +413,7 @@ class Advanced_Ads_Group {
 	 */
 	public function shuffle_ads( $ads, $weights ) {
 		// get a random ad for every ad there is
-		$shuffled_ads = array();
+		$shuffled_ads = [];
 		// while non-zero weights are set select random next
 		// phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition -- prevents code duplication.
 		while ( null !== ( $random_ad_id = $this->get_random_ad_by_weight( $weights ) ) ) {
@@ -474,13 +494,13 @@ class Advanced_Ads_Group {
 	 *
 	 * @return array
 	 */
-	public function get_ad_weights( $ad_ids = array() ) {
+	public function get_ad_weights( $ad_ids = [] ) {
 		if ( is_array( $this->ad_weights ) ) {
 			return $this->ad_weights;
 		}
 
-		$weights          = get_option( 'advads-ad-weights', array() );
-		$this->ad_weights = array();
+		$weights          = get_option( 'advads-ad-weights', [] );
+		$this->ad_weights = [];
 		if ( array_key_exists( $this->id, $weights ) ) {
 			$this->ad_weights = $weights[ $this->id ];
 		}
@@ -502,13 +522,13 @@ class Advanced_Ads_Group {
 	 * @since 1.4.8
 	 * @param arr $args group arguments
 	 */
-	public function save($args = array()) {
+	public function save($args = []) {
 
-		$defaults = array( 'type' => 'default', 'ad_count' => 1, 'options' => array() );
+		$defaults = [ 'type' => 'default', 'ad_count' => 1, 'options' => [] ];
 		$args = wp_parse_args($args, $defaults);
 
 		// get global ad group option
-		$groups = get_option( 'advads-ad-groups', array() );
+		$groups = get_option( 'advads-ad-groups', [] );
 
 		$groups[$this->id] = $args;
 
@@ -521,7 +541,7 @@ class Advanced_Ads_Group {
 	 * @since 1.0.0
 	 */
 	public static function delete_ad_weights($group_id){
-	    $all_weights = get_option( 'advads-ad-weights', array() );
+	    $all_weights = get_option( 'advads-ad-weights', [] );
 	    if ($all_weights && isset($all_weights[$group_id])){
 	        unset($all_weights[$group_id]);
 	        update_option( 'advads-ad-weights', $all_weights );
@@ -532,7 +552,7 @@ class Advanced_Ads_Group {
 	 * Create a wrapper to place around the group.
 	 */
 	private function create_wrapper() {
-		$this->wrapper = array();
+		$this->wrapper = [];
 
 		if ( $this->ad_args['is_top_level'] ) {
 			// Add label.
@@ -540,7 +560,7 @@ class Advanced_Ads_Group {
 			$this->label = Advanced_Ads::get_instance()->get_label( $placement_state );
 
 			// Add placement class.
-			if ( isset( $this->ad_args['output']['class'] ) && is_array( $this->ad_args['output']['class'] ) ) {
+			if ( ! empty( $this->ad_args['output']['class'] ) && is_array( $this->ad_args['output']['class'] ) ) {
 				$this->wrapper['class'] = $this->ad_args['output']['class'];
 			}
 
@@ -568,7 +588,7 @@ class Advanced_Ads_Group {
 
 		$this->wrapper = (array) apply_filters( 'advanced-ads-output-wrapper-options-group', $this->wrapper, $this );
 
-		if ( ( $this->wrapper !== array() || $this->label ) && ! isset( $this->wrapper['id'] ) ) {
+		if ( ( $this->wrapper !== [] || $this->label ) && ! isset( $this->wrapper['id'] ) ) {
 			$prefix = Advanced_Ads_Plugin::get_instance()->get_frontend_prefix();
 			$this->wrapper['id'] = $prefix . mt_rand();
 		}
@@ -593,6 +613,59 @@ class Advanced_Ads_Group {
 
 		// allow users to manipulate max ad weight
 		return apply_filters( 'advanced-ads-max-ad-weight', $max_weight, $num_ads );
+	}
+
+	/**
+	 * Get group hints.
+	 *
+	 * @param Advanced_Ads_Group $group The group object.
+	 *
+	 * @return string[] Group hints (escaped strings).
+	 */
+	public static function get_hints( Advanced_Ads_Group $group ) {
+		$hints = [];
+
+		if (
+			! Advanced_Ads_Checks::cache()
+			|| count( $group->get_all_ads() ) < 2
+		) {
+			return $hints;
+		}
+
+		if ( ! class_exists( 'Advanced_Ads_Pro' ) ) {
+			$installed_plugins = get_plugins();
+
+			if ( isset( $installed_plugins['advanced-ads-pro/advanced-ads-pro.php'] ) ) {
+				$link       = wp_nonce_url( 'plugins.php?action=activate&amp;plugin=advanced-ads-pro/advanced-ads-pro.php', 'activate-plugin_advanced-ads-pro/advanced-ads-pro.php' );
+				$link_title = __( 'Activate now', 'advanced-ads' );
+			} else {
+				$link       = ADVADS_URL . 'add-ons/advanced-ads-pro/?utm_source=advanced-ads&utm_medium=link&utm_campaign=groups-CB';
+				$link_title = __( 'Get this add-on', 'advanced-ads' );
+			}
+
+			$hints[] = sprintf(
+				wp_kses(
+				// translators: %1$s is an URL, %2$s is a URL text
+					__( 'It seems that a caching plugin is activated. Your ads might not rotate properly. The cache busting in Advanced Ads Pro will solve that. <a href="%1$s" target="_blank">%2$s.</a>', 'advanced-ads' ),
+					[
+						'a' => [
+							'href'   => [],
+							'target' => [],
+						],
+					]
+				),
+				$link,
+				$link_title
+			);
+		}
+
+		/**
+		 * Allows to add new hints.
+		 *
+		 * @param string[]           $hints Existing hints (escaped strings).
+		 * @param Advanced_Ads_Group $group The group object.
+		 */
+		return apply_filters( 'advanced-ads-group-hints', $hints, $group );
 	}
 
 

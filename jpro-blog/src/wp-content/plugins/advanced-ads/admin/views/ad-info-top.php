@@ -1,10 +1,14 @@
 <?php // display ad wizard controls.
-?><button type="button" id="advads-start-wizard" class="dashicons-before dashicons-controls-play page-title-action"><?php esc_html_e( 'Start Wizard', 'advanced-ads' ); ?></button>
-<button type="button" id="advads-stop-wizard" class="advads-stop-wizard dashicons-before dashicons-no page-title-action hidden"><?php esc_html_e( 'Stop Wizard', 'advanced-ads' ); ?></button>
+?><button id="advads-start-wizard" type="button" class="header-action button advads-button-secondary">
+	<span class="dashicons dashicons-controls-play"></span><?php esc_html_e( 'Start Wizard', 'advanced-ads' ); ?>
+</button>
+<button id="advads-stop-wizard" type="button" class="header-action button advads-button-secondary advads-stop-wizard hidden">
+	<span class="dashicons dashicons-no"></span><?php esc_html_e( 'Stop Wizard', 'advanced-ads' ); ?>
+</button>
 <script>
 	// move wizard button to head.
-	jQuery('#advads-start-wizard').appendTo('h1');
-	jQuery('.advads-stop-wizard').insertAfter('h1');
+	jQuery('#advads-start-wizard').appendTo('#advads-header-actions');
+	jQuery('.advads-stop-wizard').appendTo('#advads-header-actions');
 </script>
 <?php
 // show wizard welcome message.

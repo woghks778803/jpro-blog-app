@@ -8,41 +8,33 @@
  */
 ;(function($){
 
-    function printAlerts( alerts ) {
-        var $div = $( '#mapi-account-alerts' );
-        $div.empty();
-        if ( alerts.length ) {
-			var $alertBox = $( '<div class="card advads-notice-block advads-error"/>' );
-			$alertBox.append( $( '<h3 />' ).text( $div.attr( 'data-heading' ) ) );
-            var $ul = $( '<ul />' );
-            for ( var id in alerts.alerts ) {
-                var msg = alerts.alerts[id].message;
-                if ( 'undefined' != typeof AdsenseMAPI.alertsMsg[alerts.alerts[id]['id']] ) {
-                    msg = AdsenseMAPI.alertsMsg[alerts.alerts[id]['id']];
-                }
-                $ul.append( $( '<li />' ).html(  msg + ' ' +
-                '<a href="#" class="mapi-dismiss-alert" data-id="' + id + '">' + $div.attr( 'data-dismiss' ) + '</a>' ) );
-            }
-			$alertBox.append( $ul );
-			$div.append( $alertBox );
-        }
-    }
+	/**
+	 * Print Google AdSense account alerts after connecting to the API or after removing an alert.
+	 *
+	 * @param alerts
+	 */
+	function printAlerts( alerts ) {
+		var $div = $( '#mapi-account-alerts' );
+		$div.empty();
+		if ( alerts.length ) {
+			$div.append( $( '<h3 />' ).html( AdsenseMAPI.alertsHeadingMsg ) );
+			for ( var id in alerts.alerts ) {
+				var $alertBox      = $( '<div class="card advads-notice-block advads-error"/>' );
+				var $dismissButton = $( ' <button type="button" class="mapi-dismiss-alert notice-dismiss" data-id="' + alerts.alerts[id]['id'] + '"><span class="screen-reader-text">' + AdsenseMAPI.alertsDismissMsg + '</span></button>' );
+				var msg            = alerts.alerts[id].message;
+				if ( typeof AdsenseMAPI.alertsMsg[alerts.alerts[id]['id']] !== 'undefined' ) {
+					msg = AdsenseMAPI.alertsMsg[alerts.alerts[id]['id']];
+				}
+				$alertBox.append( $dismissButton );
+				$alertBox.append( msg );
+				$div.append( $alertBox );
+			}
+		}
+	}
 
 	$( document ).on( 'click', '.preventDefault', function( ev ) {
 		ev.preventDefault();
 	} );
-
-    $( document ).on( 'click', '#dissmiss-connect-error', function() {
-        $( '#mapi-connect-errors' ).empty();
-        $.ajax({
-			url: ajaxurl,
-			type: 'get',
-			data: {
-				action: 'advads-mapi-dismiss-connect-error',
-				nonce: AdsenseMAPI.nonce,
-			}
-		});
-    } );
 
 	$( document ).on( 'keypress', '#adsense input[type="text"]', function( ev ) {
 		if ( $( this ).hasClass( 'preventDefault' ) ) {

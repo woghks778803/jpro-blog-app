@@ -106,7 +106,7 @@ class Advanced_Ads_Inline_Css {
 		}
 
 		if ( ! empty( $privacy_options['enabled'] ) && $privacy_options['enabled'] === 'on' && $privacy_options['consent-method'] === 'iab_tcf_20' ) {
-			add_filter( 'advanced-ads-output-final', array( $this, 'add_tcf_container' ), 20, 2 );
+			add_filter( 'advanced-ads-output-final', [ $this, 'add_tcf_container' ], 20, 2 );
 			$this->add_inline_css = false;
 		}
 	}

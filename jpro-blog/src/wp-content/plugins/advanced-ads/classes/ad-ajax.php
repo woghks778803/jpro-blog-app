@@ -11,11 +11,10 @@ class Advanced_Ads_Ajax {
 	 * Advanced_Ads_Ajax constructor.
 	 */
 	private function __construct() {
-		add_action( 'wp_ajax_advads_ad_select', array( $this, 'advads_ajax_ad_select' ) );
-		add_action( 'wp_ajax_nopriv_advads_ad_select', array( $this, 'advads_ajax_ad_select' ) );
-		add_action( 'wp_ajax_advads-ad-health-notice-push', array( $this, 'ad_health_notice_push' ) );
-		add_action( 'wp_ajax_nopriv_advads-ad-health-notice-push', array( $this, 'ad_health_notice_push' ) );
-		add_action( 'wp_ajax_advads-ad-frontend-notice-update', array( $this, 'frontend_notice_update' ) );
+		add_action( 'wp_ajax_advads_ad_select', [ $this, 'advads_ajax_ad_select' ] );
+		add_action( 'wp_ajax_nopriv_advads_ad_select', [ $this, 'advads_ajax_ad_select' ] );
+		add_action( 'wp_ajax_advads-ad-health-notice-push', [ $this, 'ad_health_notice_push' ] );
+		add_action( 'wp_ajax_nopriv_advads-ad-health-notice-push', [ $this, 'ad_health_notice_push' ] );
 	}
 
 	/**
@@ -59,9 +58,9 @@ class Advanced_Ads_Ajax {
 
 		$defered_ads = isset( $_REQUEST['deferedAds'] ) ? $_REQUEST['deferedAds'] : null;
 		if ( $defered_ads ) { // Load all ajax ads with a single request.
-			$response = array();
+			$response = [];
 
-			$requests_by_blog = array();
+			$requests_by_blog = [];
 			foreach ( (array) $defered_ads as $request ) {
 				$blog_id                        = isset( $request['blog_id'] ) ? $request['blog_id'] : get_current_blog_id();
 				$requests_by_blog[ $blog_id ][] = $request;
@@ -104,7 +103,7 @@ class Advanced_Ads_Ajax {
 		$methods   = $selector->get_methods();
 		$method    = isset( $request['ad_method'] ) ? (string) $request['ad_method'] : null;
 		$id        = isset( $request['ad_id'] ) ? (string) $request['ad_id'] : null;
-		$arguments = isset( $request['ad_args'] ) ? $request['ad_args'] : array();
+		$arguments = isset( $request['ad_args'] ) ? $request['ad_args'] : [];
 		if ( is_string( $arguments ) ) {
 			$arguments = stripslashes( $arguments );
 			$arguments = json_decode( $arguments, true );
@@ -116,10 +115,10 @@ class Advanced_Ads_Ajax {
 
 		if ( ! array_key_exists( $method, $methods ) || empty( $id ) ) {
 			// Report error.
-			return array(
+			return [
 				'status'  => 'error',
 				'message' => 'No valid ID or METHOD found.',
-			);
+			];
 		}
 
 		/**
@@ -133,33 +132,33 @@ class Advanced_Ads_Ajax {
 		$advads       = Advanced_Ads::get_instance();
 		$previous_ads = $advads->current_ads;
 
-		add_filter( 'advanced-ads-can-display', array( $this, 'can_display_by_consent' ), 10, 2 );
+		add_filter( 'advanced-ads-can-display', [ $this, 'can_display_by_consent' ], 10, 2 );
 		$content = $selector->get_ad_by_method( $id, $method, $arguments );
 
 		if ( empty( $content ) ) {
-			return array(
+			return [
 				'status'  => 'error',
 				'message' => 'No displayable ad found for privacy settings.',
-			);
+			];
 		}
 
-		$response = array(
+		$response = [
 			'status'  => 'success',
 			'item'    => $content,
 			'id'      => $id,
 			'method'  => $method,
 			'ads'     => array_slice( $advads->current_ads, count( $previous_ads ) ),
 			'blog_id' => get_current_blog_id(),
-		);
+		];
 
 		return apply_filters(
 			'advanced-ads-cache-busting-item',
 			$response,
-			array(
+			[
 				'id'     => $id,
 				'method' => $method,
 				'args'   => $arguments,
-			)
+			]
 		);
 	}
 
@@ -175,38 +174,13 @@ class Advanced_Ads_Ajax {
 		}
 
 		$key  = ( ! empty( $_REQUEST['key'] ) ) ? esc_attr( $_REQUEST['key'] ) : false;
-		$attr = ( ! empty( $_REQUEST['attr'] ) && is_array( $_REQUEST['attr'] ) ) ? $_REQUEST['attr'] : array();
+		$attr = ( ! empty( $_REQUEST['attr'] ) && is_array( $_REQUEST['attr'] ) ) ? $_REQUEST['attr'] : [];
 
 		// Update or new entry?
 		if ( isset( $attr['mode'] ) && 'update' === $attr['mode'] ) {
 			Advanced_Ads_Ad_Health_Notices::get_instance()->update( $key, $attr );
 		} else {
 			Advanced_Ads_Ad_Health_Notices::get_instance()->add( $key, $attr );
-		}
-
-		die();
-	}
-
-	/**
-	 * Update frontend notice array
-	 */
-	public function frontend_notice_update() {
-
-		check_ajax_referer( 'advanced-ads-frontend-notice-nonce', 'nonce' );
-
-		if ( ! current_user_can( Advanced_Ads_Plugin::user_cap( 'advanced_ads_edit_ads' ) ) ) {
-			return;
-		}
-
-		$key  = ( ! empty( $_REQUEST['key'] ) ) ? esc_attr( $_REQUEST['key'] ) : false;
-		$attr = ( ! empty( $_REQUEST['attr'] ) && is_array( $_REQUEST['attr'] ) ) ? $_REQUEST['attr'] : array();
-
-		// Update or new entry?
-		if ( isset( $attr['mode'] ) && 'update' === $attr['mode'] ) {
-			die();
-			// Advanced_Ads_Frontend_Notices::get_instance()->update( $key, $attr );.
-		} else {
-			Advanced_Ads_Frontend_Notices::get_instance()->update( $key, $attr );
 		}
 
 		die();
@@ -242,7 +216,7 @@ class Advanced_Ads_Ajax {
 		$consent_state = sanitize_text_field( $_REQUEST['consent'] );
 
 		// Consent is either given or not needed.
-		if ( in_array( $consent_state, array( 'not_needed', 'accepted' ), true ) ) {
+		if ( in_array( $consent_state, [ 'not_needed', 'accepted' ], true ) ) {
 			return true;
 		}
 

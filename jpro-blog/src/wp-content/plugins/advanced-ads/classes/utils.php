@@ -21,7 +21,7 @@ class Advanced_Ads_Utils {
 	 * @copyright Copyright 2001 - 2013 Drupal contributors. License: GPL-2.0+. Drupal is a registered trademark of Dries Buytaert.
 	 */
 	public static function merge_deep_array( array $arrays, $preserve_integer_keys = false ) {
-		$result = array();
+		$result = [];
 		foreach ( $arrays as $array ) {
 			if ( ! is_array( $array ) ) {
 				continue; }
@@ -34,7 +34,7 @@ class Advanced_Ads_Utils {
 					$result[] = $value;
 				} elseif ( isset( $result[ $key ] ) && is_array( $result[ $key ] ) && is_array( $value ) ) {
 					// recurse when both values are arrays.
-					$result[ $key ] = self::merge_deep_array( array( $result[ $key ], $value ), $preserve_integer_keys );
+					$result[ $key ] = self::merge_deep_array( [ $result[ $key ], $value ], $preserve_integer_keys );
 				} else {
 					// otherwise, use the latter value, overriding any previous value.
 					$result[ $key ] = $value;
@@ -106,7 +106,7 @@ class Advanced_Ads_Utils {
 	 * @return array of Advanced_Ads_Ad objects.
 	 */
 	public static function get_nested_ads( $id, $type ) {
-		$result = array();
+		$result = [];
 
 		switch ( $type ) {
 			case 'placement':
@@ -118,7 +118,7 @@ class Advanced_Ads_Utils {
 					}
 				}
 			case 'ad':
-				$ad       = new Advanced_Ads_Ad( $id );
+				$ad       = \Advanced_Ads\Ad_Repository::get( $id );
 				$result[] = $ad;
 				if ( 'group' === $ad->type && ! empty( $ad->output['group_id'] ) ) {
 					$result = array_merge( $result, self::get_nested_ads( $ad->output['group_id'], 'group' ) );
@@ -145,7 +145,7 @@ class Advanced_Ads_Utils {
 		global $wp_roles;
 
 		$roles_or_caps = (array) $roles_or_caps;
-		$roles         = array();
+		$roles         = [];
 
 		foreach ( $roles_or_caps as $cap ) {
 			if ( $wp_roles->is_role( $cap ) ) {
@@ -279,4 +279,3 @@ class Advanced_Ads_Utils {
 		return sprintf( __( 'time of %s', 'advanced-ads' ), $time_zone );
 	}
 }
-

@@ -12,12 +12,14 @@
 include ADVADS_BASE_PATH . 'admin/views/conditions/condition-operator.php';
 ?>
 <p class="description">
+	<?php echo esc_html( $type_options[ $options['type'] ]['description'] ); ?>
 	<?php
-	echo esc_html( $type_options[ $options['type'] ]['description'] );
-	if ( isset( $type_options[ $options['type'] ]['helplink'] ) ) :
-		?>
-	<a href="<?php echo esc_url( $type_options[ $options['type'] ]['helplink'] ); ?>" target="_blank">
-		<?php
-		esc_html_e( 'Manual and Troubleshooting', 'advanced-ads' );
-		?>
-		</a><?php endif; ?></p>
+	if ( isset( $type_options[ $options['type'] ]['helplink'] ) ) {
+		printf(
+			'<a href="%1$s" class="advads-manual-link" target="_blank">%2$s</a>',
+			esc_url( $type_options[ $options['type'] ]['helplink'] ),
+			esc_html__( 'Manual', 'advanced-ads' )
+		);
+	}
+	?>
+</p>

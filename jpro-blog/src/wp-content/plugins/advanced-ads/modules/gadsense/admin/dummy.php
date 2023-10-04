@@ -11,9 +11,9 @@ class Dummy_Type extends Advanced_Ads_Ad_Type_Abstract{
         $this->title = "ASDF Dummy";
         $this->description = "Some dummy description";
 
-        $this->parameters = array(
+        $this->parameters = [
             'content' => ''
-        );
+        ];
     }
     public function render_parameters($ad){
         $network = Dummy_Network::get_instance();
@@ -86,7 +86,7 @@ class Dummy_Network extends Advanced_Ads_Ad_Network {
 
     public function get_external_ad_units()
     {
-        $units = array();
+        $units = [];
         for ($i=0; $i<42; $i++){
             $ad_unit = new Advanced_Ads_Ad_Network_Ad_Unit("RAW DATA");
             $ad_unit->id = "Dummy" . $i;
@@ -121,10 +121,10 @@ class Dummy_Network extends Advanced_Ads_Ad_Network {
         require_once GADSENSE_BASE_PATH . 'admin/views/external-ads-dummy.php';
         $html_ad_selector = ob_get_clean();
 
-        $response = array(
+        $response = [
             'status' => true,
             'html'   => $html_ad_selector,
-        );
+        ];
         header( 'Content-Type: application/json' );
         echo wp_json_encode( $response );
         die();

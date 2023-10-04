@@ -10,12 +10,12 @@
  * file that was distributed with this source code.
  */
 
-namespace AdvancedAds\Autoload;
+namespace AdvancedAds\Composer\Autoload;
 
 /**
  * ClassLoader implements a PSR-0, PSR-4 and classmap class loader.
  *
- *     $loader = new \AdvancedAds\Autoload\ClassLoader();
+ *     $loader = new \AdvancedAds\Composer\Autoload\ClassLoader();
  *
  *     // register classes with namespaces
  *     $loader->add('Symfony\Component', __DIR__.'/component');
@@ -149,7 +149,7 @@ class ClassLoader
 
     /**
      * @return string[] Array of classname => path
-     * @psalm-var array<string, string>
+     * @psalm-return array<string, string>
      */
     public function getClassMap()
     {

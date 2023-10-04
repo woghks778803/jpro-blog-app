@@ -3,12 +3,12 @@
 	<a href="
 	<?php
 	add_query_arg(
-		array(
+		[
 			'action'   => 'advads-close-notice',
 			'notice'   => $_notice,
 			'nonce'    => wp_create_nonce( 'advanced-ads-admin-ajax-nonce' ),
 			'redirect' => $_SERVER['REQUEST_URI'],
-		),
+		],
 		admin_url( 'admin-ajax.php' )
 	);
 	?>

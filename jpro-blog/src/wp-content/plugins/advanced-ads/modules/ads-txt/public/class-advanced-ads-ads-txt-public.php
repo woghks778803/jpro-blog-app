@@ -6,11 +6,18 @@ class Advanced_Ads_Ads_Txt_Public {
 	const TOP = '# Advanced Ads ads.txt';
 
 	/**
+	 * Ads.txt data management class
+	 *
+	 * @var Advanced_Ads_Ads_Txt_Strategy
+	 */
+	private $strategy;
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct( $strategy ) {
 		$this->strategy = $strategy;
-		add_action( 'init', array( $this, 'display' ) );
+		add_action( 'init', [ $this, 'display' ] );
 	}
 
 	/**
@@ -80,16 +87,16 @@ class Advanced_Ads_Ads_Txt_Public {
 		$need_file_on_root_domain = Advanced_Ads_Ads_Txt_Utils::need_file_on_root_domain();
 
 		// Get all sites that include the current domain as part of their domains.
-		$sites = get_sites( array(
+		$sites = get_sites( [
 			'search' => $domain,
-			'search_columns' => array( 'domain' ),
+			'search_columns' => [ 'domain' ],
 			'meta_key' => Advanced_Ads_Ads_Txt_Strategy::OPTION,
-		) );
+		] );
 
 		// Uses `subdomain=` variable.
-		$referrals = array();
+		$referrals = [];
 		// Included to the ads.txt file of the current domain.
-		$not_refferals = array();
+		$not_refferals = [];
 
 		foreach ( $sites as $site ) {
 			if ( (int) $site->blog_id === get_current_blog_id() ) {
@@ -119,10 +126,10 @@ class Advanced_Ads_Ads_Txt_Public {
 			$results = $wpdb->get_results( sprintf(
 				"SELECT blog_id, meta_value FROM $wpdb->blogmeta WHERE meta_key='%s' AND blog_id IN (%s)",
 				Advanced_Ads_Ads_Txt_Strategy::OPTION,
-				join( ',', array_map( 'intval', $not_refferals ) )
+				join( ',', array_map( function($value) { return (int)$value; }, $not_refferals ) )
 			) );
 
-			$blog_data = array();
+			$blog_data = [];
 			foreach ( $results as $result ) {
 				$blog_id = $result->blog_id;
 
@@ -132,7 +139,7 @@ class Advanced_Ads_Ads_Txt_Public {
 				$blog_data[ $blog_id ] = $options;
 			}
 
-			$blog_data = Advanced_Ads_Ads_Txt_Utils::remove_duplicate_lines( $blog_data, array( 'to_comments' => true ) );
+			$blog_data = Advanced_Ads_Ads_Txt_Utils::remove_duplicate_lines( $blog_data, [ 'to_comments' => true ] );
 
 			foreach ( $blog_data as $blog_id => $blog_lines ) {
 

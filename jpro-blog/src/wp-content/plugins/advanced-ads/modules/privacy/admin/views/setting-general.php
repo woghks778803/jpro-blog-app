@@ -30,7 +30,7 @@
 					echo esc_html( $options['label'] );
 					if ( ! empty( $options['manual_url'] ) ) :
 						?>
-						&ndash; <a href="<?php echo esc_url( $options['manual_url'] ); ?>" target="_blank">
+						&ndash; <a href="<?php echo esc_url( $options['manual_url'] ); ?>" target="_blank" class="advads-manual-link">
 						<?php esc_html_e( 'Manual', 'advanced-ads' ); ?>
 					</a>
 					<?php endif; ?>

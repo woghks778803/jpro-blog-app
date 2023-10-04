@@ -1,0 +1,40 @@
+# Translation of Plugins - Code Syntax Block - Stable (latest release) in Korean
+# This file is distributed under the same license as the Plugins - Code Syntax Block - Stable (latest release) package.
+msgid ""
+msgstr ""
+"PO-Revision-Date: 2023-06-08 04:26:45+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: GlotPress/4.0.0-alpha.4\n"
+"Language: ko_KR\n"
+"Project-Id-Version: Plugins - Code Syntax Block - Stable (latest release)\n"
+
+#: settings.php:38
+msgid "Default Language"
+msgstr "기본 언어"
+
+#: settings.php:30
+msgid "Color Scheme"
+msgstr "색상 구성표"
+
+#. Author URI of the plugin
+msgid "https://mkaz.blog/"
+msgstr "https://mkaz.blog/"
+
+#. Author of the plugin
+msgid "Marcus Kazmierczak"
+msgstr "마커스 카즈미엘자크"
+
+#. Description of the plugin
+msgid "A plugin to extend Gutenberg code block with syntax highlighting"
+msgstr "구텐베르그 코드를 Syntax Highlighting 으로 변환하는 플러그인"
+
+#. Plugin URI of the plugin
+msgid "https://github.com/mkaz/code-syntax-block"
+msgstr "https://github.com/mkaz/code-syntax-block"
+
+#. Plugin Name of the plugin
+msgid "Code Syntax Block"
+msgstr "코드 Syntax 블록"

@@ -2,7 +2,7 @@
 # This file is distributed under the same license as the Plugins - Jetpack &#8211; WP Security, Backup, Speed, &amp; Growth - Stable (latest release) package.
 msgid ""
 msgstr ""
-"PO-Revision-Date: 2022-03-03 13:54:09+0000\n"
+"PO-Revision-Date: 2022-03-14 16:54:08+0000\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -99,6 +99,10 @@ msgstr "젯팩 플러그인 활성화 오류"
 #: jetpack_vendor/automattic/jetpack-my-jetpack/src/products/class-extras.php:55
 msgid "Jetpack Extras"
 msgstr "젯팩 추가 기능"
+
+#: jetpack_vendor/automattic/jetpack-my-jetpack/src/products/class-hybrid-product.php:64
+msgid "Activation failed. Plugin is not installed"
+msgstr "활성화되지 않았습니다. 플러그인이 설치되지 않았습니다."
 
 #: jetpack_vendor/automattic/jetpack-my-jetpack/src/class-wpcom-products.php:60
 msgid "Unable to fetch the products list from WordPress.com"

@@ -8,10 +8,10 @@
 			__( 'The following line will be added automatically because you connected your AdSense account with Advanced Ads: %s', 'advanced-ads' ),
 			'<br><code>' . $adsense_line . '</code>'
 		),
-		array(
-			'br'   => array(),
-			'code' => array(),
-		)
+		[
+			'br'   => [],
+			'code' => [],
+		]
 	);
 	?>
 </p>

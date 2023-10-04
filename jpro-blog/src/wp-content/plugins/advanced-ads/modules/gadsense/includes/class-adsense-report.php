@@ -63,7 +63,7 @@ class Advanced_Ads_AdSense_Report {
 	 */
 	public function refresh_report() {
 		$api_helper = new Advanced_Ads_AdSense_Report_Api( $this->type );
-		$error      = array();
+		$error      = [];
 
 		if ( $api_helper->has_token() ) {
 			$response = $api_helper->call_google();
@@ -155,7 +155,7 @@ class Advanced_Ads_AdSense_Report {
 	 * @return string HTML of the individual cell.
 	 */
 	private function get_earning_cell( $sum, $index ) {
-		$period_strings = array(
+		$period_strings = [
 			'today'      => esc_html__( 'Today', 'advanced-ads' ),
 			'yesterday'  => esc_html__( 'Yesterday', 'advanced-ads' ),
 			/* translators: 1: The number of days. */
@@ -163,7 +163,7 @@ class Advanced_Ads_AdSense_Report {
 			'this_month' => esc_html__( 'This Month', 'advanced-ads' ),
 			/* translators: 1: The number of days. */
 			'28days'     => sprintf( esc_html__( 'Last %1$d days', 'advanced-ads' ), 28 ),
-		);
+		];
 
 		$markup = '<div class="advads-flex1 advads-stats-box"><div>' . $period_strings[ $index ] . '</div>';
 		$markup .= '<div class="advads-stats-box-main">';

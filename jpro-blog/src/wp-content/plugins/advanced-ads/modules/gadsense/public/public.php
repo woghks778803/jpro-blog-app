@@ -24,9 +24,9 @@ class Advanced_Ads_AdSense_Public {
 	 */
 	private function __construct() {
 		$this->data = Advanced_Ads_AdSense_Data::get_instance();
-		add_action( 'wp_head', array( $this, 'inject_header' ), 20 );
+		add_action( 'wp_head', [ $this, 'inject_header' ], 20 );
 		// Fires before cache-busting frontend is initialized and tracking method is set
-		add_action( 'wp', array( $this, 'inject_amp_code' ), 20 );
+		add_action( 'wp', [ $this, 'inject_amp_code' ], 20 );
 	}
 
 	/**
@@ -103,9 +103,9 @@ class Advanced_Ads_AdSense_Public {
 			 * @param boolean
 			 */
 			$add_publisher_id = apply_filters( 'advanced-ads-adsense-publisher-id', true );
-			$script_src       = add_query_arg( array(
+			$script_src       = add_query_arg( [
 				'client' => $add_publisher_id ? esc_attr( $client_id ) : false,
-			), 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js' );
+			], 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js' );
 
 			/**
 			 * Allows to override the page-level code.
@@ -125,7 +125,7 @@ class Advanced_Ads_AdSense_Public {
 			$custom_code = apply_filters(
 				'advanced-ads-gadsense-page-level-code',
 				'',
-				compact( array( 'client_id', 'top_anchor', 'top_anchor_code', 'script_src' ) )
+				compact( [ 'client_id', 'top_anchor', 'top_anchor_code', 'script_src' ] )
 			);
 
 			if ( $custom_code ) {
@@ -166,10 +166,10 @@ class Advanced_Ads_AdSense_Public {
 			}
 
 			// Adds the AdSense Auto ads AMP code to the page (head) in "Reader" mode.
-			add_action( 'amp_post_template_data', array( $this, 'add_auto_ads_amp_head_script' ) );
+			add_action( 'amp_post_template_data', [ $this, 'add_auto_ads_amp_head_script' ] );
 
 			// SmartMag theme (http://theme-sphere.com/smart-mag/documentation/).
-			add_action( 'bunyad_amp_pre_main', array( $this, 'add_auto_ads_amp_body_script' ) );
+			add_action( 'bunyad_amp_pre_main', [ $this, 'add_auto_ads_amp_body_script' ] );
 
 			/**
 			 * Add AMP Auto ads body code to footer for `AMP` plugin ( https://wordpress.org/plugins/amp/ )
@@ -180,13 +180,10 @@ class Advanced_Ads_AdSense_Public {
 			 * use `wp_footer` in Transition and Standard mode
 			 * use `amp_post_template_footer` in Reader mode
 			 */
-			add_action( 'wp_footer', array( $this, 'add_auto_ads_amp_body_script' ) );
-			add_action( 'amp_post_template_footer', array( $this, 'add_auto_ads_amp_body_script' ) );
+			add_action( 'wp_footer', [ $this, 'add_auto_ads_amp_body_script' ] );
+			add_action( 'amp_post_template_footer', [ $this, 'add_auto_ads_amp_body_script' ] );
 
 			// Other AMP plugins.
-		} elseif ( function_exists( 'is_wp_amp' ) ) {
-			// WP AMP — Accelerated Mobile Pages for WordPress and WooCommerce (https://codecanyon.net/item/wp-amp-accelerated-mobile-pages-for-wordpress-and-woocommerce/16278608).
-			add_action( 'amphtml_after_footer', array( $this, 'add_adsense_auto_ads' ) );
 		}
 	}
 

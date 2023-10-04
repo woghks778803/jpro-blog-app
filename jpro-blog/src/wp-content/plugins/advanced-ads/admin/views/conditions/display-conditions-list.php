@@ -34,7 +34,12 @@
 					$show_or_force_warning = true;
 				}
 
-				if ( 'is_not' === $operator && 'or' === $connector && 'is_not' === $set_conditions[ $last_index ]['operator'] ) {
+				if (
+					$operator === 'is_not'
+					&& $connector === 'or'
+					&& isset( $set_conditions[ $last_index ]['operator'] )
+					&& $set_conditions[ $last_index ]['operator'] === 'is_not'
+				) {
 					$show_is_not_or_warning = true;
 				}
 
@@ -69,7 +74,7 @@
 						data-condition-type="<?php echo esc_attr( $_options['type'] ); ?>"><?php echo esc_html( $conditions[ $_options['type'] ]['label'] ); ?></td>
 					<td>
 						<?php
-						call_user_func( array( $metabox[0], $metabox[1] ), $_options, $i ++, $form_name );
+						call_user_func( [ $metabox[0], $metabox[1] ], $_options, $i ++, $form_name );
 						?>
 					</td>
 					<td>

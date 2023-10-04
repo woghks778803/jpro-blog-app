@@ -3,17 +3,17 @@
  * Advanced Ads.
  *
  * @package   Advanced_Ads
- * @author    Thomas Maier <support@wpadvancedads.com>
+ * @author    Advanced Ads GmbH <support@wpadvancedads.com>
  * @license   GPL-2.0+
  * @link      https://wpadvancedads.com
- * @copyright 2013-2020 Thomas Maier, Advanced Ads GmbH
+ * @copyright since 2013 Thomas Maier, Advanced Ads GmbH
  *
  * @wordpress-plugin
  * Plugin Name:       Advanced Ads
  * Plugin URI:        https://wpadvancedads.com
  * Description:       Manage and optimize your ads in WordPress
- * Version:           1.31.1
- * Author:            Thomas Maier, Advanced Ads GmbH
+ * Version:           1.46.0
+ * Author:            Advanced Ads GmbH
  * Author URI:        https://wpadvancedads.com
  * Text Domain:       advanced-ads
  * Domain Path:       /languages
@@ -39,7 +39,7 @@ define( 'ADVADS_BASE_DIR', dirname( ADVADS_BASE ) ); // directory of the plugin 
 // general and global slug, e.g. to store options in WP.
 define( 'ADVADS_SLUG', 'advanced-ads' );
 define( 'ADVADS_URL', 'https://wpadvancedads.com/' );
-define( 'ADVADS_VERSION', '1.31.1' );
+define( 'ADVADS_VERSION', '1.46.0' );
 
 // Autoloading, modules and functions.
 

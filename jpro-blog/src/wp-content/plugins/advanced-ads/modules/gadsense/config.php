@@ -4,8 +4,8 @@
 
 $path = dirname( __FILE__ );
 
-return array(
-	'classmap' => array(
+return [
+	'classmap' => [
 		'Advanced_Ads_Ad_Type_Adsense'     => $path . '/includes/class-ad-type-adsense.php',
 		'Advanced_Ads_AdSense_Data'        => $path . '/includes/class-gadsense-data.php',
 		'Advanced_Ads_AdSense_MAPI'        => $path . '/includes/class-mapi.php',
@@ -16,6 +16,6 @@ return array(
 		'Advanced_Ads_AdSense_Report_Api'  => $path . '/includes/adsense-report-api.php',
 
 		'Advanced_Ads_Network_Adsense' => $path . '/includes/class-network-adsense.php',
-	),
+	],
 	'textdomain' => null,
-);
+];

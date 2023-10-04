@@ -51,7 +51,7 @@ class Advanced_Ads_AdSense_Report_Api {
 		$this->access_token = Advanced_Ads_AdSense_MAPI::get_access_token( $publisher_id );
 		$this->publisher_id = $publisher_id;
 
-		$endpoint_args      = array(
+		$endpoint_args      = [
 			'startDate.year'    => '%SY%', // Start date's year - integer (4 digits).
 			'startDate.month'   => '%SM%', // Start date's month - integer.
 			'startDate.day'     => '%SD%', // Start date's integer - integer.
@@ -62,8 +62,8 @@ class Advanced_Ads_AdSense_Report_Api {
 			'dimension2'        => 'DATE', // Secondary reporting dimension.
 			'metrics'           => 'ESTIMATED_EARNINGS', // Report metrics.
 			'reportingTimeZone' => 'ACCOUNT_TIME_ZONE', // Time zone used in report data.
-		);
-		$this->endpoint_url = str_replace( array( 'dimension1', 'dimension2' ), 'dimensions', add_query_arg( $endpoint_args, 'https://adsense.googleapis.com/v2/accounts/%pubid%/reports:generate' ) );
+		];
+		$this->endpoint_url = str_replace( [ 'dimension1', 'dimension2' ], 'dimensions', add_query_arg( $endpoint_args, 'https://adsense.googleapis.com/v2/accounts/%pubid%/reports:generate' ) );
 	}
 
 	/**
@@ -81,7 +81,7 @@ class Advanced_Ads_AdSense_Report_Api {
 	 * @return array Array of error messages.
 	 */
 	public function get_token_error() {
-		return is_string( $this->access_token ) ? array() : $this->access_token;
+		return is_string( $this->access_token ) ? [] : $this->access_token;
 	}
 
 	/**
@@ -104,7 +104,7 @@ class Advanced_Ads_AdSense_Report_Api {
 		$start_date = $today->sub( date_interval_create_from_date_string( '28 days' ) );
 		// Replace placeholder in the endpoint with actual arguments.
 		$url = str_replace(
-			array(
+			[
 				'%pubid%',
 				'%DIM%',
 				'%SY%',
@@ -113,8 +113,8 @@ class Advanced_Ads_AdSense_Report_Api {
 				'%EY%',
 				'%EM%',
 				'%ED%',
-			),
-			array(
+			],
+			[
 				$this->publisher_id,
 				$dimension,
 				$start_date->format( 'Y' ),
@@ -123,44 +123,44 @@ class Advanced_Ads_AdSense_Report_Api {
 				$today->format( 'Y' ),
 				$today->format( 'n' ),
 				$today->format( 'j' ),
-			),
+			],
 			$this->endpoint_url
 		);
 
-		$headers = array(
+		$headers = [
 			'Authorization' => 'Bearer ' . $this->access_token,
-		);
+		];
 
-		$response = wp_remote_get( $url, array( 'headers' => $headers ) );
+		$response = wp_remote_get( $url, [ 'headers' => $headers ] );
 		Advanced_Ads_AdSense_MAPI::log( 'Fetched AdSense Report from ' . $url );
 
 		if ( is_wp_error( $response ) ) {
-			return array(
+			return [
 				'status' => false,
 				// translators: AdSense ID.
 				'msg'    => sprintf( esc_html__( 'Error while retrieving report for "%s".', 'advanced-ads' ), $this->publisher_id ),
 				'raw'    => $response->get_error_message(),
-			);
+			];
 		}
 
 		$response_body = json_decode( $response['body'], true );
 
 		if ( ! isset( $response_body['startDate'] ) ) {
-			return array(
+			return [
 				'status' => false,
 				// translators: AdSense ID.
 				'msg'    => sprintf( esc_html__( 'Invalid response while retrieving report for "%s".', 'advanced-ads' ), $this->publisher_id ),
 				'raw'    => $response['body'],
-			);
+			];
 		}
 
 		$response_body['api_version'] = self::API_VERSION;
 		$response_body['timestamp']   = time();
 
-		return array(
+		return [
 			'status'        => true,
 			'response_body' => $response_body,
-		);
+		];
 	}
 
 }

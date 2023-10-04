@@ -4,6 +4,20 @@
  */
 class Advanced_Ads_Ads_Txt_Admin {
 	/**
+	 * Ads.txt data management class
+	 *
+	 * @var Advanced_Ads_Ads_Txt_Strategy
+	 */
+	private $strategy;
+
+	/**
+	 * Ads.txt frontend logic class
+	 *
+	 * @var Advanced_Ads_Ads_Txt_Public
+	 */
+	private $public;
+
+	/**
 	 * AdSense network ID.
 	 */
 	const adsense = 'adsense';
@@ -20,16 +34,17 @@ class Advanced_Ads_Ads_Txt_Admin {
 	/**
 	 * Constructor
 	 *
-	 * @param obj $strategy Advanced_Ads_Ads_Txt_Strategy.
+	 * @param Advanced_Ads_Ads_Txt_Strategy $strategy Ads.txt data management class.
+	 * @param Advanced_Ads_Ads_Txt_Public   $public Ads.txt frontend logic class.
 	 */
 	public function __construct( Advanced_Ads_Ads_Txt_Strategy $strategy, Advanced_Ads_Ads_Txt_Public $public ) {
 		$this->strategy = $strategy;
-		$this->public = $public;
+		$this->public   = $public;
 
-		add_filter( 'advanced-ads-sanitize-settings', array( $this, 'toggle' ), 10, 1 );
-		add_action( 'pre_update_option_advanced-ads-adsense', array( $this, 'update_adsense_option' ), 10, 2 );
-		add_action( 'advanced-ads-settings-init', array( $this, 'add_settings' ) );
-		add_action( self::ACTION, array( $this, 'ajax_refresh_notices' ) );
+		add_filter( 'advanced-ads-sanitize-settings', [ $this, 'toggle' ], 10, 1 );
+		add_action( 'pre_update_option_advanced-ads-adsense', [ $this, 'update_adsense_option' ], 10, 2 );
+		add_action( 'advanced-ads-settings-init', [ $this, 'add_settings' ] );
+		add_action( self::ACTION, [ $this, 'ajax_refresh_notices' ] );
 	}
 
 
@@ -103,14 +118,14 @@ class Advanced_Ads_Ads_Txt_Admin {
 		add_settings_section(
 			'advanced_ads_ads_txt_setting_section',
 			'ads.txt',
-			array( $this, 'render_ads_txt_section_callback' ),
+			[ $this, 'render_ads_txt_section_callback' ],
 			$hook
 		);
 
 		add_settings_field(
 			'adsense-ads-txt-enable',
 			'',
-			array( $this, 'render_setting_toggle' ),
+			[ $this, 'render_setting_toggle' ],
 			$hook,
 			'advanced_ads_ads_txt_setting_section'
 		);
@@ -118,7 +133,7 @@ class Advanced_Ads_Ads_Txt_Admin {
 		add_settings_field(
 			'adsense-ads-txt-content',
 			'',
-			array( $this, 'render_setting_additional_content' ),
+			[ $this, 'render_setting_additional_content' ],
 			$hook,
 			'advanced_ads_ads_txt_setting_section'
 		);
@@ -174,7 +189,7 @@ class Advanced_Ads_Ads_Txt_Admin {
 	public function get_notices() {
 		$url = home_url( '/' );
 		$parsed_url = wp_parse_url( $url );
-		$notices = array();
+		$notices = [];
 
 		if ( ! isset( $parsed_url['scheme'] ) || ! isset ( $parsed_url['host'] ) ) {
 			return $notices;
@@ -188,10 +203,10 @@ class Advanced_Ads_Ads_Txt_Admin {
 		}
 
 		if ( Advanced_Ads_Ads_Txt_Utils::is_subdir() ) {
-			$notices[] = array( 'advads-error-message', sprintf(
+			$notices[] = [ 'advads-error-message', sprintf(
 				esc_html__( 'The ads.txt file cannot be placed because the URL contains a subdirectory. You need to make the file available at %s', 'advanced-ads' ),
 				sprintf( '<a href="%1$s" target="_blank">%1$s</a>', esc_url( $parsed_url['scheme'] . '://' . $parsed_url['host'] ) )
-			) );
+			) ];
 		} else {
 			if ( null === ( $file = $this->get_notice( 'get_file_info', $url ) ) ) {
 				$this->notices_are_stale = true;
@@ -200,12 +215,12 @@ class Advanced_Ads_Ads_Txt_Admin {
 
 			if ( ! is_wp_error( $file )) {
 				if ( $file['exists'] ) {
-					$notices[] = array( '', sprintf(
+					$notices[] = [ '', sprintf(
 						esc_html__( 'The file is available on %s.', 'advanced-ads' ),
 						$link
-					) );
+					) ];
 				} else {
-					$notices[] = array( '', esc_html__( 'The file was not created.', 'advanced-ads' ) );
+					$notices[] = [ '', esc_html__( 'The file was not created.', 'advanced-ads' ) ];
 				}
 
 				if ( $file['is_third_party'] ) {
@@ -217,13 +232,13 @@ class Advanced_Ads_Ads_Txt_Admin {
 							. __( 'Move the content of the existing ads.txt file into Advanced Ads and remove it.', 'advanced-ads' )
 						. '</p>';
 					}
-					$notices['is_third_party'] = array( 'advads-error-message', $message );
+					$notices['is_third_party'] = [ 'advads-error-message', $message ];
 				}
 			} else {
-				$notices[] = array( 'advads-error-message', sprintf(
+				$notices[] = [ 'advads-error-message', sprintf(
 					esc_html__( 'An error occured: %s.', 'advanced-ads' ),
 					esc_html( $file->get_error_message() ) )
-				);
+				];
 			}
 
 
@@ -233,12 +248,12 @@ class Advanced_Ads_Ads_Txt_Admin {
 			}
 
 			if ( $need_file_on_root_domain ) {
-				$notices[] = array( 'advads-ads-txt-nfor', sprintf(
+				$notices[] = [ 'advads-ads-txt-nfor', sprintf(
 					/* translators: %s the line that may need to be added manually */
 					esc_html__( 'If your site is located on a subdomain, you need to add the following line to the ads.txt file of the root domain: %s', 'advanced-ads' ),
 					// Without http://.
 					'<code>subdomain=' . esc_html( $parsed_url['host'] ) . '</code>'
-				) );
+				) ];
 			}
 		}
 
@@ -297,8 +312,9 @@ class Advanced_Ads_Ads_Txt_Admin {
 			return isset( $transient[ $func ] ) ? $transient[ $func ] : null;
 		}
 
-		$r = call_user_func( array( 'Advanced_Ads_Ads_Txt_Utils', $func ), $url );
+		$r = call_user_func( [ 'Advanced_Ads_Ads_Txt_Utils', $func ], $url );
 
+		$transient = is_array( $transient ) ? $transient : [];
 		$transient[ $func ] = $r;
 		set_transient( $key, $transient, WEEK_IN_SECONDS );
 		return $r;
@@ -321,12 +337,12 @@ class Advanced_Ads_Ads_Txt_Admin {
 			return '';
 		}
 
-		$data   = array(
+		$data   = [
 			'domain'                  => 'google.com',
 			'account_id'              => $adsense_id,
 			'account_type'            => 'DIRECT',
 			'certification_authority' => 'f08c47fec0942fa0'
-		);
+		];
 		$result = implode( ', ', $data );
 
 		return $result;
@@ -343,15 +359,15 @@ class Advanced_Ads_Ads_Txt_Admin {
 			return;
 		}
 
-		$response = array();
-		$action_notices = array();
+		$response = [];
+		$action_notices = [];
 		if ( isset( $_REQUEST['type'] ) ) {
 			if (  'remove_real_file' === $_REQUEST['type'] ) {
 				$remove = $this->remove_real_file();
 				if ( is_wp_error( $remove ) ) {
-					$action_notices[] = array( 'advads-ads-txt-updated advads-notice-inline advads-error', $remove->get_error_message() );
+					$action_notices[] = [ 'advads-ads-txt-updated advads-notice-inline advads-error', $remove->get_error_message() ];
 				} else {
-					$action_notices[] = array( 'advads-ads-txt-updated', __( 'The ads.txt is now managed with Advanced Ads.', 'advanced-ads' ) );
+					$action_notices[] = [ 'advads-ads-txt-updated', __( 'The ads.txt is now managed with Advanced Ads.', 'advanced-ads' ) ];
 					$options = $this->strategy->get_options();
 					$response['additional_content'] = esc_textarea( $options['custom'] );
 				}
@@ -375,7 +391,7 @@ class Advanced_Ads_Ads_Txt_Admin {
 	 */
 	private function fs_connect() {
 		global $wp_filesystem;
-		$fs_connect = Advanced_Ads_Filesystem::get_instance()->fs_connect( array( ABSPATH ) );
+		$fs_connect = Advanced_Ads_Filesystem::get_instance()->fs_connect( [ ABSPATH ] );
 
 		if ( false === $fs_connect || is_wp_error( $fs_connect ) ) {
 			$message = __( 'Unable to connect to the filesystem. Please confirm your credentials.', 'advanced-ads' );

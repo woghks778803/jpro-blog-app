@@ -6,17 +6,17 @@
 // array with setting tabs for frontend.
 $setting_tabs = apply_filters(
 	'advanced-ads-setting-tabs',
-	array(
-		'general' => array(
+	[
+		'general' => [
 			'page'  => Advanced_Ads_Admin::get_instance()->plugin_screen_hook_suffix,
 			'group' => ADVADS_SLUG,
 			'tabid' => 'general',
 			'title' => __( 'General', 'advanced-ads' ),
-		),
-	)
+		],
+	]
 );
 ?><div class="wrap">
-	<h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
+	<h2 style="display: none;"><!-- There needs to be an empty H2 headline at the top of the page so that WordPress can properly position admin notifications --></h2>
 	<?php Advanced_Ads_Checks::show_issues(); ?>
 
 	<?php settings_errors(); ?>
@@ -62,88 +62,3 @@ $setting_tabs = apply_filters(
 		?>
 
 </div>
-<script>
-/**
- * There are two formats of URL supported:
- * admin.php?page=advanced-ads-settings#top#tab_id     go to the `tab_id`
- * admin.php?page=advanced-ads-settings#tab_id__anchor go to the `tab_id`, scroll to the `anchor`
- */
-
-/**
- * Extract the active tab and anchor from the URL.
- */
-function advads_extract_tab( url ) {
-	var hash_parts = url.replace( '#top#', '' ).replace( '#', '' ).split( '__' );
-
-	return {
-		'tab': hash_parts[0] || jQuery( '.advads-tab' ).attr( 'id' ),
-		'anchor': hash_parts[1]
-	}
-}
-
-/**
- * Set the active tab and optionally scroll to the anchor.
- */
-function advads_set_tab( tab ) {
-	jQuery( '#advads-tabs' ).find( 'a' ).removeClass( 'nav-tab-active' );
-	jQuery( '.advads-tab' ).removeClass( 'active' );
-
-	jQuery( '#' + tab.tab ).addClass( 'active' );
-	jQuery( '#' + tab.tab + '-tab' ).addClass( 'nav-tab-active' );
-
-	if ( tab.anchor ) {
-		var anchor_offset = document.getElementById( tab.anchor ).getBoundingClientRect().top;
-		var admin_bar = 48;
-		window.scrollTo( 0, anchor_offset + window.scrollY - admin_bar );
-	}
-}
-
-// menu tabs
-jQuery( '#advads-tabs' ).find( 'a' ).click(function () {
-	var url = jQuery( this ).attr( 'href' );
-	var tab = advads_extract_tab( url );
-	advads_set_tab( tab );
-});
-
-// While user is already on the Settings page, find links (in admin menu,
-// in the Checks at the top, in the notices at the top) to particular setting tabs and open them on click.
-jQuery( document ).on( 'click', 'a[href*="page=advanced-ads-settings"]:not(.nav-tab)', function() {
-	// Already on the Settings page, so set the new tab.
-	// Extract the tab id from the url.
-	var url = jQuery( this ).attr( 'href' ).split( 'advanced-ads-settings' )[1];
-	var tab = advads_extract_tab( url );
-	advads_set_tab( tab );
-});
-
-// activate specific or first tab
-
-var active_tab = advads_extract_tab( window.location.hash );
-advads_set_tab( active_tab );
-
-// set all tab urls
-advads_set_tab_hashes();
-
-// dynamically generate the sub-menu
-jQuery( '.advads-tab-sub-menu' ).each( function( key, e ){
-	// abort if scrollIntoView is not supported; we can’t use anchors because they are used for tabs already
-	if (typeof e.scrollIntoView !== "function") { return; };
-	// get all h2 headlines
-	advads_settings_parent_tab = jQuery( e ).parent( '.advads-tab');
-	var headlines = advads_settings_parent_tab.find( 'h2' );
-	// create list
-	if( headlines.length ){
-	advads_submenu_list = jQuery('<ul>');
-	headlines.each( function( key, h ){
-		// create anchor for this headline
-		var headline_id = 'advads-tab-headline-' + advads_settings_parent_tab.attr( 'id' ) + key;
-		jQuery( h ).attr( 'id', headline_id );
-		// place the link in the top menu
-		var text = text = h.textContent || h.innerText;
-		jQuery( '<li><a onclick="document.getElementById(\'' + headline_id + '\').scrollIntoView()">' + text + '</a></li>' ).appendTo( advads_submenu_list );
-	});
-	// place the menu
-	advads_submenu_list.appendTo( e );
-	}
-});
-
-</script>

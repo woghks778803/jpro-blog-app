@@ -25,7 +25,7 @@
 					<td class="advads-conditions-type"><?php echo esc_html( $conditions[ $_options['type'] ]['label'] ); ?></td>
 					<td>
 						<?php
-						call_user_func( array( $metabox[0], $metabox[1] ), $_options, $i ++, $form_name );
+						call_user_func( [ $metabox[0], $metabox[1] ], $_options, $i ++, $form_name );
 						?>
 					</td>
 					<td>

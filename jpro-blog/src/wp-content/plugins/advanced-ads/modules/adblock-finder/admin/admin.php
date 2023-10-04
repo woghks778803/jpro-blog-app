@@ -6,7 +6,7 @@
 class Advanced_Ads_Adblock_Finder_Admin {
 	public function __construct() {
 		// Add module settings to Advanced Ads settings page.
-		add_action( 'advanced-ads-settings-init', array( $this, 'settings_init' ), 9, 1 );
+		add_action( 'advanced-ads-settings-init', [ $this, 'settings_init' ], 9, 1 );
 	}
 
 	/**
@@ -18,14 +18,14 @@ class Advanced_Ads_Adblock_Finder_Admin {
 		add_settings_section(
 			'advanced_ads_adblocker_setting_section',
 			__( 'Ad Blocker', 'advanced-ads' ),
-			array( $this, 'render_settings_section_callback' ),
+			[ $this, 'render_settings_section_callback' ],
 			$hook
 		);
 
 		add_settings_field(
 			'GA-tracking-id',
 			__( 'Ad blocker counter', 'advanced-ads' ),
-			array( $this, 'render_settings_ga' ),
+			[ $this, 'render_settings_ga' ],
 			$hook,
 			'advanced_ads_adblocker_setting_section'
 		);

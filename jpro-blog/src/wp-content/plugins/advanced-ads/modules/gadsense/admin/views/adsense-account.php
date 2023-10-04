@@ -28,61 +28,89 @@ if ( $has_token && isset( $mapi_options['accounts'][ $adsense_id ]['details'] ) 
 $alerts = Advanced_Ads_AdSense_MAPI::get_stored_account_alerts( $adsense_id );
 
 /* translators: 1: opening anchor tag for link to adsense account  2: closing anchor tag for link to adsense account */
-$alerts_heading            = $adsense_id ? sprintf( __( 'Warning from your %1$sAdSense account%2$s', 'advanced-ads' ), '<a target="_blank" href="https://www.google.com/adsense/new/u/1/' . $adsense_id . '/">', '</a>' ) : __( 'AdSense warnings', 'advanced-ads' );
+$alerts_heading            = $adsense_id ? sprintf( esc_html__( 'Warning from your %1$sAdSense account%2$s', 'advanced-ads' ), '<a target="_blank" href="https://www.google.com/adsense/new/u/1/' . esc_html( $adsense_id ) . '/">', '</a>' ) : esc_html__( 'AdSense warnings', 'advanced-ads' );
+
+$alerts_heading = $adsense_id
+	? wp_kses(
+		sprintf(
+			/* translators: 1: opening anchor tag for link to adsense account  2: closing anchor tag for link to adsense account */
+			__( 'Warning from your %1$sAdSense account%2$s', 'advanced-ads' ),
+			'<a target="_blank" href="https://www.google.com/adsense/new/u/1/' . $adsense_id . '/">',
+			'</a>'
+		),
+		[
+			'a' => [
+				'target' => true,
+				'href'   => true,
+			],
+		]
+	)
+	: __( 'AdSense warnings', 'advanced-ads' );
+
 $alerts_dismiss            = __( 'dismiss', 'advanced-ads' );
 $connection_error_messages = Advanced_Ads_AdSense_MAPI::get_connect_error_messages();
 $alerts_advads_messages    = Advanced_Ads_Adsense_MAPI::get_adsense_alert_messages();
 
 ?>
-<div id="mapi-account-alerts" data-heading="<?php echo esc_attr( $alerts_heading ); ?>" data-dismiss="<?php echo esc_attr( $alerts_dismiss ); ?>">
-    <?php if ( is_array( $alerts ) && isset( $alerts['items'] ) && is_array( $alerts['items'] ) && $alerts['items'] ) : ?>
-	<div class="card advads-notice-block advads-error">
+<div id="mapi-account-alerts">
+	<?php if ( is_array( $alerts ) && isset( $alerts['items'] ) && is_array( $alerts['items'] ) && $alerts['items'] ) : ?>
 		<h3>
 			<?php
-			echo wp_kses(
-				$alerts_heading,
-				array(
-					'a' => array(
-						'target' => true,
-						'href'   => true,
-					),
-				)
-			);
+			//phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped
+			echo $alerts_heading;
 			?>
 		</h3>
-		<ul>
 		<?php foreach ( $alerts['items'] as $alert_id => $alert ) : ?>
-			<?php $internal_id = isset( $alert['id'] ) ? $alert['id'] : str_replace( '-', '_', strtoupper( $alert['type'] ) ); ?>
-            <?php if ( isset( $alerts_advads_messages[ $internal_id ] ) ) : ?>
-                <li><?php echo wp_kses( $alerts_advads_messages[ $internal_id ], array( 'a' => array( 'href' => true, 'target' => true, 'class' => true ) ) ); ?>&nbsp;<a href="#" class="mapi-dismiss-alert" data-id="<?php echo esc_attr( $alert_id ); ?>"><?php echo esc_html( $alerts_dismiss ); ?></a></li>
-            <?php else : ?>
-                <li><?php echo wp_kses( $alert['message'], array( 'a' => array( 'href' => true, 'target' => true, 'class' => true ) ) ); ?>&nbsp;<a href="#" class="mapi-dismiss-alert" data-id="<?php echo esc_attr( $alert_id ); ?>"><?php echo esc_html( $alerts_dismiss ); ?></a></li>
-            <?php endif; ?>
+			<div class="card advads-notice-block advads-error">
+				<button type="button" class="mapi-dismiss-alert notice-dismiss" data-id="<?php echo esc_attr( $alert_id ); ?>">
+					<span class="screen-reader-text"><?php echo esc_html( $alerts_dismiss ); ?></span>
+				</button>
+				<?php
+				$internal_id = $alert['id'] ?? str_replace( '-', '_', strtoupper( $alert['type'] ) );
+				echo wp_kses(
+					$alerts_advads_messages[ $internal_id ] ?? $alert['message'],
+					[
+						'a' => [
+							'href'   => true,
+							'target' => true,
+							'class'  => true,
+						],
+					]
+				);
+				?>
+			</div>
 		<?php endforeach; ?>
-		</ul>
 		<?php /* translators: %s: date and time of last check in the format set in wp_options */ ?>
 		<p class="description alignright"><?php printf( __( 'last checked: %s', 'advanced-ads' ), $alerts['lastCheck'] ? esc_html( ( new DateTime( '@' . $alerts['lastCheck'], Advanced_Ads_Utils::get_wp_timezone() ) )->format( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ) ) ) : '-' ); ?></p>
-	</div>
 	<?php endif; ?>
-</div>
-<div id="mapi-connect-errors">
-<?php if ( !empty( $mapi_options['connect_error'] ) ) {
-	$message = isset( $mapi_options['connect_error']['message'] ) ? $mapi_options['connect_error']['message'] : '';
-	if ( isset( $connection_error_messages[ $mapi_options['connect_error']['reason'] ] ) ) {
-		$message = $connection_error_messages[ $mapi_options['connect_error']['reason'] ];
+	<?php
+	if ( ! empty( $mapi_options['connect_error'] ) ) {
+		$message = isset( $mapi_options['connect_error']['message'] ) ? $mapi_options['connect_error']['message'] : '';
+		if ( isset( $connection_error_messages[ $mapi_options['connect_error']['reason'] ] ) ) {
+			$message = $connection_error_messages[ $mapi_options['connect_error']['reason'] ];
+		}
+		if ( ! empty( $message ) ) {
+			echo '<div id="mapi-connect-errors" class="notice error inline"><p class="advads-notice-inline advads-error">';
+			echo wp_kses( $message, [
+				'a' => [
+					'id'    => [],
+					'class' => [],
+					'href'  => [],
+					'style' => [],
+				],
+				'i' => [
+					'id'    => [],
+					'class' => [],
+					'style' => [],
+				],
+			] );
+			echo '</p></div>';
+		}
 	}
-	if ( ! empty( $message ) ) {
-		echo '<p class="advads-notice-inline advads-error">' . wp_kses_post( $message );
-		echo '<i id="dissmiss-connect-error" class="dashicons dashicons-dismiss align';
-		echo is_rtl() ? 'left' : 'right';
-		echo '" title=" ' . esc_attr( __( 'dismiss', 'advanced-ads' ) ) . '"></i>';
-		echo '</p>';
-	}
-}
-?>
+	?>
 </div>
 <div id="full-adsense-settings-div" <?php if ( empty( $adsense_id ) ) echo 'style="display:none"' ?>>
-	<input type="text" <?php if ( $has_token ) echo 'readonly' ?> name="<?php echo GADSENSE_OPT_NAME; ?>[adsense-id]" style="margin-right:.8em" id="adsense-id" size="32" value="<?php echo $adsense_id; ?>" />
+	<input type="text" <?php echo $has_token ? 'readonly' : ''; ?> name="<?php echo esc_attr( GADSENSE_OPT_NAME ); ?>[adsense-id]" placeholder="pub-1234567891234567" style="margin-right:.8em" id="adsense-id" size="32" value="<?php echo esc_attr( $adsense_id ); ?>"/>
 	<?php if ( !empty( $adsense_id ) && !$has_token ) : ?>
 	<a id="connect-adsense" class="button-primary  <?php echo ! Advanced_Ads_Checks::php_version_minimum() ? 'disabled ' : ''; ?>preventDefault" <?php if ( ! $can_connect || ! Advanced_Ads_Checks::php_version_minimum() ) echo 'disabled'; ?>><?php esc_attr_e( 'Connect to AdSense', 'advanced-ads' ) ?></a>
 	<?php endif; ?>
@@ -97,8 +125,6 @@ $alerts_advads_messages    = Advanced_Ads_Adsense_MAPI::get_adsense_alert_messag
     <?php else : ?>
 		<?php if ( 0 !== strpos( $adsense_id, 'pub-' ) ) : ?>
 			<p class="advads-notice-inline advads-error"><?php esc_html_e( 'The Publisher ID has an incorrect format. (must start with "pub-")', 'advanced-ads' ); ?></p>
-		<?php else : ?>
-			<p class="description"><?php _e( 'Your AdSense Publisher ID <em>(pub-xxxxxxxxxxxxxx)</em>', 'advanced-ads' ) ?></p>
 		<?php endif; ?>
     <?php endif; ?>
 </div>
@@ -118,14 +144,14 @@ $alerts_advads_messages    = Advanced_Ads_Adsense_MAPI::get_adsense_alert_messag
 				wp_kses(
 					// translators: %1$s is an opening a tag, %2$s is the closing one
 					__( 'See all %1$srecommended ad networks%2$s.', 'advanced-ads' ),
-					array(
-						'a' => array(
-							'href'   => array(),
-							'target' => array(),
-						),
-					)
+					[
+						'a' => [
+							'href'   => [],
+							'target' => [],
+						],
+					]
 				),
-				'<a href="' . esc_url( ADVADS_URL ) . ' recommended-ad-networks/#utm_source=advanced-ads&utm_medium=link&utm_campaign=recommendations" target="_blank">',
+				'<a href="' . esc_url( ADVADS_URL ) . ' recommended-ad-networks/?utm_source=advanced-ads&utm_medium=link&utm_campaign=recommendations" target="_blank">',
 				'</a>'
 			);
 			?>
@@ -181,7 +207,8 @@ $alerts_advads_messages    = Advanced_Ads_Adsense_MAPI::get_adsense_alert_messag
 	echo "<br/><br/><br/><hr>";
 	include ADVADS_BASE_PATH . 'modules/gadsense/admin/views/auto-ads-video.php';
 	?><p>
-	<a href="<?php echo esc_url( ADVADS_URL ); ?>place-adsense-ad-unit-manually/#utm_source=advanced-ads&utm_medium=link&utm_campaign=adsense-manually" style="text-decoration: none;" target="_blank"><span class="dashicons dashicons-welcome-learn-more"></span>&nbsp;<?php
+	<a href="<?php echo esc_url( ADVADS_URL ); ?>place-adsense-ad-unit-manually/?utm_source=advanced-ads&utm_medium=link&utm_campaign=adsense-manually" style="text-decoration: none;" target="_blank"><span class="dashicons dashicons-welcome-learn-more"></span>
+		<?php
 		esc_attr_e( 'How to choose specific positions for AdSense ad units', 'advanced-ads' ); ?></a>
 	</p><?php
 else : ?>
@@ -191,14 +218,14 @@ else : ?>
 		wp_kses(
 			// translators: %1$s is the opening link tag to our manual; %2$s is the appropriate closing link tag; %3$s is the opening link tag to our help forum; %4$s is the appropriate closing link tag
 			__( 'Problems with AdSense? Check out the %1$smanual%2$s or %3$sask here%4$s.', 'advanced-ads' ),
-			array(
-				'a' => array(
-					'href'   => array(),
-					'target' => array(),
-				),
-			)
+			[
+				'a' => [
+					'href'   => [],
+					'target' => [],
+				],
+			]
 		),
-		'<a href="' . esc_url( ADVADS_URL ) . 'adsense-ads/#utm_source=advanced-ads&utm_medium=link&utm_campaign=adsense-manual-check" target="_blank">',
+		'<a href="' . esc_url( ADVADS_URL ) . 'adsense-ads/?utm_source=advanced-ads&utm_medium=link&utm_campaign=adsense-manual-check" target="_blank">',
 		'</a>',
 		'<a href="https://wordpress.org/support/plugin/advanced-ads/#new-post" target="_blank">',
 		'</a>'
@@ -209,14 +236,14 @@ else : ?>
 		wp_kses(
 		// translators: %1$s is an opening a tag, %2$s is the closing one
 			__( 'See all %1$srecommended ad networks%2$s.', 'advanced-ads' ),
-			array(
-				'a' => array(
-					'href'   => array(),
-					'target' => array(),
-				),
-			)
+			[
+				'a' => [
+					'href'   => [],
+					'target' => [],
+				],
+			]
 		),
-		'<a href="' . esc_url( ADVADS_URL ) . ' recommended-ad-networks/#utm_source=advanced-ads&utm_medium=link&utm_campaign=recommendations" target="_blank">',
+		'<a href="' . esc_url( ADVADS_URL ) . ' recommended-ad-networks/?utm_source=advanced-ads&utm_medium=link&utm_campaign=recommendations" target="_blank">',
 		'</a>'
 	);
 	?>
@@ -235,7 +262,18 @@ else : ?>
 	if ( 'undefined' == typeof window.AdsenseMAPI ) {
 		AdsenseMAPI = {};
 	}
-	AdsenseMAPI.alertsMsg = <?php echo json_encode( $alerts_advads_messages ) ?>;
+	AdsenseMAPI = Object.assign(
+		AdsenseMAPI,
+		<?php
+		echo wp_json_encode(
+			[
+				'alertsMsg'        => $alerts_advads_messages,
+				'alertsHeadingMsg' => $alerts_heading,
+				'alertsDismissMsg' => wp_kses( $alerts_dismiss, [] ),
+			]
+		)
+		?>
+	);
 </script>
 <style type="text/css">
     #adsense {

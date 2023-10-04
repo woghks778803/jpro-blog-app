@@ -11,11 +11,11 @@ do_action( 'advanced-ads-ad-params-before', $ad, $types );
 ?>
 <div id="advanced-ads-tinymce-wrapper" style="display:none;">
 	<?php
-		$args = array(
+		$args = [
 			// used here instead of textarea_rows, because of display:none.
 			'editor_height'    => 300,
 			'drag_drop_upload' => true,
-		);
+		];
 		wp_editor( '', 'advanced-ads-tinymce', $args );
 		?>
 </div>
@@ -24,7 +24,7 @@ do_action( 'advanced-ads-ad-params-before', $ad, $types );
 	$type = ( isset( $types[ $ad->type ] ) ) ? $types[ $ad->type ] : current( $types );
 	$type->render_parameters( $ad );
 
-	$types_without_size = array( 'dummy' );
+	$types_without_size = [ 'dummy' ];
 	$types_without_size = apply_filters( 'advanced-ads-types-without-size', $types_without_size );
 	// todo: manage which ad types have a size in the ad type definition.
 	if ( ! in_array( $ad->type, $types_without_size ) ) {

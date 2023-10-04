@@ -33,6 +33,20 @@ abstract class Advanced_Ads_Ad_Network {
 	protected $nonce;
 
 	/**
+	 * The network’s settings section ID
+	 *
+	 * @var string
+	 */
+	protected $settings_section_id;
+
+	/**
+	 * The network’s settings init hook.
+	 *
+	 * @var string
+	 */
+	private $settings_init_hook;
+
+	/**
 	 * Advanced_Ads_Ad_Network constructor.
 	 *
 	 * @param string $identifier an identifier that will be used for hooks, settings, ids and much more - MAKE SURE IT IS UNIQUE.
@@ -96,14 +110,14 @@ abstract class Advanced_Ads_Ad_Network {
 	 */
 	public function register() {
 		// register the ad type.
-		add_filter( 'advanced-ads-ad-types', array( $this, 'register_ad_type_callback' ) );
+		add_filter( 'advanced-ads-ad-types', [ $this, 'register_ad_type_callback' ] );
 
 		if ( is_admin() ) {
 			if ( wp_doing_ajax() ) {
 				// we need add all the actions for our ajax calls here.
 				// our ajax method that will trigger an update of the ad units of this network.
-				add_action( 'wp_ajax_advanced_ads_get_ad_units_' . $this->identifier, array( $this, 'update_external_ad_units' ) );
-				add_action( 'wp_ajax_advanced_ads_toggle_idle_ads_' . $this->identifier, array( $this, 'toggle_idle_ads' ) );
+				add_action( 'wp_ajax_advanced_ads_get_ad_units_' . $this->identifier, [ $this, 'update_external_ad_units' ] );
+				add_action( 'wp_ajax_advanced_ads_toggle_idle_ads_' . $this->identifier, [ $this, 'toggle_idle_ads' ] );
 			} else {
 				// find out if we need to register the settings. this is necessary
 				// 1) when viewing the settings (admin.php with page="advanced-ads-settings")
@@ -129,7 +143,7 @@ abstract class Advanced_Ads_Ad_Network {
 					$requires_settings = true;
 				} elseif ( 'post.php' === $pagenow || 'post-new.php' === $pagenow ) {
 					$post_type = isset( $_REQUEST['post_type'] ) ? $_REQUEST['post_type'] : '';
-					add_filter( 'advanced-ads-ad-settings-pre-save', array( $this, 'sanitize_ad_settings' ) );
+					add_filter( 'advanced-ads-ad-settings-pre-save', [ $this, 'sanitize_ad_settings' ] );
 
 					if ( isset( $_GET['action'] ) && 'edit' === $_GET['action'] ) {
 						$requires_javascript = true;
@@ -140,11 +154,11 @@ abstract class Advanced_Ads_Ad_Network {
 
 				if ( $requires_settings ) {
 					// register the settings.
-					add_action( 'advanced-ads-settings-init', array( $this, 'register_settings_callback' ) );
-					add_filter( 'advanced-ads-setting-tabs', array( $this, 'register_settings_tabs_callback' ) );
+					add_action( 'advanced-ads-settings-init', [ $this, 'register_settings_callback' ] );
+					add_filter( 'advanced-ads-setting-tabs', [ $this, 'register_settings_tabs_callback' ] );
 				}
 				if ( $requires_javascript ) {
-					add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts_callback' ) );
+					add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_scripts_callback' ] );
 				}
 			}
 		}
@@ -171,7 +185,7 @@ abstract class Advanced_Ads_Ad_Network {
 		register_setting(
 			ADVADS_SLUG . '-' . $this->identifier,
 			ADVADS_SLUG . '-' . $this->identifier,
-			array( $this, 'sanitize_settings_callback' )
+			[ $this, 'sanitize_settings_callback' ]
 		);
 
 		/**
@@ -191,7 +205,7 @@ abstract class Advanced_Ads_Ad_Network {
 		add_settings_section(
 			$this->settings_section_id,
 			'',
-			array( $this, 'render_settings_callback' ),
+			[ $this, 'render_settings_callback' ],
 			$this->settings_page_hook
 		);
 
@@ -222,11 +236,11 @@ abstract class Advanced_Ads_Ad_Network {
 		$js_path = $this->get_javascript_base_path();
 		if ( $js_path ) {
 			$id = $this->get_js_library_name();
-			wp_enqueue_script( $id, $js_path, array( 'jquery' ) );
+			wp_enqueue_script( $id, $js_path, [ 'jquery' ] );
 			// next we have to pass the data.
-			$data = array(
+			$data = [
 				'nonce' => $this->get_nonce(),
-			);
+			];
 			$data = $this->append_javascript_data( $data );
 			wp_localize_script( $id, $this->get_localized_script_object_name(), $data );
 		}
@@ -266,12 +280,12 @@ abstract class Advanced_Ads_Ad_Network {
 	 */
 	public function register_settings_tabs_callback( $tabs ) {
 		$tab_id          = $this->identifier;
-		$tabs[ $tab_id ] = array(
+		$tabs[ $tab_id ] = [
 			'page'  => $this->settings_page_hook,
 			'group' => ADVADS_SLUG . '-' . $this->identifier,
 			'tabid' => $tab_id,
 			'title' => $this->get_settings_tab_name(),
-		);
+		];
 
 		return $tabs;
 	}
@@ -366,10 +380,10 @@ abstract class Advanced_Ads_Ad_Network {
 		$this->print_external_ads_list( $hide_idle_ads );
 		$ad_selector = ob_get_clean();
 
-		$response = array(
+		$response = [
 			'status' => true,
 			'html'   => $ad_selector,
-		);
+		];
 		$this->send_ajax_response_and_die( $response );
 	}
 

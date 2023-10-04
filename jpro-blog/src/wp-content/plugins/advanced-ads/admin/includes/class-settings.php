@@ -16,10 +16,10 @@ class Advanced_Ads_Admin_Settings {
 	 */
 	private function __construct() {
 		// settings handling.
-		add_action( 'admin_init', array( $this, 'settings_init' ) );
+		add_action( 'admin_init', [ $this, 'settings_init' ] );
 
 		// add ad admin capabilities for settings.
-		add_action( 'admin_init', array( $this, 'settings_capabilities' ), 20 );
+		add_action( 'admin_init', [ $this, 'settings_capabilities' ], 20 );
 	}
 
 	/**
@@ -47,13 +47,13 @@ class Advanced_Ads_Admin_Settings {
 		$hook = Advanced_Ads_Admin::get_instance()->plugin_screen_hook_suffix;
 
 		// register settings.
-		register_setting( ADVADS_SLUG, ADVADS_SLUG, array( $this, 'sanitize_settings' ) );
+		register_setting( ADVADS_SLUG, ADVADS_SLUG, [ $this, 'sanitize_settings' ] );
 
 		// "Management" settings section.
 		add_settings_section(
 			'advanced_ads_setting_section',
 			__( 'Admin', 'advanced-ads' ),
-			array( $this, 'render_settings_section_callback' ),
+			[ $this, 'render_settings_section_callback' ],
 			$hook
 		);
 
@@ -61,7 +61,7 @@ class Advanced_Ads_Admin_Settings {
 		add_settings_section(
 			'advanced_ads_setting_section_disable_ads',
 			__( 'Disable ads', 'advanced-ads' ),
-			array( $this, 'render_settings_section_disable_ads_callback' ),
+			[ $this, 'render_settings_section_disable_ads_callback' ],
 			$hook
 		);
 
@@ -69,7 +69,7 @@ class Advanced_Ads_Admin_Settings {
 		add_settings_section(
 			'advanced_ads_setting_section_output',
 			__( 'Layout / Output', 'advanced-ads' ),
-			array( $this, 'render_settings_section_output_callback' ),
+			[ $this, 'render_settings_section_output_callback' ],
 			$hook
 		);
 
@@ -77,7 +77,7 @@ class Advanced_Ads_Admin_Settings {
 		add_settings_section(
 			'advanced_ads_setting_section_injection',
 			__( 'Content injection', 'advanced-ads' ),
-			array( $this, 'render_settings_section_injection_callback' ),
+			[ $this, 'render_settings_section_injection_callback' ],
 			$hook
 		);
 
@@ -86,11 +86,11 @@ class Advanced_Ads_Admin_Settings {
 			add_settings_section(
 				'advanced_ads_settings_pro_pitch_section',
 				'',
-				array( $this, 'render_settings_pro_pitch_section_callback' ),
+				[ $this, 'render_settings_pro_pitch_section_callback' ],
 				'advanced-ads-settings-pro-pitch-page'
 			);
 
-			add_filter( 'advanced-ads-setting-tabs', array( $this, 'pro_pitch_tab' ) );
+			add_filter( 'advanced-ads-setting-tabs', [ $this, 'pro_pitch_tab' ] );
 		}
 
 		// Tracking pitch section.
@@ -98,53 +98,51 @@ class Advanced_Ads_Admin_Settings {
 			add_settings_section(
 				'advanced_ads_settings_tracking_pitch_section',
 				'',
-				array( $this, 'render_settings_tracking_pitch_section_callback' ),
+				[ $this, 'render_settings_tracking_pitch_section_callback' ],
 				'advanced-ads-settings-tracking-pitch-page'
 			);
 
-			add_filter( 'advanced-ads-setting-tabs', array( $this, 'tracking_pitch_tab' ) );
+			add_filter( 'advanced-ads-setting-tabs', [ $this, 'tracking_pitch_tab' ] );
 		}
 
-		// licenses section only for main blog.
-		if ( is_main_site( get_current_blog_id() ) ) {
-			// register license settings.
-			register_setting( ADVADS_SLUG . '-licenses', ADVADS_SLUG . '-licenses' );
+		// licenses section.
+		// register license settings.
+		register_setting( ADVADS_SLUG . '-licenses', ADVADS_SLUG . '-licenses' );
 
-			/**
-			 * Allow Ad Admin to save license settings..
-			 *
-			 * @param array $settings Array with allowed options.
-			 *
-			 * @return array
-			 */
-			add_filter( 'advanced-ads-ad-admin-options', function( $options ) {
-				$options[] = ADVADS_SLUG . '-licenses';
+		/**
+		 * Allow Ad Admin to save license settings..
+		 *
+		 * @param string[] $options Array with allowed options.
+		 *
+		 * @return string[]
+		 */
+		add_filter( 'advanced-ads-ad-admin-options', function( $options ) {
+			$options[] = ADVADS_SLUG . '-licenses';
 
-				return $options;
-			} );
+			return $options;
+		} );
 
-			add_settings_section(
-				'advanced_ads_settings_license_section',
-				'',
-				array( $this, 'render_settings_licenses_section_callback' ),
-				'advanced-ads-settings-license-page'
-			);
+		add_settings_section(
+			'advanced_ads_settings_license_section',
+			'',
+			[ $this, 'render_settings_licenses_section_callback' ],
+			'advanced-ads-settings-license-page'
+		);
 
-			add_filter( 'advanced-ads-setting-tabs', array( $this, 'license_tab' ) );
+		add_filter( 'advanced-ads-setting-tabs', [ $this, 'license_tab' ] );
 
-			add_settings_section(
-				'advanced_ads_settings_license_pitch_section',
-				'',
-				array( $this, 'render_settings_licenses_pitch_section_callback' ),
-				'advanced-ads-settings-license-page'
-			);
-		}
+		add_settings_section(
+			'advanced_ads_settings_license_pitch_section',
+			'',
+			[ $this, 'render_settings_licenses_pitch_section_callback' ],
+			'advanced-ads-settings-license-page'
+		);
 
 		// add setting fields to disable ads.
 		add_settings_field(
 			'disable-ads',
 			__( 'Disable ads', 'advanced-ads' ),
-			array( $this, 'render_settings_disable_ads' ),
+			[ $this, 'render_settings_disable_ads' ],
 			$hook,
 			'advanced_ads_setting_section_disable_ads'
 		);
@@ -152,7 +150,7 @@ class Advanced_Ads_Admin_Settings {
 		add_settings_field(
 			'hide-for-user-role',
 			__( 'Hide ads for user roles', 'advanced-ads' ),
-			array( $this, 'render_settings_hide_for_users' ),
+			[ $this, 'render_settings_hide_for_users' ],
 			$hook,
 			'advanced_ads_setting_section_disable_ads'
 		);
@@ -160,7 +158,7 @@ class Advanced_Ads_Admin_Settings {
 		add_settings_field(
 			'content-injection-everywhere',
 			__( 'Unlimited ad injection', 'advanced-ads' ),
-			array( $this, 'render_settings_content_injection_everywhere' ),
+			[ $this, 'render_settings_content_injection_everywhere' ],
 			$hook,
 			'advanced_ads_setting_section_injection'
 		);
@@ -168,7 +166,7 @@ class Advanced_Ads_Admin_Settings {
 		add_settings_field(
 			'content-injection-priority',
 			__( 'Priority of content injection filter', 'advanced-ads' ),
-			array( $this, 'render_settings_content_injection_priority' ),
+			[ $this, 'render_settings_content_injection_priority' ],
 			$hook,
 			'advanced_ads_setting_section_injection'
 		);
@@ -176,7 +174,7 @@ class Advanced_Ads_Admin_Settings {
 		add_settings_field(
 			'content-injection-level-limitation',
 			__( 'Disable level limitation', 'advanced-ads' ),
-			array( $this, 'render_settings_content_injection_level_limitation' ),
+			[ $this, 'render_settings_content_injection_level_limitation' ],
 			$hook,
 			'advanced_ads_setting_section_injection'
 		);
@@ -184,7 +182,7 @@ class Advanced_Ads_Admin_Settings {
 		add_settings_field(
 			'block-bots',
 			__( 'Hide ads from bots', 'advanced-ads' ),
-			array( $this, 'render_settings_block_bots' ),
+			[ $this, 'render_settings_block_bots' ],
 			$hook,
 			'advanced_ads_setting_section_disable_ads'
 		);
@@ -193,7 +191,7 @@ class Advanced_Ads_Admin_Settings {
 			add_settings_field(
 				'disable-by-post-types-pro',
 				__( 'Disable ads for post types', 'advanced-ads' ),
-				array( $this, 'render_settings_disable_post_types' ),
+				[ $this, 'render_settings_disable_post_types' ],
 				$hook,
 				'advanced_ads_setting_section_disable_ads'
 			);
@@ -202,7 +200,7 @@ class Advanced_Ads_Admin_Settings {
 		add_settings_field(
 			'disable-notices',
 			__( 'Disable Ad Health and other notices', 'advanced-ads' ),
-			array( $this, 'render_settings_disabled_notices' ),
+			[ $this, 'render_settings_disabled_notices' ],
 			$hook,
 			'advanced_ads_setting_section'
 		);
@@ -210,7 +208,7 @@ class Advanced_Ads_Admin_Settings {
 		add_settings_field(
 			'front-prefix',
 			__( 'ID prefix', 'advanced-ads' ),
-			array( $this, 'render_settings_front_prefix' ),
+			[ $this, 'render_settings_front_prefix' ],
 			$hook,
 			'advanced_ads_setting_section_output'
 		);
@@ -218,15 +216,28 @@ class Advanced_Ads_Admin_Settings {
 		add_settings_field(
 			'editors-manage-ads',
 			__( 'Allow editors to manage ads', 'advanced-ads' ),
-			array( $this, 'render_settings_editors_manage_ads' ),
+			[ $this, 'render_settings_editors_manage_ads' ],
 			$hook,
 			'advanced_ads_setting_section'
 		);
+
+		// add unfiltered_html option to multisites
+		if ( is_multisite() && current_user_can( 'unfiltered_html' ) ) {
+			add_settings_field(
+				'allow-unfiltered-html',
+				/* translators: unfiltered_html */
+				sprintf( __( 'Add the %s capability to user roles on multisite', 'advanced-ads' ), '<code>unfiltered_html</code>' ),
+				[ $this, 'renders_settings_allow_unfiltered_html' ],
+				$hook,
+				'advanced_ads_setting_section'
+			);
+		}
+
 		// ad label.
 		add_settings_field(
 			'add-custom-label',
 			__( 'Ad label', 'advanced-ads' ),
-			array( $this, 'render_settings_add_custom_label' ),
+			[ $this, 'render_settings_add_custom_label' ],
 			$hook,
 			'advanced_ads_setting_section_output'
 		);
@@ -235,7 +246,7 @@ class Advanced_Ads_Admin_Settings {
 		add_settings_field(
 			'link-target',
 			__( 'Open links in a new window', 'advanced-ads' ),
-			array( $this, 'render_settings_link_target_callback' ),
+			[ $this, 'render_settings_link_target_callback' ],
 			$hook,
 			'advanced_ads_setting_section_output'
 		);
@@ -243,7 +254,7 @@ class Advanced_Ads_Admin_Settings {
 		add_settings_field(
 			'activate-advanced-js',
 			__( 'Use advanced JavaScript', 'advanced-ads' ),
-			array( $this, 'render_settings_advanced_js' ),
+			[ $this, 'render_settings_advanced_js' ],
 			$hook,
 			'advanced_ads_setting_section_output'
 		);
@@ -253,7 +264,7 @@ class Advanced_Ads_Admin_Settings {
 			add_settings_field(
 				'uninstall-delete-data',
 				__( 'Delete data on uninstall', 'advanced-ads' ),
-				array( $this, 'render_settings_uninstall_delete_data' ),
+				[ $this, 'render_settings_uninstall_delete_data' ],
 				$hook,
 				'advanced_ads_setting_section'
 			);
@@ -269,7 +280,7 @@ class Advanced_Ads_Admin_Settings {
 	 * Filter option_page_capability_ with the appropriate slug in return to allow the Ad Admin user role to save these settings/options.
 	 */
 	public function settings_capabilities() {
-		$ad_admin_options = array( ADVADS_SLUG );
+		$ad_admin_options = [ ADVADS_SLUG ];
 		/**
 		 * Filters all options that the Ad Admin Role should have access to.
 		 *
@@ -291,12 +302,12 @@ class Advanced_Ads_Admin_Settings {
 	 */
 	public function license_tab( array $tabs ) {
 
-		$tabs['licenses'] = array(
+		$tabs['licenses'] = [
 			'page'  => 'advanced-ads-settings-license-page',
 			'group' => ADVADS_SLUG . '-licenses',
 			'tabid' => 'licenses',
 			'title' => __( 'Licenses', 'advanced-ads' ),
-		);
+		];
 
 		return $tabs;
 	}
@@ -310,12 +321,12 @@ class Advanced_Ads_Admin_Settings {
 	 */
 	public function pro_pitch_tab( array $tabs ) {
 
-		$tabs['pro_pitch'] = array(
+		$tabs['pro_pitch'] = [
 			'page'  => 'advanced-ads-settings-pro-pitch-page',
 			// 'group' => ADVADS_SLUG . '-pro-pitch',
 			'tabid' => 'pro-pitch',
 			'title' => __( 'Pro', 'advanced-ads' ),
-		);
+		];
 
 		return $tabs;
 	}
@@ -329,11 +340,11 @@ class Advanced_Ads_Admin_Settings {
 	 */
 	public function tracking_pitch_tab( array $tabs ) {
 
-		$tabs['tracking_pitch'] = array(
+		$tabs['tracking_pitch'] = [
 			'page'  => 'advanced-ads-settings-tracking-pitch-page',
 			'tabid' => 'tracking-pitch',
 			'title' => __( 'Tracking', 'advanced-ads' ),
-		);
+		];
 
 		return $tabs;
 	}
@@ -425,7 +436,7 @@ class Advanced_Ads_Admin_Settings {
 		if ( isset( $options['hide-for-user-role'] ) ) {
 			$hide_for_roles = Advanced_Ads_Utils::maybe_translate_cap_to_role( $options['hide-for-user-role'] );
 		} else {
-			$hide_for_roles = array();
+			$hide_for_roles = [];
 		}
 
 		global $wp_roles;
@@ -497,10 +508,10 @@ class Advanced_Ads_Admin_Settings {
 	public function render_settings_disable_post_types() {
 
 		$post_types        = get_post_types(
-			array(
+			[
 				'public'             => true,
 				'publicly_queryable' => true,
-			),
+			],
 			'objects',
 			'or'
 		);
@@ -545,6 +556,27 @@ class Advanced_Ads_Admin_Settings {
 		}
 
 		require ADVADS_BASE_PATH . '/admin/views/settings/general/editors-manage-ads.php';
+	}
+
+	/**
+	 * Prepare the template for multisite allow unfiltered_html settings.
+	 *
+	 * @return void
+	 */
+	public function renders_settings_allow_unfiltered_html() {
+		$options               = Advanced_Ads::get_instance()->options();
+		$user_roles_to_display = array_filter( wp_roles()->role_objects, static function( WP_Role $role ) {
+			return $role->has_cap( 'advanced_ads_edit_ads' );
+		} );
+		if ( empty( $user_roles_to_display ) ) {
+			return;
+		}
+		if ( ! isset( $options['allow-unfiltered-html'] ) ) {
+			$options['allow-unfiltered-html'] = [];
+		}
+		$allowed_roles = $options['allow-unfiltered-html'];
+
+		require ADVADS_BASE_PATH . '/admin/views/settings/general/allow-unfiltered-html.php';
 	}
 
 	/**
@@ -600,7 +632,10 @@ class Advanced_Ads_Admin_Settings {
 
 		// sanitize whatever option one wants to sanitize.
 		if ( isset( $options['front-prefix'] ) ) {
-			$options['front-prefix'] = sanitize_html_class( $options['front-prefix'], Advanced_Ads_Plugin::DEFAULT_FRONTEND_PREFIX );
+			$options['front-prefix'] = Advanced_Ads_Plugin::get_instance()->sanitize_frontend_prefix(
+				$options['front-prefix'],
+				Advanced_Ads_Plugin::DEFAULT_FRONTEND_PREFIX
+			);
 		}
 
 		$options = apply_filters( 'advanced-ads-sanitize-settings', $options );

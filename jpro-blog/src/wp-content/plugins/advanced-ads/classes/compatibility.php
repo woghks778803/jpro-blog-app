@@ -18,38 +18,38 @@ class Advanced_Ads_Compatibility {
 		if ( defined( 'ELEMENTOR_VERSION' ) ) {
 			add_filter(
 				'advanced-ads-placement-content-injection-xpath',
-				array(
+				[
 					$this,
 					'content_injection_elementor',
-				),
+				],
 				10,
 				1
 			);
 		}
 		// WP Rocket
-		add_filter( 'rocket_excluded_inline_js_content', array( $this, 'rocket_exclude_inline_js' ) );
-		add_filter( 'rocket_delay_js_exclusions', array( $this, 'rocket_exclude_inline_js' ) );
+		add_filter( 'rocket_excluded_inline_js_content', [ $this, 'rocket_exclude_inline_js' ] );
+		add_filter( 'rocket_delay_js_exclusions', [ $this, 'rocket_exclude_inline_js' ] );
 		// WPML.
-		add_filter( 'wpml_admin_language_switcher_active_languages', array( $this, 'wpml_language_switcher' ) );
+		add_filter( 'wpml_admin_language_switcher_active_languages', [ $this, 'wpml_language_switcher' ] );
 		// WordPress SEO by Yoast.
-		add_filter( 'wpseo_sitemap_entry', array( $this, 'wordpress_seo_noindex_ad_attachments' ), 10, 3 );
+		add_filter( 'wpseo_sitemap_entry', [ $this, 'wordpress_seo_noindex_ad_attachments' ], 10, 3 );
 		// Add shortcode for MailPoet.
-		add_filter( 'mailpoet_newsletter_shortcode', array( 'Advanced_Ads_Compatibility', 'mailpoet_ad_shortcode' ), 10, 5 );
+		add_filter( 'mailpoet_newsletter_shortcode', [ 'Advanced_Ads_Compatibility', 'mailpoet_ad_shortcode' ], 10, 5 );
 
 		// Enable Advanced Custom Fields on ad edit pages.
 		if ( class_exists( 'ACF', false ) ) {
-			add_filter( 'advanced-ads-ad-edit-allowed-metaboxes', array( $this, 'advanced_custom_fields_box' ) );
+			add_filter( 'advanced-ads-ad-edit-allowed-metaboxes', [ $this, 'advanced_custom_fields_box' ] );
 		}
 
-		add_action( 'admin_enqueue_scripts', array( $this, 'admin_dequeue_scripts_and_styles' ), 100 );
+		add_action( 'admin_enqueue_scripts', [ $this, 'admin_dequeue_scripts_and_styles' ], 100 );
 
 		if ( defined( 'BORLABS_COOKIE_VERSION' ) ) {
 			// Check if Verification code & Auto ads ads can be displayed.
-			add_filter( 'advanced-ads-can-display-ads-in-header', array( $this, 'borlabs_cookie_can_add_auto_ads_code' ), 10 );
+			add_filter( 'advanced-ads-can-display-ads-in-header', [ $this, 'borlabs_cookie_can_add_auto_ads_code' ], 10 );
 		}
 
 		// Make sure inline JS in head is executed when Complianz is set to block JS.
-		add_filter( 'cmplz_script_class', array( $this, 'complianz_exclude_inline_js' ), 10, 2 );
+		add_filter( 'cmplz_script_class', [ $this, 'complianz_exclude_inline_js' ], 10, 2 );
 
 		$this->critical_inline_js = $this->critical_inline_js();
 	}
@@ -123,7 +123,7 @@ class Advanced_Ads_Compatibility {
 			case 'advanced-ads_page_advanced-ads-groups':
 				$translatable_taxonomies = $sitepress->get_translatable_taxonomies();
 				if ( ! is_array( $translatable_taxonomies ) || ! in_array( 'advanced_ads_groups', $translatable_taxonomies, true ) ) {
-					return array();
+					return [];
 				}
 				break;
 			// check if Advanced Ads ad post type is translatable.
@@ -131,7 +131,7 @@ class Advanced_Ads_Compatibility {
 			case 'advanced_ads': // edit page.
 				$translatable_documents = $sitepress->get_translatable_documents();
 				if ( empty( $translatable_documents['advanced_ads'] ) ) {
-					return array();
+					return [];
 				}
 				break;
 		}
@@ -155,10 +155,10 @@ class Advanced_Ads_Compatibility {
 		static $ad_ids = null;
 		if ( null === $ad_ids ) {
 			$ad_ids = Advanced_Ads::get_instance()->get_model()->get_ads(
-				array(
+				[
 					'post_status' => 'any',
 					'fields'      => 'ids',
-				)
+				]
 			);
 		}
 
@@ -197,7 +197,7 @@ class Advanced_Ads_Compatibility {
 
 			// only display if the ad group type could work, i.e. default (random) and ordered.
 			$ad_group = new Advanced_Ads_Group( $group_id );
-			if ( isset( $ad_group->type ) && in_array( $ad_group->type, array( 'default', 'ordered' ), true ) ) {
+			if ( isset( $ad_group->type ) && in_array( $ad_group->type, [ 'default', 'ordered' ], true ) ) {
 				return get_ad_group( $group_id );
 			}
 
@@ -214,9 +214,9 @@ class Advanced_Ads_Compatibility {
 				return '';
 			}
 
-			$ad = new Advanced_Ads_Ad( $ad_id );
+			$ad = \Advanced_Ads\Ad_Repository::get( $ad_id );
 			// only display if the ad type could work, i.e. plain text and image ads.
-			if ( isset( $ad->type ) && in_array( $ad->type, array( 'plain', 'image' ), true ) ) {
+			if ( isset( $ad->type ) && in_array( $ad->type, [ 'plain', 'image' ], true ) ) {
 				return get_ad( $ad_id );
 			}
 
@@ -342,7 +342,7 @@ class Advanced_Ads_Compatibility {
 		}
 
 		// load ACF field groups dedicated to the Advanced Ads post type
-		$groups = acf_get_field_groups( array( 'post_type' => Advanced_Ads::POST_TYPE_SLUG ) );
+		$groups = acf_get_field_groups( [ 'post_type' => Advanced_Ads::POST_TYPE_SLUG ] );
 
 		if ( is_array( $groups ) && $groups ) {
 			foreach ( $groups as $_group ) {
@@ -362,9 +362,9 @@ class Advanced_Ads_Compatibility {
 	 */
 	private function critical_inline_js() {
 		$frontend_prefix = Advanced_Ads_Plugin::get_instance()->get_frontend_prefix();
-		$default         = array(
+		$default         = [
 			sprintf( 'id="%sready"', $frontend_prefix ),
-		);
+		];
 		/**
 		 * Filters an array of strings of (inline) JavaScript "identifiers" that should not be "optimized"/delayed etc.
 		 *

@@ -55,10 +55,10 @@ class Advanced_Ads_Admin {
 	private function __construct() {
 		if ( wp_doing_ajax() ) {
 			new Advanced_Ads_Ad_Ajax_Callbacks();
-			add_action( 'plugins_loaded', array( $this, 'wp_plugins_loaded_ajax' ) );
+			add_action( 'plugins_loaded', [ $this, 'wp_plugins_loaded_ajax' ] );
 		} else {
-			add_action( 'plugins_loaded', array( $this, 'wp_plugins_loaded' ) );
-			add_filter( 'admin_footer_text', array( $this, 'admin_footer_text' ), 100 );
+			add_action( 'plugins_loaded', [ $this, 'wp_plugins_loaded' ] );
+			add_filter( 'admin_footer_text', [ $this, 'admin_footer_text' ], 100 );
 			Advanced_Ads_Ad_List_Filters::get_instance();
 		}
 		// add shortcode creator to TinyMCE.
@@ -99,39 +99,41 @@ class Advanced_Ads_Admin {
 		$plugin            = Advanced_Ads::get_instance();
 		$this->plugin_slug = $plugin->get_plugin_slug();
 
-		add_action( 'current_screen', array( $this, 'current_screen' ) );
+		add_action( 'current_screen', [ $this, 'current_screen' ] );
 
 		// Load admin style sheet and JavaScript.
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_scripts' ), 9 );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_styles' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ], 9 );
 
 		// update placements.
-		add_action( 'admin_init', array( 'Advanced_Ads_Placements', 'update_placements' ) );
+		add_action( 'admin_init', [ 'Advanced_Ads_Placements', 'update_placements' ] );
 
 		// add Advanced Ads admin notices
 		// removes admin notices from other plugins
 		// `in_admin_header` is the last hook to run before àdmin_notices` according to https://codex.wordpress.org/Plugin_API/Action_Reference.
-		add_action( 'in_admin_header', array( $this, 'register_admin_notices' ) );
+		add_action( 'in_admin_header', [ $this, 'register_admin_notices' ] );
 
 		// add links to plugin page.
-		add_filter( 'plugin_action_links_' . ADVADS_BASE, array( $this, 'add_plugin_links' ) );
+		add_filter( 'plugin_action_links_' . ADVADS_BASE, [ $this, 'add_plugin_links' ] );
 
 		// display information when user is going to disable the plugin.
-		add_filter( 'admin_footer', array( $this, 'add_deactivation_logic' ) );
+		add_filter( 'admin_footer', [ $this, 'add_deactivation_logic' ] );
 		// add_filter( 'after_plugin_row_' . ADVADS_BASE, array( $this, 'display_deactivation_message' ) );
 		// disable adding rel="noopener noreferrer" to link added through TinyMCE for rich content ads.
-		add_filter( 'tiny_mce_before_init', array( $this, 'tinymce_allow_unsafe_link_target' ) );
+		add_filter( 'tiny_mce_before_init', [ $this, 'tinymce_allow_unsafe_link_target' ] );
 
-		add_action( 'plugins_api_result', array( $this, 'recommend_suitable_add_ons' ), 11, 3 );
+		add_action( 'plugins_api_result', [ $this, 'recommend_suitable_add_ons' ], 11, 3 );
 
 		// register dynamic action to load a starter setup.
-		add_action( 'admin_action_advanced_ads_starter_setup', array( $this, 'import_starter_setup' ) );
+		add_action( 'admin_action_advanced_ads_starter_setup', [ $this, 'import_starter_setup' ] );
 
 		Advanced_Ads_Admin_Meta_Boxes::get_instance();
 		Advanced_Ads_Admin_Menu::get_instance();
 		Advanced_Ads_Admin_Ad_Type::get_instance();
 		Advanced_Ads_Admin_Settings::get_instance();
+		Advanced_Ads_Ad_Authors::get_instance();
 		new Advanced_Ads_Admin_Upgrades();
+		new Advanced_Ads\Admin\Post_List();
 	}
 
 	/**
@@ -141,8 +143,8 @@ class Advanced_Ads_Admin {
 		// needed here in order to work with Quick Edit option on ad list page.
 		Advanced_Ads_Admin_Ad_Type::get_instance();
 
-		add_action( 'wp_ajax_advads_send_feedback', array( $this, 'send_feedback' ) );
-		add_action( 'wp_ajax_advads_load_rss_widget_content', array( 'Advanced_Ads_Admin_Meta_Boxes', 'dashboard_widget_function_output' ) );
+		add_action( 'wp_ajax_advads_send_feedback', [ $this, 'send_feedback' ] );
+		add_action( 'wp_ajax_advads_load_rss_widget_content', [ 'Advanced_Ads_Admin_Meta_Boxes', 'dashboard_widget_function_output' ] );
 	}
 
 	/**
@@ -181,8 +183,17 @@ class Advanced_Ads_Admin {
 	 * Register and enqueue admin-specific style sheet.
 	 */
 	public function enqueue_admin_styles() {
-		wp_enqueue_style( $this->plugin_slug . '-ui-styles', plugins_url( 'assets/css/ui.css', __FILE__ ), array(), ADVADS_VERSION );
-		wp_enqueue_style( $this->plugin_slug . '-admin-styles', plugins_url( 'assets/css/admin.css', __FILE__ ), array(), ADVADS_VERSION );
+		wp_enqueue_style( $this->plugin_slug . '-ui-styles', plugins_url( 'assets/css/ui.css', __FILE__ ), [], ADVADS_VERSION );
+		wp_enqueue_style( $this->plugin_slug . '-admin-styles', plugins_url( 'assets/css/admin.css', __FILE__ ), [], ADVADS_VERSION );
+
+		$screen = get_current_screen();
+		if ( ! $screen instanceof \WP_Screen ) {
+			return;
+		}
+
+		if ( $screen->post_type === Advanced_Ads::POST_TYPE_SLUG && $screen->base === 'post' ) {
+			wp_enqueue_style( $this->plugin_slug . '-ad-positioning-styles', ADVADS_BASE_URL . '/modules/ad-positioning/assets/css/ad-positioning.css', [ $this->plugin_slug . '-admin-styles' ], ADVADS_VERSION );
+		}
 	}
 
 	/**
@@ -191,26 +202,27 @@ class Advanced_Ads_Admin {
 	public function enqueue_admin_scripts() {
 
 		// global js script.
-		wp_enqueue_script( $this->plugin_slug . '-admin-global-script', plugins_url( 'assets/js/admin-global.js', __FILE__ ), array( 'jquery' ), ADVADS_VERSION, false );
-		wp_enqueue_script( $this->plugin_slug . '-admin-find-adblocker', plugins_url( 'assets/js/advertisement.js', __FILE__ ), array(), ADVADS_VERSION, false );
+		wp_enqueue_script( $this->plugin_slug . '-admin-global-script', plugins_url( 'assets/js/admin-global.js', __FILE__ ), [ 'jquery' ], ADVADS_VERSION, false );
+		wp_enqueue_script( $this->plugin_slug . '-admin-find-adblocker', plugins_url( 'assets/js/advertisement.js', __FILE__ ), [], ADVADS_VERSION, false );
 
 		// register ajax nonce.
-		$params = array(
+		$params = [
 			'ajax_nonce' => wp_create_nonce( 'advanced-ads-admin-ajax-nonce' ),
-		);
+		];
 		wp_localize_script( $this->plugin_slug . '-admin-global-script', 'advadsglobal', $params );
 
 		if ( self::screen_belongs_to_advanced_ads() ) {
-			wp_register_script( $this->plugin_slug . '-ui-scripts', plugins_url( 'assets/js/ui.js', __FILE__ ), array( 'jquery' ), ADVADS_VERSION, false );
-			wp_register_script( $this->plugin_slug . '-admin-script', plugins_url( 'assets/js/admin.js', __FILE__ ), array( 'jquery', $this->plugin_slug . '-ui-scripts', 'jquery-ui-autocomplete' ), ADVADS_VERSION, false );
-			wp_register_script( $this->plugin_slug . '-conditions-script', plugins_url( 'assets/js/conditions.js', __FILE__ ), array( 'jquery', $this->plugin_slug . '-ui-scripts' ), ADVADS_VERSION, false );
-			wp_register_script( $this->plugin_slug . '-wizard-script', plugins_url( 'assets/js/wizard.js', __FILE__ ), array( 'jquery' ), ADVADS_VERSION, false );
+			wp_register_script( $this->plugin_slug . '-ui-scripts', plugins_url( 'assets/js/ui.js', __FILE__ ), [ 'jquery' ], ADVADS_VERSION, false );
+			wp_register_script( $this->plugin_slug . '-conditions-script', plugins_url( 'assets/js/conditions.js', __FILE__ ), [ 'jquery', $this->plugin_slug . '-ui-scripts' ], ADVADS_VERSION, false );
+			wp_register_script( $this->plugin_slug . '-wizard-script', plugins_url( 'assets/js/wizard.js', __FILE__ ), [ 'jquery' ], ADVADS_VERSION, false );
+
+			$this->enqueue_main_admin_script();
 
 			// just register this script for later inclusion on ad group list page.
-			wp_register_script( 'inline-edit-group-ads', plugins_url( 'assets/js/inline-edit-group-ads.js', __FILE__ ), array( 'jquery' ), ADVADS_VERSION, false );
+			wp_register_script( 'inline-edit-group-ads', plugins_url( 'assets/js/inline-edit-group-ads.js', __FILE__ ), [ 'jquery' ], ADVADS_VERSION, false );
 
 			// register admin.js translations.
-			$translation_array = array(
+			$translation_array = [
 				'condition_or'                  => __( 'or', 'advanced-ads' ),
 				'condition_and'                 => __( 'and', 'advanced-ads' ),
 				'after_paragraph_promt'         => __( 'After which paragraph?', 'advanced-ads' ),
@@ -228,7 +240,14 @@ class Advanced_Ads_Admin {
 				'hide_inactive_ads'             => __( 'Hide inactive ads', 'advanced-ads' ),
 				'display_conditions_form_name'  => Advanced_Ads_Display_Conditions::FORM_NAME, // not meant for translation.
 				'delete_placement_confirmation' => __( 'Permanently delete this placement?', 'advanced-ads' ),
-			);
+				'close'                         => __( 'Close', 'advanced-ads' ),
+				'confirmation'                  => __( 'Data you have entered has not been saved. Are you sure you want to discard your changes?', 'advanced-ads' ),
+				'admin_page'                    => self::get_advanced_ads_admin_screen(),
+				'placements_allowed_ads'        => [
+					'action' => 'advads-placements-allowed-ads',
+					'nonce'  => wp_create_nonce( 'advads-placements-allowed-ads' ),
+				],
+			];
 
 			wp_localize_script( $this->plugin_slug . '-admin-script', 'advadstxt', $translation_array );
 
@@ -239,35 +258,81 @@ class Advanced_Ads_Admin {
 
 		// call media manager for image upload only on ad edit pages.
 		$screen = get_current_screen();
+
+		if ( ! $screen instanceof \WP_Screen ) {
+			return;
+		}
+
 		if ( isset( $screen->id ) && Advanced_Ads::POST_TYPE_SLUG === $screen->id ) {
 			// the 'wp_enqueue_media' function can be executed only once and should be called with the 'post' parameter
 			// in this case, the '_wpMediaViewsL10n' js object inside html will contain id of the post, that is necessary to view oEmbed priview inside tinyMCE editor.
 			// since other plugins can call the 'wp_enqueue_media' function without the 'post' parameter, Advanced Ads should call it earlier.
 			global $post;
-			wp_enqueue_media( array( 'post' => $post ) );
+			wp_enqueue_media( [ 'post' => $post ] );
 		}
 
+		// single ad edit screen.
+		if ( $screen->post_type === Advanced_Ads::POST_TYPE_SLUG && $screen->base === 'post' ) {
+			wp_enqueue_script(
+				$this->plugin_slug . '-ad-positioning-script',
+				ADVADS_BASE_URL . '/modules/ad-positioning/assets/js/ad-positioning.js',
+				[],
+				ADVADS_VERSION,
+				true
+			);
+		}
+	}
+
+	/**
+	 * Enqueue the minified version of the admin script, or the parts if SCRIPT_DEBUG is defined and true.
+	 *
+	 * @return void
+	 */
+	private function enqueue_main_admin_script() {
+		$dependencies = [ 'jquery', $this->plugin_slug . '-ui-scripts', 'jquery-ui-autocomplete', 'wp-util' ];
+
+		if ( defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ) {
+			wp_enqueue_script( $this->plugin_slug . '-admin-script', plugins_url( 'assets/js/admin.js', __FILE__ ), $dependencies, ADVADS_VERSION, false );
+			$dependencies[] = $this->plugin_slug . '-admin-script';
+
+			wp_enqueue_script( $this->plugin_slug . '-admin-script-termination', plugins_url( 'assets/js/termination.js', __FILE__ ), $dependencies, ADVADS_VERSION, false );
+			$dependencies[] = $this->plugin_slug . '-admin-script-termination';
+
+			wp_enqueue_script( $this->plugin_slug . '-admin-script-dialog', plugins_url( 'assets/js/dialog-advads-modal.js', __FILE__ ), $dependencies, ADVADS_VERSION, false );
+
+			return;
+		}
+
+		wp_enqueue_script( $this->plugin_slug . '-admin-script', plugins_url( 'assets/js/admin.min.js', __FILE__ ), $dependencies, ADVADS_VERSION, false );
 	}
 
 	/**
 	 * Check if the current screen belongs to Advanced Ads
 	 *
-	 * @return bool true if screen belongs to Advanced Ads
+	 * @return bool
 	 */
 	public static function screen_belongs_to_advanced_ads() {
+		return self::get_advanced_ads_admin_screen() !== '';
+	}
 
+	/**
+	 * Get the current screen id if the page belongs to AA, otherwise empty string.
+	 *
+	 * @return string
+	 */
+	private static function get_advanced_ads_admin_screen() {
 		if ( ! function_exists( 'get_current_screen' ) ) {
-			return false;
+			return '';
 		}
 
 		$screen = get_current_screen();
 		if ( ! isset( $screen->id ) ) {
-			return false;
+			return '';
 		}
 
 		$advads_pages = apply_filters(
 			'advanced-ads-dashboard-screens',
-			array(
+			[
 				'advanced-ads_page_advanced-ads-groups', // ad groups.
 				'edit-advanced_ads', // ads overview.
 				'advanced_ads', // ad edit page.
@@ -277,14 +342,14 @@ class Advanced_Ads_Admin {
 				'admin_page_advanced-ads-debug', // debug.
 				// 'advanced-ads_page_advanced-ads-support', // support.
 				'admin_page_advanced-ads-import-export', // import & export.
-			)
+			]
 		);
 
-		if ( in_array( $screen->id, $advads_pages, true ) ) {
-			return true;
+		if ( ! in_array( $screen->id, $advads_pages, true ) ) {
+			return '';
 		}
 
-		return false;
+		return $screen->id;
 	}
 
 	/**
@@ -333,14 +398,14 @@ class Advanced_Ads_Admin {
 
 		/**
 		 * Remove all registered admin_notices from AA screens
-		 * - we need to use this or some users have half or more of their viewports cluttered with unrelated notices
+		 * we need to use this or some users have half or more of their viewports cluttered with unrelated notices
 		 */
 		if ( $this->screen_belongs_to_advanced_ads() ) {
 			remove_all_actions( 'admin_notices' );
 		}
 
 		// register our own notices.
-		add_action( 'admin_notices', array( $this, 'admin_notices' ) );
+		add_action( 'admin_notices', [ $this, 'admin_notices' ] );
 	}
 
 	/**
@@ -350,13 +415,26 @@ class Advanced_Ads_Admin {
 		// display ad block warning to everyone who can edit ads.
 		if ( current_user_can( Advanced_Ads_Plugin::user_cap( 'advanced_ads_edit_ads' ) ) ) {
 			if ( $this->screen_belongs_to_advanced_ads() ) {
+				$ad_blocker_notice_id = Advanced_Ads_Plugin::get_instance()->get_frontend_prefix() . 'abcheck-' . md5( microtime() );
+				wp_register_script( $ad_blocker_notice_id . '-adblocker-notice', false, [], ADVADS_VERSION, true );
+				wp_enqueue_script( $ad_blocker_notice_id . '-adblocker-notice' );
+				wp_add_inline_script( $ad_blocker_notice_id . '-adblocker-notice', "
+				jQuery( document ).ready( function () {
+							if ( typeof advanced_ads_adblocker_test === 'undefined' ) {
+								jQuery( '#" . esc_attr( $ad_blocker_notice_id ) . ".message' ).show();
+							}
+						} );" );
 				include ADVADS_BASE_PATH . 'admin/views/notices/adblock.php';
 			}
 		}
 
+		if ( $this->screen_belongs_to_advanced_ads() ) {
+			$this->branded_admin_header();
+		}
+
 		// Show success notice after starter setup was imported. Registered here because it will be visible only once.
 		if ( isset( $_GET['message'] ) && 'advanced-ads-starter-setup-success' === $_GET['message'] ) {
-			add_action( 'advanced-ads-admin-notices', array( $this, 'starter_setup_success_message' ) );
+			add_action( 'advanced-ads-admin-notices', [ $this, 'starter_setup_success_message' ] );
 		}
 
 		// register our own notices on Advanced Ads pages, except from the overview page where they should appear in the notices section.
@@ -365,10 +443,13 @@ class Advanced_Ads_Admin {
 			 && current_user_can( Advanced_Ads_Plugin::user_cap( 'advanced_ads_edit_ads' ) )
 			 && ( ! isset( $screen->id ) || 'toplevel_page_advanced-ads' !== $screen->id ) ) {
 			$this->notices = Advanced_Ads_Admin_Notices::get_instance()->notices;
+
+			echo '<div class="wrap">';
 			Advanced_Ads_Admin_Notices::get_instance()->display_notices();
 
 			// allow other Advanced Ads plugins to show admin notices at this late stage.
 			do_action( 'advanced-ads-admin-notices' );
+			echo '</div>';
 		}
 	}
 
@@ -380,7 +461,6 @@ class Advanced_Ads_Admin {
 	 * @return array $links
 	 */
 	public function add_plugin_links( $links ) {
-
 		if ( ! is_array( $links ) ) {
 			return $links;
 		}
@@ -390,7 +470,11 @@ class Advanced_Ads_Admin {
 		array_unshift( $links, $support_link );
 
 		// add link to add-ons.
-		$extend_link = '<a href="' . ADVADS_URL . 'add-ons/?utm_source=advanced-ads&utm_medium=link&utm_campaign=plugin-page" target="_blank">' . __( 'Add-Ons', 'advanced-ads' ) . '</a>';
+		if ( defined( 'AAP_VERSION' ) ) {
+			$extend_link = '<a href="' . ADVADS_URL . 'add-ons/?utm_source=advanced-ads&utm_medium=link&utm_campaign=plugin-page-add-ons" target="_blank">' . __( 'Add-Ons', 'advanced-ads' ) . '</a>';
+		} else {
+			$extend_link = '<a href="' . ADVADS_URL . 'add-ons/all-access/?utm_source=advanced-ads&utm_medium=link&utm_campaign=plugin-page-features" target="_blank" class="aa-get-pro">' . __( 'See Pro Features', 'advanced-ads' ) . '</a>';
+		}
 		array_unshift( $links, $extend_link );
 
 		return $links;
@@ -402,9 +486,8 @@ class Advanced_Ads_Admin {
 	 * @since 1.7.14
 	 */
 	public function add_deactivation_logic() {
-
 		$screen = get_current_screen();
-		if ( ! isset( $screen->id ) || ! in_array( $screen->id, array( 'plugins', 'plugins-network' ), true ) ) {
+		if ( ! isset( $screen->id ) || ! in_array( $screen->id, [ 'plugins', 'plugins-network' ], true ) ) {
 			return;
 		}
 
@@ -449,14 +532,13 @@ class Advanced_Ads_Admin {
 
 		$text .= "\n\n" . home_url() . " ($installed)";
 
-		$headers = array();
+		$headers = [];
 
 		$from = isset( $form['advanced_ads_disable_from'] ) ? $form['advanced_ads_disable_from'] : '';
 		// the user clicked on the "don’t disable" button or if an address is given in the form then use that one.
 		if ( isset( $form['advanced_ads_disable_reason'] )
 			 && 'get help' === $form['advanced_ads_disable_reason']
 			 && ! empty( $form['advanced_ads_disable_reply_email'] ) ) {
-
 			$email = trim( $form['advanced_ads_disable_reply_email'] );
 			if ( ! is_email( $email ) ) {
 				die();
@@ -494,7 +576,6 @@ class Advanced_Ads_Admin {
 		$success = wp_mail( 'improve@wpadvancedads.com', $subject, $text, $headers );
 
 		die();
-
 	}
 
 	/**
@@ -568,15 +649,15 @@ class Advanced_Ads_Admin {
 				return $result;
 			}
 
-			$query_args  = array(
+			$query_args  = [
 				'slug'   => 'advanced-ads-adsense-in-feed',
-				'fields' => array(
+				'fields' => [
 					'icons'             => true,
 					'active_installs'   => true,
 					'short_description' => true,
 					'group'             => true,
-				),
-			);
+				],
+			];
 			$plugin_data = plugins_api( 'plugin_information', $query_args );
 
 			if ( ! is_wp_error( $plugin_data ) ) {
@@ -600,15 +681,15 @@ class Advanced_Ads_Admin {
 				return $result;
 			}
 
-			$query_args  = array(
+			$query_args  = [
 				'slug'   => 'advanced-ads-genesis',
-				'fields' => array(
+				'fields' => [
 					'icons'             => true,
 					'active_installs'   => true,
 					'short_description' => true,
 					'group'             => true,
-				),
-			);
+				],
+			];
 			$plugin_data = plugins_api( 'plugin_information', $query_args );
 
 			if ( ! is_wp_error( $plugin_data ) ) {
@@ -632,15 +713,15 @@ class Advanced_Ads_Admin {
 				return $result;
 			}
 
-			$query_args  = array(
+			$query_args  = [
 				'slug'   => 'ads-for-visual-composer',
-				'fields' => array(
+				'fields' => [
 					'icons'             => true,
 					'active_installs'   => true,
 					'short_description' => true,
 					'group'             => true,
-				),
-			);
+				],
+			];
 			$plugin_data = plugins_api( 'plugin_information', $query_args );
 
 			if ( ! is_wp_error( $plugin_data ) ) {
@@ -667,7 +748,6 @@ class Advanced_Ads_Admin {
 
 			/* translators: %s is the URL to add a new review, https://wordpress.org/support/plugin/advanced-ads/reviews/#new-post */
 			return sprintf( __( 'Thank the developer with a &#9733;&#9733;&#9733;&#9733;&#9733; review on <a href="%s" target="_blank">wordpress.org</a>', 'advanced-ads' ), 'https://wordpress.org/support/plugin/advanced-ads/reviews/#new-post' );
-
 		}
 
 		return $default_text;
@@ -677,7 +757,6 @@ class Advanced_Ads_Admin {
 	 * Import a starter setup for new users
 	 */
 	public function import_starter_setup() {
-
 		if (
 			! isset( $_GET['action'] )
 			|| 'advanced_ads_starter_setup' !== $_GET['action']
@@ -704,9 +783,9 @@ class Advanced_Ads_Admin {
 
 		// load link to latest post.
 
-		$args           = array(
+		$args           = [
 			'numberposts' => 1,
-		);
+		];
 		$last_post      = get_posts( $args );
 		$last_post_link = isset( $last_post[0]->ID ) ? get_permalink( $last_post[0]->ID ) : false;
 
@@ -723,7 +802,7 @@ class Advanced_Ads_Admin {
 			self::$admin_settings = get_user_meta( get_current_user_id(), 'advanced-ads-admin-settings', true );
 
 			if ( ! is_array( self::$admin_settings ) ) {
-				self::$admin_settings = array();
+				self::$admin_settings = [];
 			}
 		}
 		return self::$admin_settings;
@@ -741,5 +820,93 @@ class Advanced_Ads_Admin {
 			update_user_meta( get_current_user_id(), 'advanced-ads-admin-settings', $new_settings );
 			self::$admin_settings = $new_settings;
 		}
+	}
+
+	/**
+	 * Add an Advanced Ads branded header to plugin pages
+	 *
+	 * @see Advanced_Ads_Admin::screen_belongs_to_advanced_ads()
+	 */
+	private function branded_admin_header() {
+		$screen              = get_current_screen();
+		$manual_url          = 'manual/';
+		$new_button_id       = '';
+		$new_button_label    = '';
+		$new_button_href     = '';
+		$show_filter_button  = false;
+		$reset_href          = '';
+		$filter_disabled     = '';
+		$show_screen_options = false;
+		$title               = get_admin_page_title();
+		$tooltip             = '';
+
+		switch ( $screen->id ) {
+			// ad overview
+			case 'advanced_ads':
+				$new_button_label = __( 'New Ad', 'advanced-ads' );
+				$new_button_href  = admin_url( 'post-new.php?post_type=advanced_ads' );
+				$manual_url       = 'manual/first-ad/';
+				break;
+			case 'edit-advanced_ads':
+				$title               = __( 'Your Ads', 'advanced-ads' );
+				$new_button_label    = __( 'New Ad', 'advanced-ads' );
+				$new_button_href     = admin_url( 'post-new.php?post_type=advanced_ads' );
+				$manual_url          = 'manual/first-ad/';
+				$show_filter_button  = ! Advanced_Ads_Ad_List_Filters::uses_filter_or_search();
+				$reset_href          = ! $show_filter_button ? esc_url( admin_url( 'edit.php?post_type=' . Advanced_Ads::POST_TYPE_SLUG ) ) : '';
+				$filter_disabled     = $screen->get_option( 'show-filters' ) ? 'disabled' : '';
+				$show_screen_options = true;
+				break;
+			case 'advanced-ads_page_advanced-ads-groups': // ad groups
+				$title              = __( 'Your Groups', 'advanced-ads' );
+				$new_button_label   = __( 'New Ad Group', 'advanced-ads' );
+				$new_button_href    = '#modal-group-new';
+				$new_button_id      = 'advads-new-ad-group-link';
+				$manual_url         = 'manual/ad-groups/';
+				$show_filter_button = empty( $_GET['s'] );
+				$reset_href         = ! $show_filter_button ? esc_url( admin_url( 'admin.php?page=advanced-ads-groups' ) ) : '';
+				$tooltip            = Advanced_Ads_Groups_List::get_description();
+				break;
+			case 'advanced-ads_page_advanced-ads-placements':
+				$title              = __( 'Your Placements', 'advanced-ads' );
+				$new_button_label   = __( 'New Placement', 'advanced-ads' );
+				$new_button_href    = '#modal-placement-new';
+				$manual_url         = 'manual/placements/';
+				$show_filter_button = true;
+				$tooltip            = Advanced_Ads_Placements::get_description();
+				break;
+			case 'advanced-ads_page_advanced-ads-settings':
+				$title            = __( 'Advanced Ads Settings', 'advanced-ads' );
+				$new_button_href  = '';
+				break;
+		}
+
+		$manual_url = apply_filters( 'advanced-ads-admin-header-manual-url', $manual_url, $screen->id );
+
+		include ADVADS_BASE_PATH . 'admin/views/header.php';
+	}
+
+
+	
+	/**
+	 * Show a note about a deprecated feature and link to the appropriate page in our manual
+	 *
+	 * @param string $feature simple string to indicate the deprecated feature. Will be added to the UTM campaign attribute.
+	 */
+	public static function show_deprecated_notice( $feature = '' ) {
+		$url = esc_url( ADVADS_URL ) . 'manual/deprecated-features/';
+
+		if ( '' !== $feature ) {
+			$url .= '#utm_source=advanced-ads&utm_medium=link&utm_campaign=deprecated-' . sanitize_title_for_query( $feature );
+		}
+
+		echo '<br/><br/><span class="advads-notice-inline advads-error">';
+		printf(
+			// Translators: %1$s is the opening link tag, %2$s is closing link tag.
+			esc_html__( 'This feature is deprecated. Please find the removal schedule %1$shere%2$s', 'advanced-ads-pro' ),
+			'<a href="' . esc_url( $url ) . '" target="_blank">',
+			'</a>'
+		);
+		echo '</span>';
 	}
 }

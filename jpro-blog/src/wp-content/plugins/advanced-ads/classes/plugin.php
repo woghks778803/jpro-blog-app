@@ -55,12 +55,12 @@ class Advanced_Ads_Plugin {
 	 * Advanced_Ads_Plugin constructor.
 	 */
 	private function __construct() {
-		register_activation_hook( ADVADS_BASE, array( $this, 'activate' ) );
-		register_deactivation_hook( ADVADS_BASE, array( $this, 'deactivate' ) );
-		register_uninstall_hook( ADVADS_BASE, array( 'Advanced_Ads_Plugin', 'uninstall' ) );
+		register_activation_hook( ADVADS_BASE, [ $this, 'activate' ] );
+		register_deactivation_hook( ADVADS_BASE, [ $this, 'deactivate' ] );
+		register_uninstall_hook( ADVADS_BASE, [ 'Advanced_Ads_Plugin', 'uninstall' ] );
 
-		add_action( 'plugins_loaded', array( $this, 'wp_plugins_loaded' ), 20 );
-		add_action( 'init', array( $this, 'run_upgrades' ), 9 );
+		add_action( 'plugins_loaded', [ $this, 'wp_plugins_loaded' ], 20 );
+		add_action( 'init', [ $this, 'run_upgrades' ], 9 );
 	}
 
 	/**
@@ -94,33 +94,31 @@ class Advanced_Ads_Plugin {
 		$this->load_plugin_textdomain();
 
 		// activate plugin when new blog is added on multisites // -TODO this is admin-only.
-		add_action( 'wpmu_new_blog', array( $this, 'activate_new_site' ) );
+		add_action( 'wpmu_new_blog', [ $this, 'activate_new_site' ] );
 
 		// Load public-facing style sheet and JavaScript.
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_styles' ) );
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
-		add_action( 'wp_head', array( $this, 'print_head_scripts' ), 7 );
+		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_styles' ] );
+		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+		add_action( 'wp_head', [ $this, 'print_head_scripts' ], 7 );
 		// higher priority to make sure other scripts are printed before.
-		add_action( 'wp_footer', array( $this, 'print_footer_scripts' ), 100 );
+		add_action( 'wp_footer', [ $this, 'print_footer_scripts' ], 100 );
 
 		// add short codes.
-		add_shortcode( 'the_ad', array( $this, 'shortcode_display_ad' ) );
-		add_shortcode( 'the_ad_group', array( $this, 'shortcode_display_ad_group' ) );
-		add_shortcode( 'the_ad_placement', array( $this, 'shortcode_display_ad_placement' ) );
+		add_shortcode( 'the_ad', [ $this, 'shortcode_display_ad' ] );
+		add_shortcode( 'the_ad_group', [ $this, 'shortcode_display_ad_group' ] );
+		add_shortcode( 'the_ad_placement', [ $this, 'shortcode_display_ad_placement' ] );
 
-		// remove default ad group menu item // -TODO only for admin.
-		add_action( 'admin_menu', array( $this, 'remove_taxonomy_menu_item' ) );
 		// load widgets.
-		add_action( 'widgets_init', array( $this, 'widget_init' ) );
+		add_action( 'widgets_init', [ $this, 'widget_init' ] );
 
 		// Call action hooks for ad status changes.
-		add_action( 'transition_post_status', array( $this, 'transition_ad_status' ), 10, 3 );
+		add_action( 'transition_post_status', [ $this, 'transition_ad_status' ], 10, 3 );
 
 		// register expired post status.
 		Advanced_Ads_Ad_Expiration::register_post_status();
 
 		// if expired ad gets untrashed, revert it to expired status (instead of draft).
-		add_filter( 'wp_untrash_post_status', array( Advanced_Ads_Ad_Expiration::class, 'wp_untrash_post_status' ), 10, 3 );
+		add_filter( 'wp_untrash_post_status', [ Advanced_Ads_Ad_Expiration::class, 'wp_untrash_post_status' ], 10, 3 );
 
 		// load display conditions.
 		Advanced_Ads_Display_Conditions::get_instance();
@@ -171,28 +169,45 @@ class Advanced_Ads_Plugin {
 			return;
 		}
 		// wp_enqueue_script( $this->get_plugin_slug() . '-plugin-script', plugins_url('assets/js/public.js', __FILE__), array('jquery'), ADVADS_VERSION);
+
+		wp_register_script(
+			$this->get_plugin_slug() . '-advanced-js',
+			sprintf( '%spublic/assets/js/advanced%s.js', ADVADS_BASE_URL, defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' ),
+			[ 'jquery' ],
+			ADVADS_VERSION,
+			false
+		);
+
+		$privacy                    = Advanced_Ads_Privacy::get_instance();
+		$privacy_options            = $privacy->options();
+		$privacy_options['enabled'] = ! empty( $privacy_options['enabled'] );
+		$privacy_options['state']   = $privacy->get_state();
+
+		wp_localize_script(
+			$this->get_plugin_slug() . '-advanced-js',
+			'advads_options',
+			[
+				'blog_id' => get_current_blog_id(),
+				'privacy' => $privacy_options,
+			]
+		);
+
 		$activated_js = apply_filters( 'advanced-ads-activate-advanced-js', isset( $this->options()['advanced-js'] ) );
 
 		if ( $activated_js || ! empty( $_COOKIE['advads_frontend_picker'] ) ) {
-			wp_enqueue_script(
-				$this->get_plugin_slug() . '-advanced-js',
-				sprintf( '%spublic/assets/js/advanced%s.js', ADVADS_BASE_URL, defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' ),
-				array( 'jquery' ),
-				ADVADS_VERSION,
-				false
-			);
+			wp_enqueue_script( $this->get_plugin_slug() . '-advanced-js' );
+		}
 
-			$privacy                    = Advanced_Ads_Privacy::get_instance();
-			$privacy_options            = $privacy->options();
-			$privacy_options['enabled'] = ! empty( $privacy_options['enabled'] );
-			$privacy_options['state']   = $privacy->get_state();
+		wp_register_script(
+			$this->get_plugin_slug() . '-frontend-picker',
+			sprintf( '%spublic/assets/js/frontend-picker%s.js', ADVADS_BASE_URL, defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? '' : '.min' ),
+			[ 'jquery', $this->get_plugin_slug() . '-advanced-js' ],
+			ADVADS_VERSION,
+			false
+		);
 
-			$data = array(
-				'blog_id' => get_current_blog_id(),
-				'privacy' => $privacy_options,
-			);
-
-			wp_localize_script( $this->get_plugin_slug() . '-advanced-js', 'advads_options', $data );
+		if ( ! empty( $_COOKIE['advads_frontend_picker'] ) ) {
+			wp_enqueue_script( $this->get_plugin_slug() . '-frontend-picker' );
 		}
 	}
 
@@ -358,14 +373,7 @@ class Advanced_Ads_Plugin {
 		}
 	}
 
-	/**
-	 * Remove WP tag edit page for the ad group taxonomy
-	 *  needed, because we can’t remove it with `show_ui` without also removing the meta box
-	 */
-	public function remove_taxonomy_menu_item() {
-		remove_submenu_page( 'edit.php?post_type=advanced_ads', 'edit-tags.php?taxonomy=advanced_ads_groups&amp;post_type=advanced_ads' );
-	}
-
+	
 	/**
 	 * Shortcode to include ad in frontend
 	 *
@@ -374,7 +382,7 @@ class Advanced_Ads_Plugin {
 	 * @return string ad content.
 	 */
 	public function shortcode_display_ad( $atts ) {
-		$atts = is_array( $atts ) ? $atts : array();
+		$atts = is_array( $atts ) ? $atts : [];
 		$id   = isset( $atts['id'] ) ? (int) $atts['id'] : 0;
 		// check if there is an inline attribute with or without value.
 		if ( isset( $atts['inline'] ) || in_array( 'inline', $atts, true ) ) {
@@ -394,7 +402,7 @@ class Advanced_Ads_Plugin {
 	 * @return string ad group content.
 	 */
 	public function shortcode_display_ad_group( $atts ) {
-		$atts = is_array( $atts ) ? $atts : array();
+		$atts = is_array( $atts ) ? $atts : [];
 		$id   = isset( $atts['id'] ) ? (int) $atts['id'] : 0;
 		$atts = $this->prepare_shortcode_atts( $atts );
 
@@ -410,7 +418,7 @@ class Advanced_Ads_Plugin {
 	 * @return string ad placement content.
 	 */
 	public function shortcode_display_ad_placement( $atts ) {
-		$atts = is_array( $atts ) ? $atts : array();
+		$atts = is_array( $atts ) ? $atts : [];
 		$id   = isset( $atts['id'] ) ? (string) $atts['id'] : '';
 		$atts = $this->prepare_shortcode_atts( $atts );
 
@@ -426,7 +434,7 @@ class Advanced_Ads_Plugin {
 	 * @return array
 	 */
 	private function prepare_shortcode_atts( $atts ) {
-		$result = array();
+		$result = [];
 
 		/**
 		 * Prepare attributes by converting strings to multi-dimensional array
@@ -441,7 +449,7 @@ class Advanced_Ads_Plugin {
 
 				foreach ( $levels as $lvl ) {
 					if ( ! isset( $cur_lvl[ $lvl ] ) ) {
-						$cur_lvl[ $lvl ] = array();
+						$cur_lvl[ $lvl ] = [];
 					}
 
 					$cur_lvl = &$cur_lvl[ $lvl ];
@@ -452,11 +460,11 @@ class Advanced_Ads_Plugin {
 
 			$result = array_diff_key(
 				$result,
-				array(
+				[
 					'id'      => false,
 					'blog_id' => false,
 					'ad_args' => false,
-				)
+				]
 			);
 		}
 
@@ -478,7 +486,7 @@ class Advanced_Ads_Plugin {
 	public function options() {
 		// we can’t store options if WPML String Translations is enabled, or it would not translate the "Ad Label" option.
 		if ( ! isset( $this->options ) || class_exists( 'WPML_ST_String' ) ) {
-			$this->options = get_option( ADVADS_SLUG, array() );
+			$this->options = get_option( ADVADS_SLUG, [] );
 		}
 
 		// allow to change options dynamically
@@ -494,7 +502,7 @@ class Advanced_Ads_Plugin {
 	 */
 	public function update_options( array $options ) {
 		// do not allow to clear options.
-		if ( array() === $options ) {
+		if ( [] === $options ) {
 			return;
 		}
 
@@ -510,14 +518,14 @@ class Advanced_Ads_Plugin {
 	 */
 	public function internal_options() {
 		if ( ! isset( $this->internal_options ) ) {
-			$defaults               = array(
+			$defaults               = [
 				'version'   => ADVADS_VERSION,
 				'installed' => time(), // when was this installed.
-			);
-			$this->internal_options = get_option( ADVADS_SLUG . '-internal', array() );
+			];
+			$this->internal_options = get_option( ADVADS_SLUG . '-internal', [] );
 
 			// save defaults.
-			if ( array() === $this->internal_options ) {
+			if ( [] === $this->internal_options ) {
 				$this->internal_options = $defaults;
 				$this->update_internal_options( $this->internal_options );
 
@@ -541,7 +549,7 @@ class Advanced_Ads_Plugin {
 	 */
 	public function update_internal_options( array $options ) {
 		// do not allow to clear options.
-		if ( array() === $options ) {
+		if ( [] === $options ) {
 			return;
 		}
 
@@ -551,30 +559,62 @@ class Advanced_Ads_Plugin {
 
 	/**
 	 * Get prefix used for frontend elements
+	 *
+	 * @return string
 	 */
 	public function get_frontend_prefix() {
-		if ( ! $this->frontend_prefix ) {
-			$options = $this->options();
-
-			if ( ! isset( $options['front-prefix'] ) ) {
-				if ( isset( $options['id-prefix'] ) ) {
-					// deprecated: keeps widgets working that previously received an id based on the front-prefix.
-					$frontend_prefix = esc_attr( $options['id-prefix'] );
-				} else {
-					$host            = parse_url( get_home_url(), PHP_URL_HOST );
-					$frontend_prefix = preg_match( '/[A-Za-z][A-Za-z0-9_]{4}/', $host, $result ) ? $result[0] . '-' : self::DEFAULT_FRONTEND_PREFIX;
-				}
-			} else {
-				$frontend_prefix = esc_attr( $options['front-prefix'] );
-			}
-			/**
-			 * Applying the filter here makes sure that it is the same frontend prefix for all
-			 * calls on this page impression
-			 */
-			$this->frontend_prefix = apply_filters( 'advanced-ads-frontend-prefix', $frontend_prefix );
+		if ( isset( $this->frontend_prefix ) ) {
+			return $this->frontend_prefix;
 		}
 
+		$options = $this->options();
+
+		if ( ! isset( $options['front-prefix'] ) ) {
+			if ( isset( $options['id-prefix'] ) ) {
+				// deprecated: keeps widgets working that previously received an id based on the front-prefix.
+				$frontend_prefix = $options['id-prefix'];
+			} else {
+				$frontend_prefix = preg_match( '/[A-Za-z][A-Za-z0-9_]{4}/', parse_url( get_home_url(), PHP_URL_HOST ), $result )
+					? $result[0] . '-'
+					: self::DEFAULT_FRONTEND_PREFIX;
+			}
+		} else {
+			$frontend_prefix = $options['front-prefix'];
+		}
+		/**
+		 * Applying the filter here makes sure that it is the same frontend prefix for all
+		 * calls on this page impression
+		 *
+		 * @param string $frontend_prefix
+		 */
+		$this->frontend_prefix = (string) apply_filters( 'advanced-ads-frontend-prefix', $frontend_prefix );
+		$this->frontend_prefix = $this->sanitize_frontend_prefix( $frontend_prefix );
+
 		return $this->frontend_prefix;
+	}
+
+	/**
+	 * Sanitize the frontend prefix to result in valid HTML classes.
+	 * See https://www.w3.org/TR/selectors-3/#grammar for valid tokens.
+	 *
+	 * @param string $prefix The HTML class to sanitize.
+	 * @param string $fallback The fallback if the class is invalid.
+	 *
+	 * @return string
+	 */
+	public function sanitize_frontend_prefix( $prefix, $fallback = '' ) {
+		$prefix   = sanitize_html_class( $prefix );
+		$nonascii = '[^\0-\177]';
+		$unicode  = '\\[0-9a-f]{1,6}(\r\n|[ \n\r\t\f])?';
+		$escape   = sprintf( '%s|\\[^\n\r\f0-9a-f]', $unicode );
+		$nmstart  = sprintf( '[_a-z]|%s|%s', $nonascii, $escape );
+		$nmchar   = sprintf( '[_a-z0-9-]|%s|%s', $nonascii, $escape );
+
+		if ( ! preg_match( sprintf( '/-?(?:%s)(?:%s)*/i', $nmstart, $nmchar ), $prefix, $matches ) ) {
+			return $fallback;
+		}
+
+		return $matches[0];
 	}
 
 	/**
@@ -642,6 +682,8 @@ class Advanced_Ads_Plugin {
 			global $wpdb;
 			$main_blog_id = $wpdb->blogid;
 
+			// Delete assets (main blog).
+			Advanced_Ads_Ad_Blocker_Admin::get_instance()->clear_assets();
 			Advanced_Ads::get_instance()->create_post_types();
 
 			if ( ! is_multisite() ) {
@@ -656,8 +698,7 @@ class Advanced_Ads_Plugin {
 				switch_to_blog( $main_blog_id );
 			}
 
-			// Delete assets (main blog).
-			Advanced_Ads_Ad_Blocker_Admin::get_instance()->clear_assets();
+
 		}
 
 	}
@@ -674,8 +715,8 @@ class Advanced_Ads_Plugin {
 		if ( $post_ids ) {
 			$wpdb->delete(
 				$wpdb->posts,
-				array( 'post_type' => Advanced_Ads::POST_TYPE_SLUG ),
-				array( '%s' )
+				[ 'post_type' => Advanced_Ads::POST_TYPE_SLUG ],
+				[ '%s' ]
 			);
 
 			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->postmeta} WHERE post_id IN( %s )", implode( ',', $post_ids ) ) );
@@ -688,34 +729,41 @@ class Advanced_Ads_Plugin {
 			wp_delete_term( $term_id, Advanced_Ads::AD_GROUP_TAXONOMY );
 		}
 
+		delete_option( 'advanced-ads' );
+		delete_option( 'advanced-ads-internal' );
+		delete_option( 'advanced-ads-notices' );
 		delete_option( 'advads-ad-groups' );
-		delete_option( Advanced_Ads::AD_GROUP_TAXONOMY . '_children' );
+		delete_option( 'advanced_ads_groups_children' );
 		delete_option( 'advads-ad-weights' );
-
-		// Placements.
+		delete_option( 'advanced_ads_ads_txt' );
+		delete_option( 'advanced-ads-ad-health-notices' );
+		delete_option( 'advanced-ads-adsense' );
+		delete_option( 'advanced_ads_adsense_report_domain' );
+		delete_option( 'advanced_ads_adsense_report_unit' );
+		delete_option( 'advanced-ads-adsense-dashboard-filter' );
+		delete_option( 'advanced-ads-adsense-mapi' );
+		delete_option( 'advanced-ads-licenses' );
+		delete_option( 'advanced-ads-ab-module' );
+		delete_option( 'widget_' . Advanced_Ads_Widget::get_base_id() );
 		delete_option( 'advads-ads-placements' );
 
 		// User metadata.
 		delete_metadata( 'user', null, 'advanced-ads-hide-wizard', '', true );
 		delete_metadata( 'user', null, 'advanced-ads-subscribed', '', true );
+		delete_metadata( 'user', null, 'advanced-ads-ad-list-screen-options', '', true );
+		delete_metadata( 'user', null, 'advanced-ads-admin-settings', '', true );
+		delete_metadata( 'user', null, 'advanced-ads-role', '', true );
+		delete_metadata( 'user', null, 'edit_advanced_ads_per_page', '', true );
+		delete_metadata( 'user', null, 'meta-box-order_advanced_ads', '', true );
+		delete_metadata( 'user', null, 'screen_layout_advanced_ads', '', true );
+		delete_metadata( 'user', null, 'closedpostboxes_advanced_ads', '', true );
+		delete_metadata( 'user', null, 'metaboxhidden_advanced_ads', '', true );
 
 		// Post metadata.
 		delete_metadata( 'post', null, '_advads_ad_settings', '', true );
 
 		// Transients.
-		delete_transient( ADVADS_SLUG . '_add-on-updates-checked' );
-
-		delete_option( GADSENSE_OPT_NAME );
-		delete_option( ADVADS_SLUG );
-		delete_option( ADVADS_SLUG . '-internal' );
-		delete_option( ADVADS_SLUG . '-notices' );
-
-		// Widget.
-		$base_widget_id = Advanced_Ads_Widget::get_base_id();
-		delete_option( 'widget_' . $base_widget_id );
-
-		// Ad blocker disquise.
-		delete_option( ADVADS_AB_SLUG );
+		delete_transient( 'advanced-ads_add-on-updates-checked' );
 
 		do_action( 'advanced-ads-uninstall' );
 
@@ -735,7 +783,6 @@ class Advanced_Ads_Plugin {
 				 || defined( 'AASADS_VERSION' )  // Sticky Ads.
 				 || defined( 'AAR_VERSION' )        // Responsive Ads.
 				 || defined( 'AAPLDS_VERSION' )  // PopUp and Layer Ads.
-				 || defined( 'AAGT_SLUG' )        // Geo-Targeting.
 		);
 	}
 
@@ -748,7 +795,7 @@ class Advanced_Ads_Plugin {
 	 */
 	public static function support_url( $utm = '' ) {
 
-		$utm = empty( $utm ) ? '#utm_source=advanced-ads&utm_medium=link&utm_campaign=support' : $utm;
+		$utm = empty( $utm ) ? '?utm_source=advanced-ads&utm_medium=link&utm_campaign=support' : $utm;
 		if ( self::any_activated_add_on() ) {
 			$url = ADVADS_URL . 'support/' . $utm . '-with-addons';
 		} else {
@@ -770,7 +817,7 @@ class Advanced_Ads_Plugin {
 
 		$url = self::get_short_url( $url );
 
-		$code = intval( substr( md5( $url ), - 1 ), 16 );
+		$code = (int)substr( md5( $url ), - 1 );
 
 		switch ( $ex ) {
 			case 'b':
@@ -865,7 +912,7 @@ class Advanced_Ads_Plugin {
 			return;
 		}
 
-		$ad = new Advanced_Ads_Ad( $post->ID );
+		$ad = \Advanced_Ads\Ad_Repository::get( $post->ID );
 
 		if ( $old_status !== $new_status ) {
 			/**

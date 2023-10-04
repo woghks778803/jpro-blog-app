@@ -6,8 +6,10 @@
 		/**
 		 *  Shortcut variables
 		 */
-		var el = wp.element.createElement,
-		registerBlockType = wp.blocks.registerBlockType;
+		var el                = wp.element.createElement,
+			registerBlockType = wp.blocks.registerBlockType,
+			RawHTML           = wp.element.RawHTML,
+			safeHTML          = wp.dom.safeHTML;
 
 		/**
 		 * Custom SVG icon
@@ -73,7 +75,46 @@
 					var selected = event.target.querySelector( 'option:checked' );
 					props.setAttributes( { itemID: selected.value } );
 					event.preventDefault();
+
 				}
+
+				/**
+				 * Request hints related to the item.
+				 *
+				 * @param {string} itemID Item ID.
+				 */
+				function requestHints( itemID ) {
+					if ( ! itemID || 0 !== itemID.indexOf( 'group_' ) ) {
+						setHints( [] );
+
+						return;
+					}
+
+					const data = new FormData();
+					data.append( 'action', 'advads-get-block-hints' );
+					data.append( 'nonce', advadsglobal.ajax_nonce );
+					data.append( 'itemID', itemID );
+
+					fetch( ajaxurl, {
+						method:      'POST',
+						credentials: 'same-origin',
+						body:        data
+					} )
+						.then( response => response.json() )
+						.then( json => {
+							if ( json.success ) {
+								setHints( json.data );
+							}
+						} )
+						.catch( error => {
+							console.info( error );
+						} );
+				}
+
+				const [ hints, setHints ] = window.wp.element.useState( [] );
+				window.wp.element.useEffect( () => {
+					requestHints( itemID );
+				}, [ itemID ] );
 
 				// the form children elements
 				var children = [];
@@ -85,37 +126,37 @@
 				var placements = [];
 
 				args.push( 'select' );
-				args.push( { value: itemID, onChange: setItemID } );
-				args.push( el( 'option', null, advadsGutenberg.i18n['--empty--'] ) );
+				args.push( { value: itemID, onChange: setItemID, key: 'select' } );
+				args.push( el( 'option', {key: 'empty'}, advadsGutenberg.i18n['--empty--'] ) );
 
 				for ( var adID in advadsGutenberg.ads ) {
 					if ( 'undefined' == typeof advadsGutenberg.ads[adID].id ) continue;
-					ads.push( el( 'option', {value: 'ad_' + advadsGutenberg.ads[adID].id}, advadsGutenberg.ads[adID].title ) );
+					ads.push( el( 'option', {value: 'ad_' + advadsGutenberg.ads[adID].id, key: adID}, advadsGutenberg.ads[adID].title ) );
 				}
 
 				for ( var GID in advadsGutenberg.groups ) {
 					if ( 'undefined' == typeof advadsGutenberg.groups[GID].id ) continue;
-					groups.push( el( 'option', {value: 'group_' + advadsGutenberg.groups[GID]['id'] }, advadsGutenberg.groups[GID]['name'] ) );
+					groups.push( el( 'option', {value: 'group_' + advadsGutenberg.groups[GID]['id'], key: GID}, advadsGutenberg.groups[GID]['name'] ) );
 
 				}
 
 				if ( advadsGutenberg.placements ) {
 					for ( var pid in advadsGutenberg.placements ) {
 					if ( 'undefined' == typeof advadsGutenberg.placements[pid].id ) continue;
-						placements.push( el( 'option', {value: 'place_' + advadsGutenberg.placements[pid]['id']}, advadsGutenberg.placements[pid]['name'] ) );
+						placements.push( el( 'option', {value: 'place_' + advadsGutenberg.placements[pid]['id'], key: pid}, advadsGutenberg.placements[pid]['name'] ) );
 					}
 				}
 
 				if ( advadsGutenberg.placements ) {
-					args.push( el( 'optgroup', {label: advadsGutenberg.i18n['placements']}, placements ) );
+					args.push( el( 'optgroup', {label: advadsGutenberg.i18n['placements'], key: 'placements' }, placements ) );
 				}
 
-				args.push( el( 'optgroup', {label: advadsGutenberg.i18n['adGroups']}, groups ) );
+				args.push( el( 'optgroup', {label: advadsGutenberg.i18n['adGroups'], key: 'adGroups' }, groups ) );
 
-				args.push( el( 'optgroup', {label: advadsGutenberg.i18n['ads']}, ads ) );
+				args.push( el( 'optgroup', {label: advadsGutenberg.i18n['ads'], key: 'ads' }, ads ) );
 
 				// add a <label /> first and style it.
-				children.push( el( 'div', {className: 'components-placeholder__label'}, advadsIconEl, el( 'label', {style: {display: 'block'}}, advadsGutenberg.i18n.advads ) ) );
+				children.push( el( 'div', {className: 'components-placeholder__label', key:'components-placeholder__label'}, advadsIconEl, el( 'label', {style: {display: 'block'}}, advadsGutenberg.i18n.advads ) ) );
 
 				if ( itemID && advadsGutenberg.i18n['--empty--'] != itemID ) {
 
@@ -132,13 +173,13 @@
 					children.push(
 						el(
 							'div',
-							{className: 'components-placeholder__fieldset'},
+							{className: 'components-placeholder__fieldset', key: 'components-placeholder__fieldset'},
 							// then add the <select /> input with its own children
 							el.apply( null, args ),
 							el(
 								'a',
 								{
-									class:  'dashicons dashicons-external',
+									className:  'dashicons dashicons-external',
 									style:  {
 										margin: 5
 									},
@@ -148,9 +189,24 @@
 							)
 						)
 					);
+
+					hints.forEach( function( item, index ) {
+						children.push(
+							el(
+								RawHTML,
+								{
+									key: index,
+									className: 'advads-block-hint advads-notice-inline advads-error',
+								},
+								safeHTML( item )
+							)
+						);
+					} );
+
 				} else {
 					children.push( el.apply( null, args ) );
 				}
+
 				// return the complete form
 				return el( 'form', { className: 'components-placeholder is-large', onSubmit: setItemID }, children );
 

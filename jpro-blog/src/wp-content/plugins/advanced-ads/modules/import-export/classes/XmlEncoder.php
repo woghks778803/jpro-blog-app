@@ -56,7 +56,7 @@ class Advanced_Ads_XmlEncoder
     }
 
 
-    public function encode( $data, $options = array()) {
+    public function encode( $data, $options = []) {
         if ( ! extension_loaded( 'simplexml' ) ) {
             throw new Exception( sprintf( __( 'The %s extension(s) is not loaded', 'advanced-ads' ), 'simplexml' ) );
         }
@@ -212,9 +212,10 @@ class Advanced_Ads_XmlEncoder
 
 		$internal_errors = libxml_use_internal_errors( true );
 
-		if ( PHP_VERSION_ID < 80000 ) {
-			// This function has been deprecated in PHP 8.0 because in libxml 2.9.0, external entity loading
-			// is disabled by default, so this function is no longer needed to protect against XXE attacks.
+		if ( LIBXML_VERSION < 20900 ) {
+			// The `libxml_disable_entity_loading` function has been deprecated in PHP 8.0 because in
+			// libxml >= 2.9.0 (that is required by PHP 8), external entity loading is disabled by default,
+			// so this function is no longer needed to protect against XXE attacks.
 			// phpcs:ignore PHPCompatibility.FunctionUse.RemovedFunctions.libxml_disable_entity_loaderDeprecated
 			$disable_entities = libxml_disable_entity_loader( true );
 		}
@@ -232,7 +233,8 @@ class Advanced_Ads_XmlEncoder
 
 		libxml_use_internal_errors( $internal_errors );
 
-		if ( PHP_VERSION_ID < 80000 && isset( $disable_entities ) ) {
+		if ( LIBXML_VERSION < 20900 ) {
+			// phpcs:ignore PHPCompatibility.FunctionUse.RemovedFunctions.libxml_disable_entity_loaderDeprecated -- see L215ff. for an explanation
 			libxml_disable_entity_loader( $disable_entities );
 		}
 
@@ -260,7 +262,7 @@ class Advanced_Ads_XmlEncoder
      */
     private function parseXml(DOMNode $node) {
         // Parse the input DOMNode value (content and children) into an array or a string
-        $data = array();
+        $data = [];
         if ( $node->hasAttributes() ) {
             foreach ($node->attributes as $attr) {
                 if (ctype_digit($attr->nodeValue)) {
@@ -277,12 +279,12 @@ class Advanced_Ads_XmlEncoder
         // Parse the input DOMNode value (content and children) into an array or a string.
         if (!$node->hasChildNodes()) {
             $value = $node->nodeValue;
-        } elseif (1 === $node->childNodes->length && in_array($node->firstChild->nodeType, array(XML_TEXT_NODE, XML_CDATA_SECTION_NODE))) {
+        } elseif (1 === $node->childNodes->length && in_array($node->firstChild->nodeType, [XML_TEXT_NODE, XML_CDATA_SECTION_NODE])) {
             $value = $node->firstChild->nodeValue;
         } else {
 
 
-            $value = array();
+            $value = [];
 
             foreach ($node->childNodes as $subnode) {
                 $val = $this->parseXml($subnode);
@@ -336,7 +338,7 @@ class Advanced_Ads_XmlEncoder
         if ( $type === 'string' ) return (string) $text;
         if ( $type === 'numeric' ) return 0 + $text;
         if ( $type === 'boolean' ) return (boolean) $text;
-        if ( $type === 'array' && $text=== '' ) return array();
+        if ( $type === 'array' && $text=== '' ) return [];
         if ( $type === 'null' ) return 'null';
         return $text;
     }

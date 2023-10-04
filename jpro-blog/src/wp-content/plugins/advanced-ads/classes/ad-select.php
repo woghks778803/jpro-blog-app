@@ -52,11 +52,11 @@ class Advanced_Ads_Select {
 	public function get_methods()
 	{
 		if ( ! isset($this->methods) ) {
-			$methods = array(
-				self::AD => array( $this, 'get_ad_by_id' ),
-				self::GROUP => array( $this, 'get_ad_by_group' ),
-				self::PLACEMENT => array( $this, 'get_ad_by_placement' ),
-			);
+			$methods = [
+				self::AD => [ $this, 'get_ad_by_id' ],
+				self::GROUP => [ $this, 'get_ad_by_group' ],
+				self::PLACEMENT => [ $this, 'get_ad_by_placement' ],
+			];
 
 			$this->methods = apply_filters( 'advanced-ads-ad-select-methods', $methods );
 		}
@@ -72,12 +72,12 @@ class Advanced_Ads_Select {
 	 *
 	 * @return array
 	 */
-	public function get_ad_arguments( $method, $id, $args = array() )
+	public function get_ad_arguments( $method, $id, $args = [] )
 	{
 		$args = (array) $args;
 
 		$args['previous_method'] = isset( $args['method'] ) ? $args['method']  : null;
-		$args['previous_id'] = isset( $args['id'] ) ? $args['id'] : null;		
+		$args['previous_id'] = isset( $args['id'] ) ? $args['id'] : null;
 
 		if ( $id || ! isset( $args['id'] ) ) $args['id'] = $id;
 		$args['method'] = $method;
@@ -87,7 +87,7 @@ class Advanced_Ads_Select {
 		return $args;
 	}
 
-	public function get_ad_by_method( $id, $method, $args = array() ) {
+	public function get_ad_by_method( $id, $method, $args = [] ) {
 
 		$methods = $this->get_methods();
 		if ( ! isset($methods[ $method ]) ) {
@@ -110,13 +110,13 @@ class Advanced_Ads_Select {
 			return ;
 		}
 
-		// get ad
+		// We can't get the ad from the repository, this is the only instance where the arguments are passed in the constructor.
 		$ad = new Advanced_Ads_Ad( (int) $args['id'], $args );
 
 		if ( false !== ( $override = apply_filters( 'advanced-ads-ad-select-override-by-ad', false, $ad, $args ) ) ) {
 			return $override;
 		}
-		
+
 		// check conditions
 		if ( $ad->can_display() ) {
 			return $ad->output();
@@ -137,7 +137,7 @@ class Advanced_Ads_Select {
 		$adgroup = new Advanced_Ads_Group( $id, $args );
 		$ordered_ad_ids = $adgroup->get_ordered_ad_ids();
 
-		if ( false !== ( $override = apply_filters( 'advanced-ads-ad-select-override-by-group', false, $adgroup, $ordered_ad_ids, $args ) ) ) {	
+		if ( false !== ( $override = apply_filters( 'advanced-ads-ad-select-override-by-group', false, $adgroup, $ordered_ad_ids, $args ) ) ) {
 			return $override;
 		}
 
