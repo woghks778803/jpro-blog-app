@@ -14,4 +14,4 @@
 
 /.vscode
 /env
-/nginx/conf.ex
+/nginx/conf.d

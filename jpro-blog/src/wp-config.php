@@ -1,14 +1,5 @@
 <?php
 
-// BEGIN iThemes Security - Do not modify or remove this line
-// iThemes Security Config Details: 2
-define( 'FORCE_SSL_ADMIN', filter_var(getenv('FORCE_SSL_ADMIN'), FILTER_VALIDATE_BOOLEAN) ); // Redirect All HTTP Page Requests to HTTPS - Security > Settings > Enforce SSL
-define( 'DISALLOW_FILE_EDIT', filter_var(getenv('DISALLOW_FILE_EDIT'), FILTER_VALIDATE_BOOLEAN) ); // Disable File Editor - Security > Settings > WordPress Tweaks > File Editor
-// END iThemes Security - Do not modify or remove this line
-
-// FTP 우회
-// Define( 'FS_METHOD', 'direct' );
-
 /**
  * The base configuration for WordPress
  *
@@ -28,11 +19,20 @@ define( 'DISALLOW_FILE_EDIT', filter_var(getenv('DISALLOW_FILE_EDIT'), FILTER_VA
  * @package WordPress
  */
 
+// BEGIN iThemes Security - Do not modify or remove this line
+// iThemes Security Config Details: 2
+define( 'FORCE_SSL_ADMIN', filter_var(getenv('FORCE_SSL_ADMIN'), FILTER_VALIDATE_BOOLEAN) ); // Redirect All HTTP Page Requests to HTTPS - Security > Settings > Enforce SSL
+define( 'DISALLOW_FILE_EDIT', filter_var(getenv('DISALLOW_FILE_EDIT'), FILTER_VALIDATE_BOOLEAN) ); // Disable File Editor - Security > Settings > WordPress Tweaks > File Editor
+// END iThemes Security - Do not modify or remove this line
+
 // 자동 update 관련
-// 모든 자동 업데이트 끄기
-define( 'AUTOMATIC_UPDATER_DISABLED', true );
-// 코어 자동 업데이트 끄기
-define( 'WP_AUTO_UPDATE_CORE', false );
+// 워드프레스 테마, 플러그인, 코어 모든 자동 업데이트 방지
+define( 'AUTOMATIC_UPDATER_DISABLED', filter_var(getenv('AUTOMATIC_UPDATER_DISABLED'), FILTER_VALIDATE_BOOLEAN) );
+// 코어 자동 업데이트 활성화
+define( 'WP_AUTO_UPDATE_CORE', filter_var(getenv('WP_AUTO_UPDATE_CORE'), FILTER_VALIDATE_BOOLEAN) );
+
+// FTP 우회
+Define( 'FS_METHOD', 'direct' );
 
 // aws iam 인증
 define( 'AS3CF_SETTINGS', serialize( array(

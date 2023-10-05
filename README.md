@@ -61,12 +61,12 @@
 >>> Nginx 컨테이너를 웹 서버로 지정하여 각 서비스 컨테이너를 연결하였습니다.<br>
 
 ## ▎Result
-[![image](https://user-images.githubusercontent.com/38343913/158014722-9d3d9eda-71f3-4652-a852-8f6cb1a9d8f5.png)](https://jpro.blog)
-> <a href="https://www.jpro.blog/">JPro Blog</a> 에서 이용해보기 😄
+[![image](https://user-images.githubusercontent.com/38343913/158014722-9d3d9eda-71f3-4652-a852-8f6cb1a9d8f5.png)](https://jpro.website)
+> <a href="https://www.jpro.website/">JPro Blog</a> 에서 이용해보기 😄
 
 ***
 # ▎관련 정리 자료
-- <a href="https://www.jpro.blog/?p=2147">CI - Circle CI 사용법</a>
-- <a href="https://www.jpro.blog/?p=2220">AWS - Elastic Beanstalk 이란?</a>
-- <a href="https://www.jpro.blog/?p=353">WordPress - BackWPup backup 플러그인 사용해보기</a>
+- <a href="https://www.jpro.website/?p=2147">CI - Circle CI 사용법</a>
+- <a href="https://www.jpro.website/?p=2220">AWS - Elastic Beanstalk 이란?</a>
+- <a href="https://www.jpro.website/?p=353">WordPress - BackWPup backup 플러그인 사용해보기</a>
 

@@ -30,7 +30,7 @@ $(document).ready(function() {
         window.open('https://github.com/woghks778803', '_blank');
     });
     $('#about-blog').click(function(){
-        window.open('https://www.jpro.blog/', '_blank');
+        window.open('https://www.jpro.website/', '_blank');
     });
 
     $('.btn_gotop').click(function(){

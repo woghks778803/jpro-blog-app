@@ -2,7 +2,7 @@
   Plugin list generated with BackWPup version: 3.10.0
   http://backwpup.com
   Blog Name: JPro
-  Blog URL: https://www.jpro.blog
+  Blog URL: https://www.jpro.website
   Generated on: 2022-02-24 18:41.15
 ------------------------------------------------------------
 
